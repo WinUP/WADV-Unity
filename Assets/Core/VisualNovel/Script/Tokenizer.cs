@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Assets.Core.VisualNovel.Script {
@@ -14,109 +13,72 @@ namespace Assets.Core.VisualNovel.Script {
             _path = path;
             var asset = Resources.Load<TextAsset>(path);
             _file = asset.text.Replace("\r\n", "\n").Replace('\r', '\n');
+            if (_file.Last() != '\n') {
+                Debug.LogWarning($"VNS file {path}: Recommend to end with new empty line");
+                _file += '\n';
+            }
             Resources.UnloadAsset(asset);
         }
 
         public IEnumerable<Token> Analyze() {
-            var pointer = 0;
+            var position = 0;
             var totalLength = _file.Length;
             var tokens = new List<Token>();
             var state = new List<TokenizerState>();
-            var lineNumber = 1;
+            var line = 0;
             var cache = new StringBuilder();
-            while (pointer < totalLength) {
-                var character = _file[pointer];
-                var next = pointer == totalLength - 1 ? '\0' : _file[pointer + 1];
-                // 换行
-                if (character == '\n') {
-                    if (state.Last() == TokenizerState.InDialogue) {
-                        state.RemoveAt(state.Count - 1);
-                        tokens.Add(new Token(TokenType.DialogueEnd, lineNumber, pointer + 1));
-                    }
-                    lineNumber++;
-                }
-                // 对话
-                else if (character == '#') {
-                    tokens.Add(new Token(TokenType.DialogueStart, lineNumber, pointer + 1));
-                    state.Add(TokenizerState.InDialogue);
-                    var lineEnd = _file.IndexOf('\n', pointer);
-                    var index = _file.IndexOf(' ', pointer);
-                    if (lineEnd == pointer + 1) {
-                        tokens.Add(new Token(TokenType.DialogueContentStart, lineNumber, pointer + 1));
-                        tokens.Add(new Token(TokenType.String, lineNumber, pointer + 1));
-                        tokens.Add(new Token(TokenType.DialogueContentEnd, lineNumber, pointer + 1));
-                    }
-                    if (index < lineEnd) {
-                        tokens.Add(new Token(TokenType.DialogueNameStart, lineNumber, pointer + 1));
-                        state.Add(TokenizerState.InDialogueName);
-                    } else {
-                        tokens.Add(new Token(TokenType.DialogueContentStart, lineNumber, pointer + 1));
-                        state.Add(TokenizerState.InDialogueContent);
-                    }
-                }
-                // 注释
-                else if (character == '/' && next == '/') {
-                    var index = _file.IndexOf('\n', pointer + 1);
-                    if (index <= pointer) {
+            while (position < totalLength) {
+                var character = _file[position];
+                var next = position == totalLength - 1 ? '\0' : _file[position + 1];
+                if (character == '/' && next == '/' && !state.Contains(TokenizerState.InDialogue)) {
+                    var index = _file.IndexOf('\n', position + 1);
+                    if (index <= position) {
                         return tokens;
                     }
-                    pointer = index;
-                }
-                // 转义
-                else if (character == '\\') {
-                    if (next != '\0') {
-                        cache.Append(next);
-                    }
-                    pointer++;
-                }
-                // 制表符
-                else if (character == '\t') {
-                    if (state.Contains(TokenizerState.InDialogue)) {
-                        cache.Append(character);
-                    } else {
-                        throw new TokenizerException(_path, lineNumber, pointer + 1, "WADV VNS file cannot contains \\t outside of dialogue");
-                    }
-                }
-                // 指令
-                else if (character == '[') {
-                    state.Add((TokenizerState.InCommand);
-                    state.Add((TokenizerState.InCommandName);
-                    tokens.Add(new Token(TokenType.CommandStart, lineNumber, pointer + 1));
-                    tokens.Add(new Token(TokenType.CommandNameStart, lineNumber, pointer + 1));
-                }
-                // 变量
-                else if (character == '@') {
-                    if (state.Contains(TokenizerState.InDialogue)) {
-                        cache.Append(character);
-                    } else {
-                        tokens.Add(new Token(TokenType.DialogueStart, lineNumber, pointer + 1));
-                        state.Add(TokenizerState.InDialogue);
-                    }
-                }
-                // 空格
-                else if (character == ' ') {
-                    if (state.Contains(TokenizerState.InVariableName)) {
-                        if (cache.Length > 0) {
-                            tokens.Add(new Token(TokenType.String, lineNumber, pointer + 1, cache.ToString()));
-                            cache.Clear();
-                        }
-                        tokens.Add(new Token(TokenType.VariableEnd, lineNumber, pointer + 1, cache.ToString()));
-                        state.RemoveAt(state.LastIndexOf(TokenizerState.InVariableName));
-                    }
-                    if (state.Contains(TokenizerState.InCommandName)) {
-                        tokens.Add(new Token(TokenType.CommandNameStart, lineNumber, pointer + 1, cache.ToString()));
-                        cache.Clear();
-                        state.RemoveAt(state.Count - 1);
-                    }
+                    position = index;
+                } else if (character == '\n') {
                     if (state.Contains(TokenizerState.InDialogueName)) {
+                        throw new TokenizerException(_path, line, position, "Dialogue must has content");
+                    } else if (state.Contains(TokenizerState.InDialogueContent)) {
+                        tokens.Add(new Token(TokenType.String, line, position - cache.Length, cache.ToString()));
+                        tokens.Add(new Token(TokenType.DialogueContentEnd, line, position));
+                        tokens.Add(new Token(TokenType.DialogueEnd, line, position));
+                        cache.Clear();
+                        state.Remove(TokenizerState.InDialogueContent);
+                        state.Remove(TokenizerState.InDialogue);
+                    }
+                    line++;
+                } else if (character == '#') {
+                    if (state.Contains(TokenizerState.InDialogueContent)) {
+                        cache.Append(character);
+                    } else {
+                        tokens.Add(new Token(TokenType.DialogueStart, line, position));
+                        state.Add(TokenizerState.InDialogue);
+                        tokens.Add(new Token(TokenType.DialogueNameStart, line, position));
+                        state.Add(TokenizerState.InDialogueName);
+                    }
+                } else if (character == ' ') {
+                    if (state.Contains(TokenizerState.InDialogueName)) {
+                        tokens.Add(new Token(TokenType.String, line, position - cache.Length, cache.ToString()));
+                        tokens.Add(new Token(TokenType.DialogueNameEnd, line, position));
+                        tokens.Add(new Token(TokenType.DialogueContentStart, line, position));
+                        cache.Clear();
+                        state.Remove(TokenizerState.InDialogueName);
+                        state.Add(TokenizerState.InDialogueContent);
+                    } else {
                         cache.Append(character);
                     }
                 }
-                // 一般文本
                 else {
+                    if (!state.Contains(TokenizerState.InDialogue)) {
+                        tokens.Add(new Token(TokenType.DialogueStart, line, position));
+                        tokens.Add(new Token(TokenType.DialogueContentStart, line, position));
+                        state.Add(TokenizerState.InDialogue);
+                        state.Add(TokenizerState.InDialogueContent);
+                    }
                     cache.Append(character);
                 }
-                pointer++;
+                position++;
             }
             return tokens;
         }
