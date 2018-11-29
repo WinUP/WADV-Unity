@@ -1,6 +1,6 @@
 // ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo
-namespace Assets.Core.VisualNovel.Script.Compiler.OpCodes {
+namespace Core.VisualNovel.Script.Compiler {
     public enum OpCodeType : short {
         LDC_I4_0,
         LDC_I4_1,

@@ -2,14 +2,57 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Assets.Core.VisualNovel.Script.Compiler.Extensions;
-using Assets.Core.VisualNovel.Script.Compiler.Tokens;
+using Core.VisualNovel.Attributes;
+using Core.VisualNovel.Script.Compiler.Extensions;
+using Core.VisualNovel.Script.Compiler.Tokens;
+using Core.VisualNovel.Translate;
 
-namespace Assets.Core.VisualNovel.Script.Compiler {
+namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
     /// WADV VNS词法分析器
     /// </summary>
+    [RegisterTranslate("default", SyntaxIf, "如果")]
+    [RegisterTranslate("default", SyntaxElseIf, "或者")]
+    [RegisterTranslate("default", SyntaxElse, "否则")]
+    [RegisterTranslate("default", SyntaxLoop, "循环")]
+    [RegisterTranslate("default", SyntaxScenario, "场景")]
+    [RegisterTranslate("default", SyntaxReturn, "返回")]
+    [RegisterTranslate("en", SyntaxIf, "If")]
+    [RegisterTranslate("en", SyntaxElseIf, "ElseIf")]
+    [RegisterTranslate("en", SyntaxElse, "Else")]
+    [RegisterTranslate("en", SyntaxLoop, "Loop")]
+    [RegisterTranslate("en", SyntaxScenario, "Scene")]
+    [RegisterTranslate("en", SyntaxReturn, "Return")]
     public class Lexer {
+        /// <summary>
+        /// 编译语言选项
+        /// <para>该指令在所有语言中表示一致，且不能对特定语言添加字面表示</para>
+        /// </summary>
+        public const string SyntaxLanguage = "lang";
+        /// <summary>
+        /// 选择指令
+        /// </summary>
+        public const string SyntaxIf = "SYNTAX_IF";
+        /// <summary>
+        /// 分支指令
+        /// </summary>
+        public const string SyntaxElseIf = "SYNTAX_ELSEIF";
+        /// <summary>
+        /// 否则指令
+        /// </summary>
+        public const string SyntaxElse = "SYNTAX_ELSE";
+        /// <summary>
+        /// 循环指令
+        /// </summary>
+        public const string SyntaxLoop = "SYNTAX_LOOP";
+        /// <summary>
+        /// 场景指令
+        /// </summary>
+        public const string SyntaxScenario = "SYNTAX_SCENARIO";
+        /// <summary>
+        /// 返回指令
+        /// </summary>
+        public const string SyntaxReturn = "SYNTAX_RETURN";
         /// <summary>
         /// 所有操作符
         /// </summary>
@@ -124,7 +167,7 @@ namespace Assets.Core.VisualNovel.Script.Compiler {
                 if (File.Current == ';' && File.Previous != '\\') { // 指令
                     File.MoveToNext();
                     position = position.NextColumn();
-                    if (File.StartsWith(Commands.SyntaxLanguage)) {
+                    if (File.StartsWith(SyntaxLanguage)) {
                         tokens.Add(new BasicToken(TokenType.Language, position));
                         File.Move(5);
                         position = position.MoveColumn(5);
@@ -139,17 +182,17 @@ namespace Assets.Core.VisualNovel.Script.Compiler {
                         position = position.MoveColumn(index);
                     } else {
                         var index = File.IndexOf(' ', '\n');
-                        if (File.StartsWith(Commands.FindCommand(language, Commands.SyntaxScenario) + ' ')) {
+                        if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxScenario) + ' ')) {
                             tokens.Add(new BasicToken(TokenType.Scenario, position));
-                        } else if (File.StartsWith(Commands.FindCommand(language, Commands.SyntaxIf) + ' ')) {
+                        } else if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxIf) + ' ')) {
                             tokens.Add(new BasicToken(TokenType.If, position));
-                        } else if (File.StartsWith(Commands.FindCommand(language, Commands.SyntaxElse) + ' ', Commands.FindCommand(language, Commands.SyntaxElse) + '\n')) {
+                        } else if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxElse) + ' ', ScriptTranslateManager.Find(language, SyntaxElse) + '\n')) {
                             tokens.Add(new BasicToken(TokenType.Else, position));
-                        } else if (File.StartsWith(Commands.FindCommand(language, Commands.SyntaxElseIf) + ' ')) {
+                        } else if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxElseIf) + ' ')) {
                             tokens.Add(new BasicToken(TokenType.ElseIf, position));
-                        } else if (File.StartsWith(Commands.FindCommand(language, Commands.SyntaxLoop) + ' ')) {
+                        } else if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxLoop) + ' ')) {
                             tokens.Add(new BasicToken(TokenType.Loop, position));
-                        } else if (File.StartsWith(Commands.FindCommand(language, Commands.SyntaxReturn) + ' ', Commands.FindCommand(language, Commands.SyntaxReturn) + '\n')) {
+                        } else if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxReturn) + ' ', ScriptTranslateManager.Find(language, SyntaxReturn) + '\n')) {
                             tokens.Add(new BasicToken(TokenType.Return, position));
                         } else {
                             throw new CompileException(Identifier, position, $"Unknown command {File.CopyContent(index)} in language {language}, may cause by command format error or typo mistake");

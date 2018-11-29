@@ -1,4 +1,4 @@
-namespace Assets.Core.VisualNovel.Script.Compiler {
+namespace Core.VisualNovel.Script.Compiler {
     public struct CodePosition {
         public int Line { get; set; }
         public int Column { get; set; }

@@ -1,4 +1,4 @@
-namespace Assets.Core.VisualNovel.Script.Compiler.Expressions {
+namespace Core.VisualNovel.Script.Compiler.Expressions {
     public class VariableExpression : Expression {
         public Expression Name { get; set; }
         

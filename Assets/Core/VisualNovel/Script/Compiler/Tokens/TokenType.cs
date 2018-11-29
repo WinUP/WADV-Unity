@@ -1,4 +1,4 @@
-﻿namespace Assets.Core.VisualNovel.Script.Compiler.Tokens {
+﻿namespace Core.VisualNovel.Script.Compiler.Tokens {
     public enum TokenType {
         DialogueSpeaker,
         DialogueContent,

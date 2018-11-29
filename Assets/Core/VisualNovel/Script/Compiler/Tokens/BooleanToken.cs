@@ -1,6 +1,4 @@
-using VisualNovelScript.Compiler;
-
-namespace Assets.Core.VisualNovel.Script.Compiler.Tokens {
+namespace Core.VisualNovel.Script.Compiler.Tokens {
     public class BooleanToken : BasicToken {
         public bool Content { get; set; }
 

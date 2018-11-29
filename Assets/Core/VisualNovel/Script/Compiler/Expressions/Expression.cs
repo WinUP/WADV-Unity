@@ -1,8 +1,8 @@
-namespace Assets.Core.VisualNovel.Script.Compiler.Expressions {
-    public class Expression {
-        public CodePosition Position { get; set; }
+namespace Core.VisualNovel.Script.Compiler.Expressions {
+    public abstract class Expression {
+        public CodePosition Position { get; }
 
-        public Expression(CodePosition position) {
+        protected Expression(CodePosition position) {
             Position = position;
         }
     }

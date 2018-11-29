@@ -1,6 +1,4 @@
-using VisualNovelScript.Compiler.Expressions;
-
-namespace Assets.Core.VisualNovel.Script.Compiler.Expressions {
+namespace Core.VisualNovel.Script.Compiler.Expressions {
     public class BinaryExpression : Expression {
         public OperatorType Operator { get; set; }
         public Expression Left { get; set; }
