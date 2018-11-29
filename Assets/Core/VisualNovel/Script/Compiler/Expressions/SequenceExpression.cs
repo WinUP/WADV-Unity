@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Assets.Core.VisualNovel.Script.Compiler.Expressions {
+namespace Core.VisualNovel.Script.Compiler.Expressions {
     public class SequenceExpression : Expression {
         public List<Expression> Content { get; }
 

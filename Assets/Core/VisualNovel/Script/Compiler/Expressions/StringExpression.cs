@@ -1,4 +1,4 @@
-namespace Assets.Core.VisualNovel.Script.Compiler.Expressions {
+namespace Core.VisualNovel.Script.Compiler.Expressions {
     public class StringExpression : Expression {
         public string Value { get; set; }
         public bool Translatable { get; set; }

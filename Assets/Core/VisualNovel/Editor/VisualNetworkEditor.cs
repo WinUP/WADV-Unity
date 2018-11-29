@@ -1,4 +1,5 @@
 ﻿using System;
+using Core.VisualNovel;
 using JetBrains.Annotations;
 using UnityEditor;
 

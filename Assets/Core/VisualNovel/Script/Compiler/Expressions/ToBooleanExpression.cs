@@ -1,4 +1,4 @@
-namespace Assets.Core.VisualNovel.Script.Compiler.Expressions {
+namespace Core.VisualNovel.Script.Compiler.Expressions {
     public class ToBooleanExpression : Expression {
         public Expression Value { get; set; }
 

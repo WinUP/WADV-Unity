@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Assets.Core.VisualNovel.Script.Compiler.Tokens;
+using Core.VisualNovel.Script.Compiler.Tokens;
 
-namespace Assets.Core.VisualNovel.Script.Compiler {
+namespace Core.VisualNovel.Script.Compiler {
     public class TokenSequence {
         public List<BasicToken> Content { get; }
         

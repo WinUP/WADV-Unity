@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace Assets.Core.VisualNovel.Script.Compiler {
+namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
     /// 表示脚本内容
     /// <para>脚本内容提供大多数与字符串类相似的操作，不过均以当前偏移值为0索引处理</para>

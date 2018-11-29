@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Assets.Core.VisualNovel.Script.Compiler.Extensions {
+namespace Core.VisualNovel.Script.Compiler.Extensions {
     public static class StringExtensions {
         /// <summary>
         /// 解析字符串中所有转义字符

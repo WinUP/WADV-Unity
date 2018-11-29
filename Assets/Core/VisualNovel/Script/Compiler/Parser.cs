@@ -1,9 +1,8 @@
 using System.Collections.Generic;
-using Assets.Core.VisualNovel.Script.Compiler.Expressions;
-using Assets.Core.VisualNovel.Script.Compiler.Tokens;
-using VisualNovelScript.Compiler.Expressions;
+using Core.VisualNovel.Script.Compiler.Expressions;
+using Core.VisualNovel.Script.Compiler.Tokens;
 
-namespace Assets.Core.VisualNovel.Script.Compiler {
+namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
     /// WADV VNS 语法分析器
     /// </summary>

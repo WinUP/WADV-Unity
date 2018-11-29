@@ -1,4 +1,4 @@
-namespace VisualNovelScript.Compiler.Expressions {
+namespace Core.VisualNovel.Script.Compiler.Expressions {
     public enum OperatorType {
         PickChild,
         Add,
