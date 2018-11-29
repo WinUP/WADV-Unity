@@ -116,7 +116,7 @@ pop
 ldc.r4.025
 ldc.i4.4
 ldstr 背景音1
-ldstr 声道
+ldc.i4.0
 ldc.i4.2
 ldstr 暂停
 lduid 187,209,68,40,152,67,188,70,155,128,208,185,139,204,73,61
@@ -155,7 +155,15 @@ call
 ret
 
 .label __func_测试1__ ldstr 变量2
+ldnul
+ldstr 变量2
 ldloc
+bne.s __func_测试1_content__
+ldc.i4.1
+ldstr 变量2
+stloc
+pop
+.label __func_测试1_content__ ldloc
 ldstr 变量1
 ldloc
 add
