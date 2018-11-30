@@ -239,6 +239,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 return -1;
             }
             // 以下部分基于Sunday字符串检索（的一种逐步推进型复合搜素方案），解释起来很麻烦，有需要请自行上网查
+            // 目前的词法分析用不到这么精细的算法，不过无所谓
             var valuesOffset = new int[values.Length];
             var sourceOffset = Enumerable.Repeat(Offset, values.Length).ToArray();
             var selectedValueIndex = 0;

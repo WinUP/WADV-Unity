@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Core.VisualNovel;
 using Core.VisualNovel.Attributes;
@@ -12,11 +13,11 @@ namespace Core.VisualNovelPlugins {
         public PluginIdentifier Identifier { get; } = new PluginIdentifier(0, 0, 0, 0);
 
         public IStackItem Execute(ExecutionContext context, IReadOnlyDictionary<int, IStackItem> parameters) {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public IVisualNovelPlugin PickChild(ExecutionContext context, string childName) {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }
