@@ -61,18 +61,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Core\System\IMessager.cs" />
-    <Compile Include="Assets\Core\System\Message.cs" />
-    <Compile Include="Assets\Core\System\MessageService.cs" />
+    <Compile Include="Assets\Core\Extensions\ListExtensions.cs" />
+    <Compile Include="Assets\Core\Extensions\StringExtensions.cs" />
+    <Compile Include="Assets\Core\IMessager.cs" />
+    <Compile Include="Assets\Core\Message.cs" />
+    <Compile Include="Assets\Core\MessageService.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Attributes\PluginTranslationAttribute.cs" />
     <Compile Include="Assets\Core\VisualNovel\Attributes\RegisterTranslateAttribute.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Attributes\VisualNovelPluginAttribute.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Attributes\VisualNovelPluginNameAttribute.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Attributes\VisualNovelPluginParameterAttribute.cs" />
     <Compile Include="Assets\Core\VisualNovel\EmptyVisualCommand.cs" />
+    <Compile Include="Assets\Core\VisualNovel\ExecutionContext.cs" />
+    <Compile Include="Assets\Core\VisualNovel\GlobalStack.cs" />
     <Compile Include="Assets\Core\VisualNovel\MessageMask.cs" />
     <Compile Include="Assets\Core\VisualNovel\MessageTag.cs" />
-    <Compile Include="Assets\Core\VisualNovel\PluginManager.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Plugins\SoundPlugin.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Plugin\IVisualNovelPlugin.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Plugin\PluginDescription.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Plugin\PluginIdentifier.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Plugin\PluginManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\AssembleFile.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Assembler.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CodeFile.cs" />
@@ -100,8 +104,6 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\StringExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ToBooleanExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\VariableExpression.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Extensions\ListExtensions.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Extensions\StringExtensions.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Hasher.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Lexer.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\OpCodeType.cs" />
@@ -113,13 +115,15 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\StringToken.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\TokenType.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\TokenSequence.cs" />
+    <Compile Include="Assets\Core\VisualNovel\ScriptTranslateManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\PlaySoundMessageContent.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundChannel.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundManager.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Translate\ScriptTranslateManager.cs" />
+    <Compile Include="Assets\Core\VisualNovel\StackItems\IStackItem.cs" />
     <Compile Include="Assets\Core\VisualNovel\VisualCommand.cs" />
     <Compile Include="Assets\Core\VisualNovel\VisualNetwork.cs" />
-    <None Include="Assets\Logic\!Entrance.txt" />
+    <Compile Include="Assets\Core\VisualNovelPlugins\SoundPlugin.cs" />
+    <None Include="Assets\Resources\Logic\!Entrance.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/bo/SCB_YUME_NO_MISAKI_SAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

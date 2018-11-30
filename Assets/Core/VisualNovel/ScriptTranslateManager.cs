@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Core.VisualNovel.Attributes;
-using UnityEngine;
 
-namespace Core.VisualNovel.Translate {
+namespace Core.VisualNovel {
     /// <summary>
     /// 指令翻译表
     /// </summary>
@@ -14,29 +13,8 @@ namespace Core.VisualNovel.Translate {
 
         static ScriptTranslateManager() {
             foreach (var item in Assembly.GetExecutingAssembly().GetTypes().Where(e => e.IsClass)) {
-                var translates = item.GetCustomAttributes<RegisterTranslateAttribute>();
-                foreach (var translate in translates) {
-                    Add(translate.Language, translate.Name, translate.Value);
-                }
-                var plugin = item.GetCustomAttribute<VisualNovelPluginAttribute>();
-                if (plugin == null) {
-                    continue;
-                }
-                var pluginId = string.Join("", plugin.Identifier.Select(e => Convert.ToString(e, 16).PadLeft(2, '0').ToUpper()));
-                var names = item.GetCustomAttributes<VisualNovelPluginNameAttribute>();
-                var parameters = item.GetCustomAttributes<VisualNovelPluginParameterAttribute>();
-                foreach (var name in names) {
-                    Add(name.Language, $"PLUGIN_{name.Name}", pluginId);
-                    var parameterList = parameters.FirstOrDefault(e => e.Language == name.Language);
-                    if (parameterList == null) continue;
-                    for (var i = -1; ++i < parameterList.Parameters.Length;) {
-                        Add(parameterList.Language, $"PLUGIN_{name.Name}_{i}", parameterList.Parameters[i]);
-                    }
-                }
-            }
-            foreach (var e in Translates) {
-                foreach (var r in e.Value) {
-                    Debug.Log($"{e.Key}:{r.Key}:{r.Value}");
+                foreach (var translation in item.GetCustomAttributes<RegisterTranslateAttribute>()) {
+                    Add(translation.Language, translation.Name, translation.Value);
                 }
             }
         }
@@ -73,12 +51,6 @@ namespace Core.VisualNovel.Translate {
                 items[name] = value;
             } else {
                 items.Add(name, value);
-            }
-        }
-        
-        public static void AddPluginName(byte[] id, string language, string name) {
-            if (id.Length != 4) {
-                throw new ArgumentException("Identifier array's length must be 4");
             }
         }
 

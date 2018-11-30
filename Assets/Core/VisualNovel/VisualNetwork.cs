@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
-using Assets.Core.System;
+using Core;
+using Core.VisualNovel;
 using JetBrains.Annotations;
 using UnityEngine;
 

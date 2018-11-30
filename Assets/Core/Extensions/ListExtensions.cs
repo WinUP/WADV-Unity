@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Core.VisualNovel.Script.Compiler.Extensions {
+namespace Core.Extensions {
     public static class ListExtensions {
         /// <summary>
         /// 确定列表是否一指定元素结束

@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Core.Extensions;
 using Core.VisualNovel.Attributes;
-using Core.VisualNovel.Script.Compiler.Extensions;
 using Core.VisualNovel.Script.Compiler.Tokens;
-using Core.VisualNovel.Translate;
 
 namespace Core.VisualNovel.Script.Compiler {
     /// <summary>

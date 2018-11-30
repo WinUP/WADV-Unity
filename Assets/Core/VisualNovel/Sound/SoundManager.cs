@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Assets.Core.System;
+using Core;
 using JetBrains.Annotations;
 using UnityEngine;
 

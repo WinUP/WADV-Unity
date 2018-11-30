@@ -1,6 +1,7 @@
 ﻿using System.Collections;
+using Assets.Core.VisualNovel;
 
-namespace Assets.Core.VisualNovel {
+namespace Core.VisualNovel {
     /// <inheritdoc />
     /// <summary>
     /// 空指令节点

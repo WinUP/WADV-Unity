@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Assets.Core.System {
+namespace Core {
     /// <summary>
     /// Message service
     /// </summary>

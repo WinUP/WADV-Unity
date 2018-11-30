@@ -1,4 +1,4 @@
-﻿namespace Assets.Core.System {
+﻿namespace Core {
     /// <summary>
     /// Message service receiver
     /// </summary>

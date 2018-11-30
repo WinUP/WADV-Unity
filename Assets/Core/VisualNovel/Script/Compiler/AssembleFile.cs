@@ -41,7 +41,7 @@ namespace Core.VisualNovel.Script.Compiler {
             ++_stringCount;
         }
 
-        public void WritePluginName(string name) {
+        public void WritePluginName(string language, string name) {
             
         }
 

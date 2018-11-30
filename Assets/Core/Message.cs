@@ -1,4 +1,4 @@
-﻿namespace Assets.Core.System {
+﻿namespace Core {
     /// <summary>
     /// Base system message
     /// </summary>
