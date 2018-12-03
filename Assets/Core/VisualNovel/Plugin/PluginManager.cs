@@ -77,9 +77,9 @@ namespace Core.VisualNovel.Plugin {
             }
             var translations = plugin.GetType().GetCustomAttributes<PluginTranslationAttribute>();
             foreach (var translation in translations) {
-                AddExtraDescription(translation.Language, new PluginDescription(translation.Name, translation.Parameters, plugin.Identifier));
+                AddExtraDescription(translation.Language, new PluginDescription(translation.Name, plugin.Identifier));
             }
-            AddExtraDescription("default", new PluginDescription(plugin.Name, plugin.Parameters, plugin.Identifier));
+            AddExtraDescription("default", new PluginDescription(plugin.Name, plugin.Identifier));
             Plugins.Add(plugin.Identifier, plugin);
         }
 

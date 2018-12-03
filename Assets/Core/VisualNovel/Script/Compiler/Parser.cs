@@ -24,8 +24,8 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <summary>
         /// 构建抽象语法树
         /// </summary>
-        public Expression Parse() {
-            var result = new SequenceExpression(new CodePosition());
+        public ScopeExpression Parse() {
+            var result = new ScopeExpression(new CodePosition());
             while (Tokens.HasNext) {
                 switch (Tokens.Current.Type) {
                     case TokenType.DialogueContent:
@@ -74,7 +74,7 @@ namespace Core.VisualNovel.Script.Compiler {
                     case TokenType.LeaveScope:
                         Tokens.MoveToNext();
                         // 解析文件域时LeaveScope一定不会出现，如果出现则证明这是脚本中一个子域，那么这一定是在ParseScope的递归中，可以直接返回
-                        return result.Content.Count == 0 ? null : result.Content.Count == 1 ? result.Content[0] : result;
+                        return result;
                     case TokenType.CallEnd:
                         throw new CompileException(Identifier, Tokens.Current.Position, "Unexpected CallEnd");
                     case TokenType.RightBracket:
@@ -105,7 +105,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 }
             }
             Tokens.Reset();
-            return result.Content.Count == 0 ? null : result.Content.Count == 1 ? result.Content[0] : result;
+            return result;
         }
 
         /// <summary>
@@ -333,12 +333,9 @@ namespace Core.VisualNovel.Script.Compiler {
                 case TokenType.LogicNot:
                     content = ParseLogicNot();
                     break;
-                case TokenType.If:
-                    content = ParseCondition();
-                    break;
                 default:
                     throw new CompileException(Identifier, Tokens.Current.Position,
-                        "Expected String, Number, CallStart '[', Variable '@', LeftBracket '(', LogicNot '!' or If");
+                        "Expected String, Number, CallStart '[', Variable '@', LeftBracket '(' or LogicNot '!'");
             }
             // 双重取否改布尔转换
             Expression result = new LogicNotExpression(position) {Content = content};
@@ -747,7 +744,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 throw new CompileException(Identifier, Tokens.Current.Position, "Expected RightBracket");
             }
             Tokens.MoveToNext();
-            return new ScopeExpression(position) {Content = content};
+            return content;
         }
         
         /// <summary>
@@ -758,7 +755,7 @@ namespace Core.VisualNovel.Script.Compiler {
             var currentToken = Tokens.Current;
             Tokens.MoveToNext();
             // 由于词法分析时忽略了所有空行，因而ParseScope绝对不会解析出空结果
-            return new ScopeExpression(currentToken.Position) {Content = Parse()};
+            return new ScopeExpression(currentToken.Position) {Content = Parse().Content};
         }
 
         /// <summary>

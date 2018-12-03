@@ -28,6 +28,36 @@ namespace Core.Extensions {
                             case ';':
                                 result.Append(';');
                                 break;
+                            case '0':
+                                result.Append('0');
+                                break;
+                            case '1':
+                                result.Append('1');
+                                break;
+                            case '2':
+                                result.Append('2');
+                                break;
+                            case '3':
+                                result.Append('3');
+                                break;
+                            case '4':
+                                result.Append('4');
+                                break;
+                            case '5':
+                                result.Append('5');
+                                break;
+                            case '6':
+                                result.Append('6');
+                                break;
+                            case '7':
+                                result.Append('7');
+                                break;
+                            case '8':
+                                result.Append('8');
+                                break;
+                            case '9':
+                                result.Append('9');
+                                break;
                             default:
                                 result.Append(value[i + 1]);
                                 break;;

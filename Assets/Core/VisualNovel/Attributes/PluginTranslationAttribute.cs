@@ -5,12 +5,10 @@ namespace Core.VisualNovel.Attributes {
     public class PluginTranslationAttribute : Attribute {
         public string Language { get; }
         public string Name { get; }
-        public string[] Parameters { get; }
 
-        public PluginTranslationAttribute(string language, string name, string[] parameters) {
+        public PluginTranslationAttribute(string language, string name) {
             Language = language;
             Name = name;
-            Parameters = parameters;
         }
     }
 }

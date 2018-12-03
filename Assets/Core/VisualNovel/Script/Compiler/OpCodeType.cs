@@ -73,6 +73,7 @@ namespace Core.VisualNovel.Script.Compiler {
         BLE_S,
         BLT_S,
         BE_S,
-        BNE_S
+        BNE_S,
+        BR
     }
 }

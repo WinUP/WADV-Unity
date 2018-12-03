@@ -11,10 +11,6 @@ namespace Core.VisualNovel.Plugin {
         /// </summary>
         string Name { get; }
         /// <summary>
-        /// 插件及子插件默认参数列表
-        /// </summary>
-        string[] Parameters { get; }
-        /// <summary>
         /// 
         /// </summary>
         PluginIdentifier Identifier { get; }
@@ -25,7 +21,7 @@ namespace Core.VisualNovel.Plugin {
         /// <param name="context">执行上下文</param>
         /// <param name="parameters">参数列表</param>
         /// <returns></returns>
-        IStackItem Execute(ExecutionContext context, IReadOnlyDictionary<int, IStackItem> parameters);
+        IEnumerable<IStackItem> ExecuteAsync(ExecutionContext context, IReadOnlyDictionary<string, IStackItem> parameters);
         /// <summary>
         /// 从当前插件中获取指定名称的子插件
         /// </summary>

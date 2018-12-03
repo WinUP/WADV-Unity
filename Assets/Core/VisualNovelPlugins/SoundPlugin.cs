@@ -6,13 +6,12 @@ using Core.VisualNovel.Plugin;
 using Core.VisualNovel.StackItems;
 
 namespace Core.VisualNovelPlugins {
-    [PluginTranslation("en", "Sound", new[] {"Channel", "Resource", "FadeIn", "FadeOut", "Time", "Loop"})]
+    [PluginTranslation("en", "Sound")]
     public class SoundPlugin : IVisualNovelPlugin {
         public string Name { get; } = "声音";
-        public string[] Parameters { get; } = {"声道", "资源", "淡入", "淡出", "时长", "循环"};
         public PluginIdentifier Identifier { get; } = new PluginIdentifier(0, 0, 0, 0);
 
-        public IStackItem Execute(ExecutionContext context, IReadOnlyDictionary<int, IStackItem> parameters) {
+        public IEnumerable<IStackItem> ExecuteAsync(ExecutionContext context, IReadOnlyDictionary<string, IStackItem> parameters) {
             throw new NotImplementedException();
         }
 

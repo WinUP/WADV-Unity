@@ -78,10 +78,12 @@
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\AssembleFile.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Assembler.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\AssemblerContext.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CodeFile.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CodeIndent.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CodePosition.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CompileException.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CompilerFlag.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\BinaryExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\CommandExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ConditionContentExpression.cs" />
@@ -89,6 +91,7 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\DialogueExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\EmptyExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\Expression.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ExpressionType.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\FloatExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\IntegerExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\LanguageExpression.cs" />
@@ -99,7 +102,6 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ReturnExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ScenarioExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ScopeExpression.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\SequenceExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\StringExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ToBooleanExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\VariableExpression.cs" />

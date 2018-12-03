@@ -14,6 +14,15 @@ namespace Core.Extensions {
         }
 
         /// <summary>
+        /// 将列表转换为内容-索引组
+        /// </summary>
+        /// <param name="e">目标列表</param>
+        /// <returns></returns>
+        public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> e) {
+            return e.Select((item, index) => (item, index));
+        }
+
+        /// <summary>
         /// 倒序批量删除最后一个符合的元素
         /// </summary>
         /// <param name="e">目标列表</param>
