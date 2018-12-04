@@ -1,0 +1,435 @@
+.translation 000064AA 小红
+.translation 0001DC02 这是隐藏对话。\n因为[粗体]对话框[取消粗体]没有显示。[不暂停]
+.translation 000277F5 旁白
+.translation 0003D02E + 这是普通的对话。
+.translation 000430A1 这里可以做各种运算了
+.translation 00051FC7 当前系统语言不受支持
+.translation 0006C16A Assets/Resources/Intro
+.translation 0007BFF4 测试对话2。
+.translation 000864AA 小红
+.translation 0009D9CC 场景
+.translation 000AD9CC 场景
+.string 0 旁白
+.string 1 编号
+.string 2 角色
+.string 3 系统语言
+.string 4 内容
+.string 5 广播
+.string 6 对话
+.string 7 也可以这么用
+.string 8 测试对话
+.string 9 来源
+.string 10 更高级的用法
+.string 11 基础样式
+.string 12 zh_CN
+.string 13 #808080
+.string 14 颜色
+.string 15 无变量
+.string 16 样式
+.string 17 #222222
+.string 18 样式#对话框主体_简中
+.string 19 初次运行
+.string 20 对象
+.string 21 事件列表
+.string 22 事件列表长度
+.string 23 完成度
+.string 24 第一章
+.string 25 ja_JP
+.string 26 样式#对话框主体_日文
+.string 27 提示
+.string 28 测试1
+.string 29 en
+.string 30 目标
+.string 31 切换语言
+.string 32 背景音1
+.string 33 声道
+.string 34 资源
+.string 35 淡入
+.string 36 循环
+.string 37 播放
+.string 38 声音
+.string 39 时长
+.string 40 暂停
+.string 41 子场景1
+.string 42 执行
+.string 43 变量1
+.string 44 变量2
+.string 45 var2
+.string 46 var1
+.label 670 1S引入场景
+.label 823 1S测试1
+.label 887 1Stest1
+.label 924 2S子场景1
+.label 222 2C1
+.label 288 2C2
+.label 335 2C0
+.label 345 1C5
+.label 384 2C8
+.label 487 2C7
+.label 493 1C6
+.label 550 1C10
+.label 582 1C4
+.label 583 1L12
+.label 620 1L13
+.label 851 1S测试1P14
+.scene 引入场景 1S引入场景
+.scene 测试1 1S测试1
+.scene test1 1Stest1
+.scene 子场景1 2S子场景1
+
+SCOPE
+LDSTR 0(旁白)
+LDSTR 1(编号)
+LDC_I4_1
+LDSTR 2(角色)
+CALL
+POP
+LDSTT 25770(小红)
+LDSTR 1(编号)
+LDC_I4_1
+LDSTR 2(角色)
+CALL
+POP
+LDSTT 121858(这是隐藏对话。\n因为[粗体]对话框[取消粗体]没有显示。[不暂停])
+LDSTT 161781(旁白)
+DIALOGUE
+POP
+LDSTT 249902(+ 这是普通的对话。)
+LDNUL
+DIALOGUE
+POP
+LDSTR 0(旁白)
+LDSTR 2(角色)
+LDC_I4_2
+LDC_I4_1
+LDSTR 3(系统语言)
+LDLOC
+ADD
+MUL
+LDSTT 274593(这里可以做各种运算了)
+ADD
+LDSTR 4(内容)
+LDNUL
+LDSTR 5(广播)
+LDC_I4_3
+LDSTR 6(对话)
+CALL
+POP
+LDSTR 7(也可以这么用)
+LDSTR 4(内容)
+LDC_I4_1
+LDSTR 6(对话)
+CALL
+LDSTR 8(测试对话)
+STLOC
+POP
+LDSTR 8(测试对话)
+LDLOC
+LDSTR 9(来源)
+LDC_I4_1
+LDSTR 8(测试对话)
+LDLOC
+LDSTR 6(对话)
+PICK
+CALL
+POP
+LDNUL
+LDSTR 8(测试对话)
+LDLOC
+STLOC
+POP
+LDSTR 0(旁白)
+LDSTR 2(角色)
+LDSTR 10(更高级的用法)
+LDSTR 4(内容)
+LDC_I4_2
+LDSTR 6(对话)
+CALL
+LDSTR 9(来源)
+LDC_I4_1
+LDSTR 5(广播)
+LDSTR 6(对话)
+PICK
+CALL
+POP
+LDNUL
+LDSTR 11(基础样式)
+STLOC
+POP
+SCOPE
+LDSTR 11(基础样式)
+LDLOC
+[2C1]LDSTR 3(系统语言)
+LDLOC
+NOT
+LDSTR 12(zh_CN)
+LDSTR 3(系统语言)
+LDLOC
+EQL
+ADD
+BVAL
+BF_S 2C2
+SCOPE
+LDSTR 11(基础样式)
+LDSTR 1(编号)
+LDSTR 13(#808080)
+LDSTR 14(颜色)
+LDNUL
+LDSTR 15(无变量)
+LDC_I4_3
+LDSTR 16(样式)
+CALL
+LEAVE
+BR_S 2C0
+[2C2]LDT
+BVAL
+BF_S 2C3
+SCOPE
+LDSTR 11(基础样式)
+LDSTR 1(编号)
+LDSTR 17(#222222)
+LDSTR 14(颜色)
+LDNUL
+LDSTR 15(无变量)
+LDC_I4_3
+LDSTR 16(样式)
+CALL
+LEAVE
+BR_S 2C0
+[2C0]NOT
+ADD
+LDSTR 11(基础样式)
+STLOC
+LEAVE
+POP
+[1C5]LDSTR 12(zh_CN)
+LDSTR 3(系统语言)
+LDLOC
+LDLOC
+EQL
+BVAL
+BF_S 1C6
+SCOPE
+LDSTR 18(样式#对话框主体_简中)
+LDLOC
+LDSTR 11(基础样式)
+LDC_I4_1
+LDSTR 16(样式)
+CALL
+POP
+[2C8]LDT
+LDSTR 19(初次运行)
+LDLOC
+EQL
+BVAL
+BF_S 2C9
+SCOPE
+LDF
+LDC_I4_0
+LDF
+LDC_I4_1
+LDC_I4_2
+LDSTR 20(对象)
+CALL
+LDSTR 21(事件列表)
+STLOC
+POP
+LDT
+LDC_I4_2
+LDC_I4_1
+LDSTR 22(事件列表长度)
+LDLOC
+SUB
+LDSTR 21(事件列表)
+LDLOC
+PICK
+MUL
+STLOC
+POP
+LDC_I4_0
+LDSTR 20(对象)
+CALL
+LDSTR 23(完成度)
+STLOC
+POP
+LDF
+LDSTR 24(第一章)
+LDSTR 23(完成度)
+LDLOC
+PICK
+STLOC
+POP
+LDT
+LDSTR 22(事件列表长度)
+LDLOC
+LDSTR 23(完成度)
+LDLOC
+PICK
+STLOC
+LEAVE
+BR_S 2C7
+[2C7]LEAVE
+BR_S 1C4
+[1C6]LDC_I4 10
+LDSTR 22(事件列表长度)
+LDLOC
+CGE
+LDSTR 25(ja_JP)
+LDSTR 3(系统语言)
+LDLOC
+EQL
+ADD
+BVAL
+BF_S 1C10
+SCOPE
+LDSTR 26(样式#对话框主体_日文)
+LDLOC
+LDSTR 11(基础样式)
+LDC_I4_1
+LDSTR 16(样式)
+CALL
+LEAVE
+BR_S 1C4
+[1C10]LDT
+BVAL
+BF_S 1C11
+SCOPE
+LDSTT 335815(当前系统语言不受支持)
+LDSTR 4(内容)
+LDC_I4_1
+LDSTR 27(提示)
+CALL
+LEAVE
+BR_S 1C4
+[1C4]POP
+[1L12]LDC_I4_0
+LDSTR 22(事件列表长度)
+LDLOC
+CGT
+BVAL
+BF_S 1L13
+SCOPE
+LDC_I4_1
+LDSTR 22(事件列表长度)
+LDLOC
+SUB
+LDSTR 22(事件列表长度)
+STLOC
+LEAVE
+BR_S 1L12
+[1L13]POP
+LDSTR 28(测试1)
+LDSTR 29(en)
+LANG
+ADD
+LDSTR 29(en)
+STLOC
+POP
+LDSTR 29(en)
+LDLOC
+LDSTR 30(目标)
+LDC_I4_1
+LDSTR 31(切换语言)
+CALL
+POP
+LDADDR -> 1Stest1
+LEAVE
+RET
+[1S引入场景]SCOPE
+LDSTR 32(背景音1)
+LDSTR 33(声道)
+LDSTT 442730(Assets/Resources/Intro)
+LDSTR 34(资源)
+LDC_R4_2
+LDSTR 35(淡入)
+LDNUL
+LDSTR 36(循环)
+LDC_I4_4
+LDSTR 37(播放)
+LDSTR 38(声音)
+PICK
+CALL
+POP
+LDSTR 32(背景音1)
+LDSTR 33(声道)
+LDC_R4_025
+LDSTR 39(时长)
+LDC_I4_2
+LDSTR 40(暂停)
+LDSTR 38(声音)
+PICK
+CALL
+POP
+LDSTT 507892(测试对话2。)
+LDSTT 550058(小红)
+DIALOGUE
+POP
+LDSTR 41(子场景1)
+LDSTR 30(目标)
+LDC_I4_1
+LDSTR 42(执行)
+LDSTT 645580(场景)
+LDLOC
+PICK
+CALL
+POP
+LDSTR 28(测试1)
+LDSTR 30(目标)
+LDC_I4_1
+LDSTR 43(变量1)
+LDLOC
+LDC_I4_2
+LDSTR 44(变量2)
+LDLOC
+LDC_I4_3
+LDSTR 42(执行)
+LDSTT 711116(场景)
+PICK
+CALL
+LEAVE
+RET
+[1S测试1]LDNUL
+LDSTR 44(变量2)
+EQL
+BF_S 1S测试1P14
+LDC_I4_1
+LDSTR 44(变量2)
+STLOC
+[1S测试1P14]SCOPE
+LDSTR 44(变量2)
+LDLOC
+LDSTR 43(变量1)
+LDLOC
+ADD
+LDSTR 43(变量1)
+STLOC
+POP
+LDSTR 44(变量2)
+LDLOC
+LDSTR 43(变量1)
+LDLOC
+ADD
+LEAVE
+RET
+[1Stest1]SCOPE
+LDSTR 45(var2)
+LDLOC
+LDSTR 46(var1)
+LDLOC
+ADD
+LDSTR 46(var1)
+STLOC
+POP
+LDSTR 45(var2)
+LDLOC
+LDSTR 46(var1)
+LDLOC
+ADD
+RET
+LEAVE
+RET
+[2S子场景1]SCOPE
+LDNUL
+RET
+LEAVE
+RET

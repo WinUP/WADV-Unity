@@ -14,7 +14,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <summary>
         /// Token序列标识符
         /// </summary>
-        private string Identifier { get; }
+        public string Identifier { get; }
 
         public Parser(IEnumerable<BasicToken> tokens, string identifier) {
             Tokens = new TokenSequence(tokens);
@@ -490,7 +490,7 @@ namespace Core.VisualNovel.Script.Compiler {
             while (Tokens.Current.Type == TokenType.If || Tokens.Current.Type == TokenType.Else || Tokens.Current.Type == TokenType.ElseIf) {
                 var condition = new ConditionContentExpression(Tokens.Current.Position);
                 if (Tokens.Current.Type == TokenType.Else) {
-                    condition.Condition = new EmptyExpression(Tokens.Current.Position);
+                    condition.Condition = new VariableExpression(Tokens.Current.Position) {Name = new StringExpression(Tokens.Current.Position) {Value = "true"}};
                     Tokens.MoveToNext();
                 } else {
                     Tokens.MoveToNext();
@@ -751,7 +751,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 处理域
         /// </summary>
         /// <returns></returns>
-        private Expression ParseScope() {
+        private ScopeExpression ParseScope() {
             var currentToken = Tokens.Current;
             Tokens.MoveToNext();
             // 由于词法分析时忽略了所有空行，因而ParseScope绝对不会解析出空结果

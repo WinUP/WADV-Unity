@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
-using Core.VisualNovel.Plugin;
+using Core.Extensions;
 
 namespace Core.VisualNovel.Script.Compiler {
     public class AssembleFile {
@@ -12,12 +13,46 @@ namespace Core.VisualNovel.Script.Compiler {
         private readonly List<string> _strings = new List<string>();
         private uint _stringCount;
 
+        public long Position => _writer.BaseStream.Position;
+
         /// <summary>
         /// 编写指令
         /// </summary>
         /// <param name="code">指令类型</param>
         public void OpCode(OpCodeType code) {
             _writer.Write((byte) code);
+        }
+
+        /// <summary>
+        /// 编写字符串
+        /// </summary>
+        /// <param name="value">目标字符串</param>
+        public void String(string value) {
+            _writer.Write(value);
+        }
+
+        /// <summary>
+        /// 编写数组内容
+        /// </summary>
+        /// <param name="values">目标数组</param>
+        public void Array(params byte[] values) {
+            _writer.Write(values);
+        }
+
+        /// <summary>
+        /// 编写32位整数
+        /// </summary>
+        /// <param name="value">目标数字</param>
+        public void Number(int value) {
+            _writer.Write(value);
+        }
+
+        /// <summary>
+        /// 编写64位整数
+        /// </summary>
+        /// <param name="value">目标数字</param>
+        public void Number(long value) {
+            _writer.Write(value);
         }
 
         /// <summary>
@@ -39,10 +74,10 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="content">字符串内容</param>
         public void LoadTranslatableString(string content) {
-            var index = _translations.Count;
-            _translations.Add(Convert.ToString((index << 16) + Hasher.Crc16(Encoding.UTF8.GetBytes(content)), 16).ToUpper().PadLeft(8, '0'), content);
+            var key = (_translations.Count << 16) + Hasher.Crc16(Encoding.UTF8.GetBytes(content));
+            _translations.Add(Convert.ToString(key, 16).ToUpper().PadLeft(8, '0'), content);
             OpCode(OpCodeType.LDSTT);
-            _writer.Write(index);
+            _writer.Write(key);
         }
 
         /// <summary>
@@ -199,24 +234,6 @@ namespace Core.VisualNovel.Script.Compiler {
             }
             OpCode(OpCodeType.DIALOGUE);
         }
-        
-        /// <summary>
-        /// 编写入栈插件名指令
-        /// </summary>
-        /// <param name="description">插件描述</param>
-        /// <param name="name">描述不可用时的替代插件名字符串</param>
-        public void LoadPluginName(PluginDescription? description, string name) {
-            if (description.HasValue) {
-                OpCode(OpCodeType.LDUID);
-                _writer.Write(
-                    ((uint) description.Value.Identifier.Part1 << 24) +
-                    ((uint) description.Value.Identifier.Part2 << 16) +
-                    ((uint) description.Value.Identifier.Part3 << 8) +
-                    description.Value.Identifier.Part4);
-            } else {
-                LoadString(name);
-            }
-        }
 
         /// <summary>
         /// 编写切换脚本语言指令
@@ -252,8 +269,8 @@ namespace Core.VisualNovel.Script.Compiler {
             _labels.Add(name, _writer.BaseStream.Position);
         }
 
-        public (byte[] content, IReadOnlyDictionary<string, long> labels, IReadOnlyDictionary<string, string> translations) Create() {
-            return ((_writer.BaseStream as MemoryStream)?.ToArray(), _labels, _translations);
+        public (byte[] Content, IReadOnlyDictionary<string, long> Labels, IReadOnlyDictionary<string, string> Translations, IReadOnlyCollection<string> Strings) Create() {
+            return ((_writer.BaseStream as MemoryStream)?.ToArray(), _labels, _translations, _strings);
         }
     }
 }

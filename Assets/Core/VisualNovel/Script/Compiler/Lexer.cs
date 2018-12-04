@@ -5,6 +5,7 @@ using System.Text;
 using Core.Extensions;
 using Core.VisualNovel.Attributes;
 using Core.VisualNovel.Script.Compiler.Tokens;
+using UnityEngine;
 
 namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
@@ -16,12 +17,12 @@ namespace Core.VisualNovel.Script.Compiler {
     [RegisterTranslate("default", SyntaxLoop, "循环")]
     [RegisterTranslate("default", SyntaxScenario, "场景")]
     [RegisterTranslate("default", SyntaxReturn, "返回")]
-    [RegisterTranslate("en", SyntaxIf, "If")]
-    [RegisterTranslate("en", SyntaxElseIf, "ElseIf")]
-    [RegisterTranslate("en", SyntaxElse, "Else")]
-    [RegisterTranslate("en", SyntaxLoop, "Loop")]
-    [RegisterTranslate("en", SyntaxScenario, "Scene")]
-    [RegisterTranslate("en", SyntaxReturn, "Return")]
+    [RegisterTranslate("en", SyntaxIf, "if")]
+    [RegisterTranslate("en", SyntaxElseIf, "elseIf")]
+    [RegisterTranslate("en", SyntaxElse, "else")]
+    [RegisterTranslate("en", SyntaxLoop, "loop")]
+    [RegisterTranslate("en", SyntaxScenario, "scene")]
+    [RegisterTranslate("en", SyntaxReturn, "return")]
     public class Lexer {
         /// <summary>
         /// 编译语言选项
@@ -71,7 +72,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <param name="path">文件路径</param>
         /// <returns></returns>
         public static Lexer FromFile(string path) {
-            return new Lexer(global::System.IO.File.ReadAllText(path, Encoding.UTF8), path);
+            return new Lexer(Resources.Load<TextAsset>(path).text, path);
         }
         
         /// <summary>
