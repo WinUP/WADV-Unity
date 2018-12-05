@@ -62,7 +62,6 @@
     <Compile Include="Assets\Core\MessageService.cs" />
     <Compile Include="Assets\Core\VisualNovel\Attributes\PluginTranslationAttribute.cs" />
     <Compile Include="Assets\Core\VisualNovel\Attributes\StaticTranslationAttribute.cs" />
-    <Compile Include="Assets\Core\VisualNovel\EmptyVisualCommand.cs" />
     <Compile Include="Assets\Core\VisualNovel\ExecutionContext.cs" />
     <Compile Include="Assets\Core\VisualNovel\GlobalStack.cs" />
     <Compile Include="Assets\Core\VisualNovel\MessageMask.cs" />
@@ -119,10 +118,8 @@
     <Compile Include="Assets\Core\VisualNovel\Translation\ScriptTranslation.cs" />
     <Compile Include="Assets\Core\VisualNovel\Translation\Translation.cs" />
     <Compile Include="Assets\Core\VisualNovel\Translation\TranslationManager.cs" />
-    <Compile Include="Assets\Core\VisualNovel\VisualCommand.cs" />
     <Compile Include="Assets\Core\VisualNovel\VisualNetwork.cs" />
     <Compile Include="Assets\Core\VisualNovelPlugins\SoundPlugin.cs" />
-    <None Include="Assets\Resources\Logic\!Entrance.debug.txt" />
     <None Include="Assets\Resources\Logic\!Entrance_tr_default.txt" />
     <None Include="Assets\Resources\Logic\!Entrance.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">

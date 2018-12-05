@@ -43,9 +43,9 @@ namespace Core.VisualNovel.Translation {
 
         /// <summary>
         /// 将新的翻译合并到此翻译中
-        /// <para>目标与此翻译ID相同的条目会被直接合并</para>
-        /// <para>目标ID序号不同但哈希于此翻译中存在的条目会使用此翻译中同哈希的第一个条目的内容</para>
-        /// <para>目标与此翻译ID完全不同的条目会在此翻译中新建</para>
+        /// <para>目标与此翻译ID相同的条目会被忽略</para>
+        /// <para>目标与此翻译ID和哈希相同的条目会被忽略</para>
+        /// <para>目标与此翻译ID与哈希完全不同的条目会在此翻译中新建</para>
         /// <para>此翻译中存在但是目标中不存在的条目的处理方式取决于函数第二个参数</para>
         /// </summary>
         /// <param name="target">目标翻译</param>
@@ -56,9 +56,9 @@ namespace Core.VisualNovel.Translation {
 
         /// <summary>
         /// 将新的翻译合并到此翻译中
-        /// <para>目标与此翻译ID相同的条目会被直接合并</para>
-        /// <para>目标ID序号不同但哈希于此翻译中存在的条目会使用此翻译中同哈希的第一个条目的内容</para>
-        /// <para>目标与此翻译ID完全不同的条目会在此翻译中新建</para>
+        /// <para>目标与此翻译ID和哈希相同的条目会被忽略</para>
+        /// <para>目标ID不同但哈希于此翻译中存在的条目会使用此翻译中同哈希的第一个条目的内容</para>
+        /// <para>目标与此翻译ID与哈希完全不同的条目会在此翻译中新建</para>
         /// <para>此翻译中存在但是目标中不存在的条目的处理方式取决于函数第二个参数</para>
         /// </summary>
         /// <param name="source">目标翻译</param>

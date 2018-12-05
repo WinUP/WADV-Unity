@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Core.Extensions;
 using Core.VisualNovel.Script.Compiler.Expressions;
@@ -19,11 +17,13 @@ namespace Core.VisualNovel.Script.Compiler {
         // VNS1 File
         /*   564E5331 | 32
             str_count | 32
-          str_content | dynamic
+          str_segment | dynamic
           label_count | 32
-        label_content | dynamic
+        label_segment | dynamic
           scene_count | 32
-        scene_content | dynamic
+        scene_segment | dynamic
+       position_count | 32
+     position_segment | dynamic
          code_segment | dynamic */
         
         /// <summary>
@@ -34,7 +34,7 @@ namespace Core.VisualNovel.Script.Compiler {
             var context = new AssemblerContext();
             // 生成主程序段
             Assemble(context, RootExpression);
-            context.File.OpCode(OpCodeType.RET);
+            context.File.OpCode(OpCodeType.RET, new CodePosition());
             // 生成场景程序段
             for (var i = -1; ++i < context.Scenarios.Count;) {
                 var description = context.Scenarios[i];
@@ -43,61 +43,68 @@ namespace Core.VisualNovel.Script.Compiler {
                 foreach (var parameter in description.Scenario.Parameters) {
                     if (!(parameter.Value is EmptyExpression)) {
                         var nextParameterCheck = $"{description.Label}P{context.NextLabelId}";
-                        context.File.LoadNull();
+                        context.File.LoadNull(parameter.Position);
                         Assemble(context, parameter.Name);
-                        context.File.OpCode(OpCodeType.EQL);
-                        context.File.OpCode(OpCodeType.BF_S);
-                        context.File.String(nextParameterCheck);
+                        context.File.OpCode(OpCodeType.EQL, parameter.Position);
+                        context.File.OpCode(OpCodeType.BF_S, parameter.Position);
+                        context.File.DirectWrite(nextParameterCheck);
                         Assemble(context, parameter.Value);
                         Assemble(context, parameter.Name);
-                        context.File.OpCode(OpCodeType.STLOC);
+                        context.File.OpCode(OpCodeType.STLOC, parameter.Position);
                         context.File.CreateLabel(nextParameterCheck);
                     }
                 }
                 Assemble(context, description.Scenario.Body);
-                context.File.OpCode(OpCodeType.RET);
+                context.File.OpCode(OpCodeType.RET, description.Scenario.Position);
                 context.Scope = 0;
             }
             // 准备文件头
             var baseFile = context.File.Create();
             context.File = new AssembleFile();
             // 写入文件标志 (VisualNovelScript Version 1, assembly format)
-            context.File.Number(0x564E5331);
+            context.File.DirectWrite(0x564E5331);
             // 写入字符串常量数
-            context.File.Number(baseFile.Strings.Count);
+            context.File.DirectWrite(baseFile.Strings.Count);
             // 写入字符串常量表
             foreach (var stringConstant in baseFile.Strings) {
-                context.File.String(stringConstant);
+                context.File.DirectWrite(stringConstant);
             }
             // 写入跳转标签数
-            context.File.Number(context.Scenarios.Count + baseFile.Labels.Count);
+            context.File.DirectWrite(context.Scenarios.Count + baseFile.Labels.Count);
             // 写入跳转表
             foreach (var scenario in context.Scenarios) {
-                context.File.Number(scenario.Offset);
-                context.File.String(scenario.Label);
+                context.File.DirectWrite(scenario.Offset);
+                context.File.DirectWrite(scenario.Label);
             }
             foreach (var label in baseFile.Labels) {
-                context.File.Number(label.Value);
-                context.File.String(label.Key);
+                context.File.DirectWrite(label.Value);
+                context.File.DirectWrite(label.Key);
             }
             // 写入场景数
-            context.File.Number(context.Scenarios.Count);
-            // 写入场景表
+            context.File.DirectWrite(context.Scenarios.Count);
+            // 写入场景表（即函数表）
             foreach (var scenario in context.Scenarios) {
-                context.File.String(scenario.Scenario.Name);
-                context.File.String(scenario.Label);
+                context.File.DirectWrite(scenario.Scenario.Name);
+                context.File.DirectWrite(scenario.Label);
+            }
+            // 写入调试信息
+            context.File.DirectWrite(baseFile.Positions.Count);
+            foreach (var position in baseFile.Positions) {
+                context.File.DirectWrite(position.Line);
+                context.File.DirectWrite(position.Column);
             }
             // 复制程序段
-            context.File.Array(baseFile.Content);
-            baseFile.Content = context.File.Create().Content;
+            context.File.DirectWrite(baseFile.Code);
+            baseFile.Code = context.File.Create().Code;
+            // 更新默认翻译
             var existedTranslationContent = Resources.Load<TextAsset>($"{Identifier}_tr_default").text;
             if (string.IsNullOrEmpty(existedTranslationContent)) {
                 var translationContent = new ScriptTranslation(baseFile.Translations);
-                return (baseFile.Content, translationContent.Pack());
+                return (baseFile.Code, translationContent.Pack());
             } else {
                 var existedTranslation = new ScriptTranslation(existedTranslationContent);
                 existedTranslation.MergeWith(baseFile.Translations);
-                return (baseFile.Content, existedTranslation.Pack());
+                return (baseFile.Code, existedTranslation.Pack());
             }
         }
 
@@ -108,19 +115,19 @@ namespace Core.VisualNovel.Script.Compiler {
                     switch (binaryExpression.Operator) {
                         case OperatorType.AddBy:
                             Assemble(context, binaryExpression.Left);
-                            context.File.OpCode(OpCodeType.ADD);
+                            context.File.OpCode(OpCodeType.ADD, binaryExpression.Position);
                             break;
                         case OperatorType.MinusBy:
                             Assemble(context, binaryExpression.Left);
-                            context.File.OpCode(OpCodeType.SUB);
+                            context.File.OpCode(OpCodeType.SUB, binaryExpression.Position);
                             break;
                         case OperatorType.MultiplyBy:
                             Assemble(context, binaryExpression.Left);
-                            context.File.OpCode(OpCodeType.MUL);
+                            context.File.OpCode(OpCodeType.MUL, binaryExpression.Position);
                             break;
                         case OperatorType.DivideBy:
                             Assemble(context, binaryExpression.Left);
-                            context.File.OpCode(OpCodeType.DIV);
+                            context.File.OpCode(OpCodeType.DIV, binaryExpression.Position);
                             break;
                     }
                     if (binaryExpression.Operator == OperatorType.EqualsTo || binaryExpression.Operator == OperatorType.AddBy ||
@@ -128,40 +135,40 @@ namespace Core.VisualNovel.Script.Compiler {
                         binaryExpression.Operator == OperatorType.DivideBy) {
                         Assemble(context, binaryExpression.Left, CompilerFlag.UseSetLocalVariable);
                         if (!(binaryExpression.Left is VariableExpression)) {
-                            context.File.OpCode(OpCodeType.STLOC);
+                            context.File.OpCode(OpCodeType.STLOC, binaryExpression.Left.Position);
                         }
                     } else {
                         Assemble(context, binaryExpression.Left);
                         switch (binaryExpression.Operator) {
                             case OperatorType.PickChild:
-                                context.File.OpCode(OpCodeType.PICK);
+                                context.File.OpCode(OpCodeType.PICK, binaryExpression.Position);
                                 break;
                             case OperatorType.Add:
-                                context.File.OpCode(OpCodeType.ADD);
+                                context.File.OpCode(OpCodeType.ADD, binaryExpression.Position);
                                 break;
                             case OperatorType.Minus:
-                                context.File.OpCode(OpCodeType.SUB);
+                                context.File.OpCode(OpCodeType.SUB, binaryExpression.Position);
                                 break;
                             case OperatorType.Multiply:
-                                context.File.OpCode(OpCodeType.MUL);
+                                context.File.OpCode(OpCodeType.MUL, binaryExpression.Position);
                                 break;
                             case OperatorType.Divide:
-                                context.File.OpCode(OpCodeType.DIV);
+                                context.File.OpCode(OpCodeType.DIV, binaryExpression.Position);
                                 break;
                             case OperatorType.GreaterThan:
-                                context.File.OpCode(OpCodeType.CGT);
+                                context.File.OpCode(OpCodeType.CGT, binaryExpression.Position);
                                 break;
                             case OperatorType.LesserThan:
-                                context.File.OpCode(OpCodeType.CLT);
+                                context.File.OpCode(OpCodeType.CLT, binaryExpression.Position);
                                 break;
                             case OperatorType.NotLessThan:
-                                context.File.OpCode(OpCodeType.CGE);
+                                context.File.OpCode(OpCodeType.CGE, binaryExpression.Position);
                                 break;
                             case OperatorType.NotGreaterThan:
-                                context.File.OpCode(OpCodeType.CLE);
+                                context.File.OpCode(OpCodeType.CLE, binaryExpression.Position);
                                 break;
                             case OperatorType.LogicEqualsTo:
-                                context.File.OpCode(OpCodeType.EQL);
+                                context.File.OpCode(OpCodeType.EQL, binaryExpression.Position);
                                 break;
                         }
                     }
@@ -170,9 +177,9 @@ namespace Core.VisualNovel.Script.Compiler {
                     foreach (var parameter in commandExpression.Parameters) {
                         Assemble(context, parameter);
                     }
-                    context.File.LoadInteger(commandExpression.Parameters.Count);
+                    context.File.LoadInteger(commandExpression.Parameters.Count, commandExpression.Position);
                     Assemble(context, commandExpression.Target);
-                    context.File.Call();
+                    context.File.Call(commandExpression.Position);
                     break;
                 case ConditionExpression conditionExpression: // 协同处理ConditionContentExpression
                     var conditionEndLabel = $"{context.Scope}C{context.NextLabelId}";
@@ -181,45 +188,45 @@ namespace Core.VisualNovel.Script.Compiler {
                         context.File.CreateLabel(conditionNextLabel);
                         conditionNextLabel = $"{context.Scope}C{context.NextLabelId}";
                         Assemble(context, branch.Condition);
-                        context.File.OpCode(OpCodeType.BVAL);
-                        context.File.OpCode(OpCodeType.BF_S);
-                        context.File.String(conditionNextLabel);
+                        context.File.OpCode(OpCodeType.BVAL, branch.Position);
+                        context.File.OpCode(OpCodeType.BF_S, branch.Position);
+                        context.File.DirectWrite(conditionNextLabel);
                         Assemble(context, branch.Body);
-                        context.File.OpCode(OpCodeType.BR_S);
-                        context.File.String(conditionEndLabel);
+                        context.File.OpCode(OpCodeType.BR_S, branch.Body.Position);
+                        context.File.DirectWrite(conditionEndLabel);
                     }
                     context.File.CreateLabel(conditionEndLabel);
                     break;
                 case DialogueExpression dialogueExpression:
-                    context.File.LoadDialogue(dialogueExpression.Character, dialogueExpression.Content);
+                    context.File.LoadDialogue(dialogueExpression.Character, dialogueExpression.Content, dialogueExpression.Position);
                     break;
-                case EmptyExpression _:
-                    context.File.LoadNull();
+                case EmptyExpression emptyExpression:
+                    context.File.LoadNull(emptyExpression.Position);
                     break;
                 case FloatExpression floatExpression:
-                    context.File.LoadFloat(floatExpression.Value);
+                    context.File.LoadFloat(floatExpression.Value, floatExpression.Position);
                     break;
                 case IntegerExpression integerExpression:
-                    context.File.LoadInteger(integerExpression.Value);
+                    context.File.LoadInteger(integerExpression.Value, integerExpression.Position);
                     break;
                 case LanguageExpression languageExpression:
-                    context.File.Language(context.Language = languageExpression.Language);
+                    context.File.Language(languageExpression.Language, languageExpression.Position);
                     break;
                 case LogicNotExpression logicNotExpression:
                     Assemble(context, logicNotExpression.Content);
-                    context.File.OpCode(OpCodeType.NOT);
+                    context.File.OpCode(OpCodeType.NOT, logicNotExpression.Position);
                     break;
                 case LoopExpression loopExpression:
                     var loopStartLabel = $"{context.Scope}L{context.NextLabelId}";
                     var loopEndLabel = $"{context.Scope}L{context.NextLabelId}";
                     context.File.CreateLabel(loopStartLabel);
                     Assemble(context, loopExpression.Condition);
-                    context.File.OpCode(OpCodeType.BVAL);
-                    context.File.OpCode(OpCodeType.BF_S);
-                    context.File.String(loopEndLabel);
+                    context.File.OpCode(OpCodeType.BVAL, loopExpression.Position);
+                    context.File.OpCode(OpCodeType.BF_S, loopExpression.Condition.Position);
+                    context.File.DirectWrite(loopEndLabel);
                     Assemble(context, loopExpression.Body);
-                    context.File.OpCode(OpCodeType.BR_S);
-                    context.File.String(loopStartLabel);
+                    context.File.OpCode(OpCodeType.BR_S, loopExpression.Body.Position);
+                    context.File.DirectWrite(loopStartLabel);
                     context.File.CreateLabel(loopEndLabel);
                     break;
                 case ParameterExpression parameterExpression:
@@ -228,10 +235,10 @@ namespace Core.VisualNovel.Script.Compiler {
                     break;
                 case ReturnExpression returnExpression:
                     Assemble(context, returnExpression.Value);
-                    context.File.OpCode(OpCodeType.RET);
+                    context.File.OpCode(OpCodeType.RET, returnExpression.Position);
                     break;
                 case ScopeExpression scopeExpression: // 协同处理ScenarioExpression
-                    context.File.OpCode(OpCodeType.SCOPE);
+                    context.File.OpCode(OpCodeType.SCOPE, scopeExpression.Position);
                     ++context.Scope;
                     foreach (var (item, i) in scopeExpression.Content.WithIndex()) {
                         Assemble(context, item);
@@ -243,28 +250,28 @@ namespace Core.VisualNovel.Script.Compiler {
                             };
                             context.Scenarios.Add(description);
                             if (i == scopeExpression.Content.Count - 1) {
-                                context.File.OpCode(OpCodeType.LDADDR);
-                                context.File.String(description.Label);
+                                context.File.OpCode(OpCodeType.LDADDR, scenarioExpression.Position);
+                                context.File.DirectWrite(description.Label);
                             }
                             continue;
                         }
                         if (i < scopeExpression.Content.Count - 1) {
-                            context.File.Pop();
+                            context.File.Pop(item.Position);
                         }
                     }
                     --context.Scope;
-                    context.File.OpCode(OpCodeType.LEAVE);
+                    context.File.OpCode(OpCodeType.LEAVE, scopeExpression.Position);
                     break;
                 case StringExpression stringExpression:
                     if (stringExpression.Translatable) {
-                        context.File.LoadTranslatableString(stringExpression.Value);
+                        context.File.LoadTranslatableString(stringExpression.Value, stringExpression.Position);
                     } else {
-                        context.File.LoadString(stringExpression.Value);
+                        context.File.LoadString(stringExpression.Value, stringExpression.Position);
                     }
                     break;
                 case ToBooleanExpression toBooleanExpression:
                     Assemble(context, toBooleanExpression.Value);
-                    context.File.OpCode(OpCodeType.BVAL);
+                    context.File.OpCode(OpCodeType.BVAL, toBooleanExpression.Position);
                     break;
                 case VariableExpression variableExpression:
                     var variableAssignMode = flags.Any(e => e == CompilerFlag.UseSetLocalVariable);
@@ -274,19 +281,19 @@ namespace Core.VisualNovel.Script.Compiler {
                                 if (variableAssignMode) {
                                     throw new UnassignedReferenceException("Cannot assign value to constant variable TRUE/FALSE/NULL");
                                 }
-                                context.File.LoadBoolean(true);
+                                context.File.LoadBoolean(true, variableExpression.Position);
                                 return;
                             case "FALSE":
                                 if (variableAssignMode) {
                                     throw new UnassignedReferenceException("Cannot assign value to constant variable TRUE/FALSE/NULL");
                                 }
-                                context.File.LoadBoolean(false);
+                                context.File.LoadBoolean(false, variableExpression.Position);
                                 return;
                             case "NULL":
                                 if (variableAssignMode) {
                                     throw new UnassignedReferenceException("Cannot assign value to constant variable TRUE/FALSE/NULL");
                                 }
-                                context.File.LoadNull();
+                                context.File.LoadNull(variableExpression.Position);
                                 return;
                             default:
                                 Assemble(context, nameExpression);
@@ -295,7 +302,7 @@ namespace Core.VisualNovel.Script.Compiler {
                     } else {
                         Assemble(context, variableExpression.Name);
                     }
-                    context.File.OpCode(variableAssignMode ? OpCodeType.STLOC : OpCodeType.LDLOC);
+                    context.File.OpCode(variableAssignMode ? OpCodeType.STLOC : OpCodeType.LDLOC, variableExpression.Position);
                     break;
             }
         }

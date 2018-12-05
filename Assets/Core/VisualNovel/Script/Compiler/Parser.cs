@@ -22,6 +22,14 @@ namespace Core.VisualNovel.Script.Compiler {
         }
 
         /// <summary>
+        /// 运行语法解析器并创建汇编生成器
+        /// </summary>
+        /// <returns></returns>
+        public Assembler CreateAssembler() {
+            return new Assembler(Parse(), Identifier);
+        }
+
+        /// <summary>
         /// 构建抽象语法树
         /// </summary>
         public ScopeExpression Parse() {

@@ -65,15 +65,6 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 脚本标识符（通常是路径）
         /// </summary>
         public string Identifier { get; }
-
-        /// <summary>
-        /// 从文件创建词法分析器
-        /// </summary>
-        /// <param name="path">文件路径</param>
-        /// <returns></returns>
-        public static Lexer FromFile(string path) {
-            return new Lexer(Resources.Load<TextAsset>(path).text, path);
-        }
         
         /// <summary>
         /// 声明一个新的VNS词法分析器
@@ -83,6 +74,23 @@ namespace Core.VisualNovel.Script.Compiler {
         public Lexer(string content, string identifier) {
             Identifier = identifier;
             File = new CodeFile(content);
+        }
+
+        /// <summary>
+        /// 从文件创建词法分析器
+        /// </summary>
+        /// <param name="path">文件路径</param>
+        /// <returns></returns>
+        public static Lexer FromFile(string path) {
+            return new Lexer(Resources.Load<TextAsset>(path).text, path);
+        }
+
+        /// <summary>
+        /// 运行词法解析器并创建语法解析器
+        /// </summary>
+        /// <returns></returns>
+        public Parser CreateParser() {
+            return new Parser(Lex(), Identifier);
         }
 
         /// <summary>
