@@ -54,13 +54,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Core\Extensions\EnumerableExtensions.cs" />
     <Compile Include="Assets\Core\Extensions\ListExtensions.cs" />
     <Compile Include="Assets\Core\Extensions\StringExtensions.cs" />
     <Compile Include="Assets\Core\IMessager.cs" />
     <Compile Include="Assets\Core\Message.cs" />
     <Compile Include="Assets\Core\MessageService.cs" />
     <Compile Include="Assets\Core\VisualNovel\Attributes\PluginTranslationAttribute.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Attributes\RegisterTranslateAttribute.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Attributes\StaticTranslationAttribute.cs" />
     <Compile Include="Assets\Core\VisualNovel\EmptyVisualCommand.cs" />
     <Compile Include="Assets\Core\VisualNovel\ExecutionContext.cs" />
     <Compile Include="Assets\Core\VisualNovel\GlobalStack.cs" />
@@ -99,7 +100,6 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\StringExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ToBooleanExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\VariableExpression.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Hasher.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Lexer.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\OpCodeType.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Parser.cs" />
@@ -111,15 +111,19 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\StringToken.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\TokenType.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\TokenSequence.cs" />
-    <Compile Include="Assets\Core\VisualNovel\ScriptTranslateManager.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Hasher.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\PlaySoundMessageContent.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundChannel.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\StackItems\IStackItem.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Translation\ScriptTranslation.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Translation\Translation.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Translation\TranslationManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\VisualCommand.cs" />
     <Compile Include="Assets\Core\VisualNovel\VisualNetwork.cs" />
     <Compile Include="Assets\Core\VisualNovelPlugins\SoundPlugin.cs" />
     <None Include="Assets\Resources\Logic\!Entrance.debug.txt" />
+    <None Include="Assets\Resources\Logic\!Entrance_tr_default.txt" />
     <None Include="Assets\Resources\Logic\!Entrance.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/bo/SCB_YUME_NO_MISAKI_SAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>

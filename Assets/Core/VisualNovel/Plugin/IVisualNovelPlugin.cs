@@ -10,10 +10,6 @@ namespace Core.VisualNovel.Plugin {
         /// 插件默认名称
         /// </summary>
         string Name { get; }
-        /// <summary>
-        /// 
-        /// </summary>
-        PluginIdentifier Identifier { get; }
 
         /// <summary>
         /// 执行当前插件

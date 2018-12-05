@@ -35,9 +35,8 @@ namespace Core.VisualNovel.Editor {
             var file = assembler.Assemble();
             var reader = new BinaryReader(new MemoryStream(file.Content), Encoding.UTF8);
             var data = new StringBuilder();
-            foreach (var pair in file.Translations) {
-                data.AppendLine($".translation {pair.Key} {pair.Value.Replace("\n", "\\n")}");
-            }
+            File.WriteAllBytes("Assets/Resources/Logic/!Entrance_bin.bytes", file.Content);
+            File.WriteAllText("Assets/Resources/Logic/!Entrance_tr_default.txt", file.Translations, Encoding.UTF8);
             if (reader.ReadInt32() != 0x564E5331) {
                 throw new FormatException("Not VNS1 File");
             }
@@ -79,7 +78,7 @@ namespace Core.VisualNovel.Editor {
                         break;
                     case OpCodeType.LDSTT:
                         var sttIndex = reader.ReadInt32();
-                        data.AppendLine($"{command} {sttIndex}({file.Translations[Convert.ToString(sttIndex, 16).ToUpper().PadLeft(8, '0')].Replace("\n", "\\n")})");
+                        data.AppendLine($"{command} {Convert.ToString(sttIndex, 16).PadLeft(8, '0')}");
                         break;
                     case OpCodeType.LDADDR:
                         data.AppendLine($"{command} -> {reader.ReadString()}");

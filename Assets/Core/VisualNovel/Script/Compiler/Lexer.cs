@@ -1,28 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Core.Extensions;
 using Core.VisualNovel.Attributes;
 using Core.VisualNovel.Script.Compiler.Tokens;
+using Core.VisualNovel.Translation;
 using UnityEngine;
 
 namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
     /// WADV VNS词法分析器
     /// </summary>
-    [RegisterTranslate("default", SyntaxIf, "如果")]
-    [RegisterTranslate("default", SyntaxElseIf, "或者")]
-    [RegisterTranslate("default", SyntaxElse, "否则")]
-    [RegisterTranslate("default", SyntaxLoop, "循环")]
-    [RegisterTranslate("default", SyntaxScenario, "场景")]
-    [RegisterTranslate("default", SyntaxReturn, "返回")]
-    [RegisterTranslate("en", SyntaxIf, "if")]
-    [RegisterTranslate("en", SyntaxElseIf, "elseIf")]
-    [RegisterTranslate("en", SyntaxElse, "else")]
-    [RegisterTranslate("en", SyntaxLoop, "loop")]
-    [RegisterTranslate("en", SyntaxScenario, "scene")]
-    [RegisterTranslate("en", SyntaxReturn, "return")]
+    [StaticTranslation(SyntaxIf, "如果")]
+    [StaticTranslation(SyntaxElseIf, "或者")]
+    [StaticTranslation(SyntaxElse, "否则")]
+    [StaticTranslation(SyntaxLoop, "循环")]
+    [StaticTranslation(SyntaxScenario, "场景")]
+    [StaticTranslation(SyntaxReturn, "返回")]
+    [StaticTranslation(SyntaxIf, "if", "en")]
+    [StaticTranslation(SyntaxElseIf, "elseIf", "en")]
+    [StaticTranslation(SyntaxElse, "else", "en")]
+    [StaticTranslation(SyntaxLoop, "loop", "en")]
+    [StaticTranslation(SyntaxScenario, "scene", "en")]
+    [StaticTranslation(SyntaxReturn, "return", "en")]
     public class Lexer {
         /// <summary>
         /// 编译语言选项
@@ -182,17 +182,17 @@ namespace Core.VisualNovel.Script.Compiler {
                         position = position.MoveColumn(index);
                     } else {
                         var index = File.IndexOf(' ', '\n');
-                        if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxScenario) + ' ')) {
+                        if (File.StartsWith(TranslationManager.GetStatic(SyntaxScenario, language) + ' ')) {
                             tokens.Add(new BasicToken(TokenType.Scenario, position));
-                        } else if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxIf) + ' ')) {
+                        } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxIf, language) + ' ')) {
                             tokens.Add(new BasicToken(TokenType.If, position));
-                        } else if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxElse) + ' ', ScriptTranslateManager.Find(language, SyntaxElse) + '\n')) {
+                        } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxElse, language) + ' ', TranslationManager.GetStatic(SyntaxElse, language) + '\n')) {
                             tokens.Add(new BasicToken(TokenType.Else, position));
-                        } else if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxElseIf) + ' ')) {
+                        } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxElseIf, language) + ' ')) {
                             tokens.Add(new BasicToken(TokenType.ElseIf, position));
-                        } else if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxLoop) + ' ')) {
+                        } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxLoop, language) + ' ')) {
                             tokens.Add(new BasicToken(TokenType.Loop, position));
-                        } else if (File.StartsWith(ScriptTranslateManager.Find(language, SyntaxReturn) + ' ', ScriptTranslateManager.Find(language, SyntaxReturn) + '\n')) {
+                        } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxReturn, language) + ' ', TranslationManager.GetStatic(SyntaxReturn, language) + '\n')) {
                             tokens.Add(new BasicToken(TokenType.Return, position));
                         } else {
                             throw new CompileException(Identifier, position, $"Unknown command {File.CopyContent(index)} in language {language}, may cause by command format error or typo mistake");

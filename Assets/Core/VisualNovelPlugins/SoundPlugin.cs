@@ -9,7 +9,6 @@ namespace Core.VisualNovelPlugins {
     [PluginTranslation("en", "Sound")]
     public class SoundPlugin : IVisualNovelPlugin {
         public string Name { get; } = "声音";
-        public PluginIdentifier Identifier { get; } = new PluginIdentifier(0, 0, 0, 0);
 
         public IEnumerable<IStackItem> ExecuteAsync(ExecutionContext context, IReadOnlyDictionary<string, IStackItem> parameters) {
             throw new NotImplementedException();

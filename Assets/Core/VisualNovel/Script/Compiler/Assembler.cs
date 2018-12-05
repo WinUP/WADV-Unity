@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Extensions;
 using Core.VisualNovel.Script.Compiler.Expressions;
+using Core.VisualNovel.Translation;
 using UnityEngine;
 
 namespace Core.VisualNovel.Script.Compiler {
@@ -29,7 +30,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 生成程序码
         /// </summary>
         /// <returns></returns>
-        public (byte[] Content, IReadOnlyDictionary<string, string> Translations) Assemble() {
+        public (byte[] Content, string Translations) Assemble() {
             var context = new AssemblerContext();
             // 生成主程序段
             Assemble(context, RootExpression);
@@ -89,8 +90,15 @@ namespace Core.VisualNovel.Script.Compiler {
             // 复制程序段
             context.File.Array(baseFile.Content);
             baseFile.Content = context.File.Create().Content;
-            // TODO 生成翻译文件
-            return (baseFile.Content, baseFile.Translations);
+            var existedTranslationContent = Resources.Load<TextAsset>($"{Identifier}_tr_default").text;
+            if (string.IsNullOrEmpty(existedTranslationContent)) {
+                var translationContent = new ScriptTranslation(baseFile.Translations);
+                return (baseFile.Content, translationContent.Pack());
+            } else {
+                var existedTranslation = new ScriptTranslation(existedTranslationContent);
+                existedTranslation.MergeWith(baseFile.Translations);
+                return (baseFile.Content, existedTranslation.Pack());
+            }
         }
 
         private void Assemble(AssemblerContext context, Expression expression, params CompilerFlag[] flags) {

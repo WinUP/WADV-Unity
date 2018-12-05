@@ -1,11 +1,11 @@
 namespace Core.VisualNovel.Plugin {
     public struct PluginDescription {
         public string Name { get; }
-        public PluginIdentifier Identifier { get; }
+        public IVisualNovelPlugin Plugin { get; }
 
-        public PluginDescription(string name, PluginIdentifier identifier) {
+        public PluginDescription(string name, PluginIdentifier identifier, IVisualNovelPlugin plugin) {
             Name = name;
-            Identifier = identifier;
+            Plugin = plugin;
         }
     }
 }

@@ -7,6 +7,9 @@ namespace Core.VisualNovel.Attributes {
         public string Name { get; }
 
         public PluginTranslationAttribute(string language, string name) {
+            if (language == "default") {
+                throw new ArgumentException("");
+            }
             Language = language;
             Name = name;
         }

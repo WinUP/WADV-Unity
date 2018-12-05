@@ -9,7 +9,7 @@ namespace Core.VisualNovel.Script.Compiler {
     public class AssembleFile {
         private readonly BinaryWriter _writer = new BinaryWriter(new MemoryStream(), Encoding.UTF8);
         private readonly Dictionary<string, long> _labels = new Dictionary<string, long>();
-        private readonly Dictionary<string, string> _translations = new Dictionary<string, string>();
+        private readonly Dictionary<int, string> _translations = new Dictionary<int, string>();
         private readonly List<string> _strings = new List<string>();
         private uint _stringCount;
 
@@ -74,8 +74,11 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="content">字符串内容</param>
         public void LoadTranslatableString(string content) {
+            if (_translations.Count >= 0xFFFF) {
+                throw new OutOfMemoryException("Only 65535 translatable strings are allowed in one VNS file");
+            }
             var key = (_translations.Count << 16) + Hasher.Crc16(Encoding.UTF8.GetBytes(content));
-            _translations.Add(Convert.ToString(key, 16).ToUpper().PadLeft(8, '0'), content);
+            _translations.Add(key, content);
             OpCode(OpCodeType.LDSTT);
             _writer.Write(key);
         }
@@ -269,7 +272,7 @@ namespace Core.VisualNovel.Script.Compiler {
             _labels.Add(name, _writer.BaseStream.Position);
         }
 
-        public (byte[] Content, IReadOnlyDictionary<string, long> Labels, IReadOnlyDictionary<string, string> Translations, IReadOnlyCollection<string> Strings) Create() {
+        public (byte[] Content, IReadOnlyDictionary<string, long> Labels, IReadOnlyDictionary<int, string> Translations, IReadOnlyCollection<string> Strings) Create() {
             return ((_writer.BaseStream as MemoryStream)?.ToArray(), _labels, _translations, _strings);
         }
     }

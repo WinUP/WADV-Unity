@@ -1,14 +1,3 @@
-.translation 000064AA 小红
-.translation 0001DC02 这是隐藏对话。\n因为[粗体]对话框[取消粗体]没有显示。[不暂停]
-.translation 000277F5 旁白
-.translation 0003D02E + 这是普通的对话。
-.translation 000430A1 这里可以做各种运算了
-.translation 00051FC7 当前系统语言不受支持
-.translation 0006C16A Assets/Resources/Intro
-.translation 0007BFF4 测试对话2。
-.translation 000864AA 小红
-.translation 0009D9CC 场景
-.translation 000AD9CC 场景
 .string 0 旁白
 .string 1 编号
 .string 2 角色
@@ -84,17 +73,17 @@ LDC_I4_1
 LDSTR 2(角色)
 CALL
 POP
-LDSTT 25770(小红)
+LDSTT 000064aa
 LDSTR 1(编号)
 LDC_I4_1
 LDSTR 2(角色)
 CALL
 POP
-LDSTT 121858(这是隐藏对话。\n因为[粗体]对话框[取消粗体]没有显示。[不暂停])
-LDSTT 161781(旁白)
+LDSTT 0001dc02
+LDSTT 000277f5
 DIALOGUE
 POP
-LDSTT 249902(+ 这是普通的对话。)
+LDSTT 0003d02e
 LDNUL
 DIALOGUE
 POP
@@ -106,7 +95,7 @@ LDSTR 3(系统语言)
 LDLOC
 ADD
 MUL
-LDSTT 274593(这里可以做各种运算了)
+LDSTT 000430a1
 ADD
 LDSTR 4(内容)
 LDNUL
@@ -294,7 +283,7 @@ BR_S 1C4
 BVAL
 BF_S 1C11
 SCOPE
-LDSTT 335815(当前系统语言不受支持)
+LDSTT 00051fc7
 LDSTR 4(内容)
 LDC_I4_1
 LDSTR 27(提示)
@@ -338,7 +327,7 @@ RET
 [1S引入场景]SCOPE
 LDSTR 32(背景音1)
 LDSTR 33(声道)
-LDSTT 442730(Assets/Resources/Intro)
+LDSTT 0006c16a
 LDSTR 34(资源)
 LDC_R4_2
 LDSTR 35(淡入)
@@ -360,15 +349,15 @@ LDSTR 38(声音)
 PICK
 CALL
 POP
-LDSTT 507892(测试对话2。)
-LDSTT 550058(小红)
+LDSTT 0007bff4
+LDSTT 000864aa
 DIALOGUE
 POP
 LDSTR 41(子场景1)
 LDSTR 30(目标)
 LDC_I4_1
 LDSTR 42(执行)
-LDSTT 645580(场景)
+LDSTT 0009d9cc
 LDLOC
 PICK
 CALL
@@ -383,7 +372,7 @@ LDSTR 44(变量2)
 LDLOC
 LDC_I4_3
 LDSTR 42(执行)
-LDSTT 711116(场景)
+LDSTT 000ad9cc
 PICK
 CALL
 LEAVE
