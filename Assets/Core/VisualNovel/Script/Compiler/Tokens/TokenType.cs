@@ -34,11 +34,11 @@
         /// <summary>
         /// 插件调用开始
         /// </summary>
-        CallStart,
+        PluginCallStart,
         /// <summary>
         /// 插件调用结束
         /// </summary>
-        CallEnd,
+        PluginCallEnd,
         /// <summary>
         /// 变量引用
         /// </summary>
@@ -142,6 +142,10 @@
         /// <summary>
         /// 返回
         /// </summary>
-        Return
+        Return,
+        /// <summary>
+        /// 函数调用
+        /// </summary>
+        FunctionCall
     }
 }

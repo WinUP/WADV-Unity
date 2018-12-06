@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Core.VisualNovel.Script.Compiler.Expressions;
 using Core.VisualNovel.Script.Compiler.Tokens;
 
@@ -14,9 +15,9 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <summary>
         /// Token序列标识符
         /// </summary>
-        public string Identifier { get; }
+        public CodeIdentifier Identifier { get; }
 
-        public Parser(IEnumerable<BasicToken> tokens, string identifier) {
+        public Parser(IEnumerable<BasicToken> tokens, CodeIdentifier identifier) {
             Tokens = new TokenSequence(tokens);
             Identifier = identifier;
         }
@@ -52,8 +53,8 @@ namespace Core.VisualNovel.Script.Compiler {
                     case TokenType.CreateScope:
                         result.Content.Add(ParseScope());
                         break;
-                    case TokenType.CallStart:
-                        result.Content.Add(ParseBinaryOperator(ParseCall()));
+                    case TokenType.PluginCallStart:
+                        result.Content.Add(ParseBinaryOperator(ParsePluginCall()));
                         break;
                     case TokenType.Variable:
                         result.Content.Add(ParseBinaryOperator(ParseVariable()));
@@ -65,7 +66,7 @@ namespace Core.VisualNovel.Script.Compiler {
                         result.Content.Add(ParseBinaryOperator(ParseLogicNot()));
                         break;
                     case TokenType.Function:
-                        result.Content.Add(ParseBinaryOperator(ParseScenario()));
+                        result.Content.Add(ParseBinaryOperator(ParseFunctionDefinition()));
                         break;
                     case TokenType.If:
                         result.Content.Add(ParseBinaryOperator(ParseCondition()));
@@ -76,6 +77,9 @@ namespace Core.VisualNovel.Script.Compiler {
                     case TokenType.Return:
                         result.Content.Add(ParseReturn());
                         break;
+                    case TokenType.FunctionCall:
+                        result.Content.Add(ParseBinaryOperator(ParseFunctionCall()));
+                        break;
                     case TokenType.Language:
                         result.Content.Add(ParseBinaryOperator(ParseLanguage()));
                         break;
@@ -83,7 +87,7 @@ namespace Core.VisualNovel.Script.Compiler {
                         Tokens.MoveToNext();
                         // 解析文件域时LeaveScope一定不会出现，如果出现则证明这是脚本中一个子域，那么这一定是在ParseScope的递归中，可以直接返回
                         return result;
-                    case TokenType.CallEnd:
+                    case TokenType.PluginCallEnd:
                         throw new CompileException(Identifier, Tokens.Current.Position, "Unexpected CallEnd");
                     case TokenType.RightBracket:
                         throw new CompileException(Identifier, Tokens.Current.Position, "Unexpected RightBracket");
@@ -107,13 +111,40 @@ namespace Core.VisualNovel.Script.Compiler {
                     case TokenType.MinusEqual:
                     case TokenType.LogicEqual:
                         // 二元运算符是由其他部分酌情自动调用的，出现在主switch里说明非法使用
-                        throw new CompileException(Identifier, Tokens.Current.Position, $"Unexpected binary operator {Tokens.Current.Type.ToString()}"); 
+                        throw new CompileException(Identifier, Tokens.Current.Position, $"Unexpected binary operator {Tokens.Current.Type.ToString()}");
                     default:
                         throw new CompileException(Identifier, Tokens.Current.Position, $"Unknown token type {Tokens.Current.Type}");
                 }
             }
             Tokens.Reset();
             return result;
+        }
+
+        /// <summary>
+        /// 处理函数调用
+        /// </summary>
+        /// <returns></returns>
+        private Expression ParseFunctionCall() {
+            Tokens.MoveToNext();
+            var function = new FunctionCallExpression(Tokens.Current.Position) {
+                Target = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket))
+            };
+            while (Tokens.Current.Type != TokenType.LineBreak && Tokens.Current.Type != TokenType.RightBracket) {
+                var parameter = new ParameterExpression(Tokens.Current.Position) {
+                    Name = ParseBinaryOperator(
+                        GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket),
+                        0,
+                        TokenType.Equal)
+                };
+                if (Tokens.Current.Type != TokenType.Equal) {
+                    throw new CompileException(Identifier, Tokens.Current.Position, "Function call parameters must have value");
+                }
+                Tokens.MoveToNext();
+                parameter.Value = ParseBinaryOperator(GeneralParser(
+                    TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot));
+                function.Parameters.Add(parameter);
+            }
+            return function;
         }
 
         /// <summary>
@@ -188,7 +219,7 @@ namespace Core.VisualNovel.Script.Compiler {
             Tokens.MoveToNext();
             return expression;
         }
-        
+
         /// <summary>
         /// 处理变量
         /// </summary>
@@ -196,122 +227,42 @@ namespace Core.VisualNovel.Script.Compiler {
         private Expression ParseVariable() {
             var position = Tokens.Current.Position;
             Tokens.MoveToNext();
-            Expression content;
-            switch (Tokens.Current.Type) {
-                case TokenType.String:
-                    content = ParseString();
-                    break;
-                case TokenType.CallStart:
-                    content = ParseCall();
-                    break;
-                case TokenType.Variable:
-                    content = ParseVariable();
-                    break;
-                case TokenType.LeftBracket:
-                    content = ParseBracket();
-                    break;
-                case TokenType.LogicNot:
-                    content = ParseLogicNot();
-                    break;
-                default:
-                    throw new CompileException(Identifier, Tokens.Current.Position, "Expected String, CallStart '[', Variable '@',  LeftBracket '(' or LogicNot '!'");
-            }
+            var content = GeneralParser(TokenType.String, TokenType.PluginCallStart, TokenType.Variable, TokenType.Number, TokenType.LeftBracket);
             return new VariableExpression(position) {Name = content};
         }
 
         /// <summary>
-        /// 处理调用
+        /// 处理插件调用
         /// </summary>
         /// <returns></returns>
-        private Expression ParseCall() {
-            // 指令采取自左至右贪心匹配，因此[A->B+ C+(@D=E)=F]被解析为[A->B+C+(@D=E)=F]不算错误，反正执行会崩
+        private Expression ParsePluginCall() {
             Tokens.MoveToNext();
-            var command = new CallExpression(Tokens.Current.Position) {Target = ParseCallName()};
-            while (Tokens.Current.Type != TokenType.CallEnd) {
+            var command = new CallExpression(Tokens.Current.Position) {
+                Target = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket))
+            };
+            while (Tokens.Current.Type != TokenType.PluginCallEnd) {
                 if (Tokens.Current.Type == TokenType.LineBreak) {
-                    throw new CompileException(Identifier, Tokens.Current.Position, "Unexpected LineBreak when parsing call");
+                    Tokens.MoveToNext();
+                    continue;
                 }
-                var parameter = new ParameterExpression(Tokens.Current.Position);
-                switch (Tokens.Current.Type) {
-                    case TokenType.String:
-                        parameter.Name = ParseString();
-                        break;
-                    case TokenType.Number:
-                        parameter.Name = ParseNumber();
-                        break;
-                    case TokenType.CallStart:
-                        parameter.Name = ParseCall();
-                        break;
-                    case TokenType.Variable:
-                        parameter.Name = ParseVariable();
-                        break;
-                    case TokenType.LeftBracket:
-                        parameter.Name = ParseScope();
-                        break;
-                    default:
-                        throw new CompileException(Identifier, Tokens.Current.Position,
-                            "Expected String, Number, CallStart '[', Variable '@' or LeftBracket '('");
-                }
-                parameter.Name = ParseBinaryOperator(parameter.Name, 0, TokenType.Equal);
+                var parameter = new ParameterExpression(Tokens.Current.Position) {
+                    Name = ParseBinaryOperator(
+                        GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket),
+                        0,
+                        TokenType.Equal)
+                };
                 if (Tokens.Current.Type != TokenType.Equal) {
                     parameter.Value = new EmptyExpression(parameter.Name.Position);
                     command.Parameters.Add(parameter);
                     continue;
                 }
                 Tokens.MoveToNext();
-                switch (Tokens.Current.Type) {
-                    case TokenType.String:
-                        parameter.Value = ParseString();
-                        break;
-                    case TokenType.Number:
-                        parameter.Value = ParseNumber();
-                        break;
-                    case TokenType.CallStart:
-                        parameter.Value = ParseCall();
-                        break;
-                    case TokenType.Variable:
-                        parameter.Value = ParseVariable();
-                        break;
-                    case TokenType.LeftBracket:
-                        parameter.Value = ParseBracket();
-                        break;
-                    case TokenType.LogicNot:
-                        parameter.Value = ParseLogicNot();
-                        break;
-                    default:
-                        throw new CompileException(Identifier, Tokens.Current.Position,
-                            "Expected String, Number, CallStart '[', Variable '@', LeftBracket '(' or LogicNot '!'");
-                }
-                parameter.Value = ParseBinaryOperator(parameter.Value);
+                parameter.Value = ParseBinaryOperator(GeneralParser(
+                    TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot));
                 command.Parameters.Add(parameter);
             }
             Tokens.MoveToNext();
             return command;
-        }
-
-        /// <summary>
-        /// 处理调用名
-        /// </summary>
-        /// <returns></returns>
-        private Expression ParseCallName() {
-            Expression content;
-            switch (Tokens.Current.Type) {
-                case TokenType.String:
-                    content = ParseString();
-                    break;
-                case TokenType.CallStart:
-                    content = ParseCall();
-                    break;
-                case TokenType.Variable:
-                    content = ParseVariable();
-                    break;
-                case TokenType.LeftBracket:
-                    content = ParseScope();
-                    break;
-                default:
-                    throw new CompileException(Identifier, Tokens.Current.Position, "Expected String, CallStart '[', Variable '@' or LeftBracket '('");
-            }
-            return ParseBinaryOperator(content);
         }
 
         /// <summary>
@@ -321,30 +272,7 @@ namespace Core.VisualNovel.Script.Compiler {
         private Expression ParseLogicNot() {
             var position = Tokens.Current.Position;
             Tokens.MoveToNext();
-            Expression content;
-            switch (Tokens.Current.Type) {
-                case TokenType.String:
-                    content = ParseString();
-                    break;
-                case TokenType.Number:
-                    content = ParseNumber();
-                    break;
-                case TokenType.CallStart:
-                    content = ParseCall();
-                    break;
-                case TokenType.Variable:
-                    content = ParseVariable();
-                    break;
-                case TokenType.LeftBracket:
-                    content = ParseBracket();
-                    break;
-                case TokenType.LogicNot:
-                    content = ParseLogicNot();
-                    break;
-                default:
-                    throw new CompileException(Identifier, Tokens.Current.Position,
-                        "Expected String, Number, CallStart '[', Variable '@', LeftBracket '(' or LogicNot '!'");
-            }
+            var content = GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot);
             // 双重取否改布尔转换
             Expression result = new LogicNotExpression(position) {Content = content};
             if (!(content is LogicNotExpression contentLevel1)) return result;
@@ -428,45 +356,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 if (Tokens.Current.Type == TokenType.LineBreak) {
                     throw new CompileException(Identifier, Tokens.Current.Position, "Unexpected LineBreak");
                 }
-                Expression right;
-                switch (Tokens.Current.Type) {
-                    case TokenType.DialogueSpeaker:
-                    case TokenType.DialogueContent:
-                        throw new CompileException(Identifier, Tokens.Current.Position, "Unexpected dialogue inside code, dialogue must be in a single line");
-                    case TokenType.String:
-                        right = ParseString();
-                        break;
-                    case TokenType.Number:
-                        right = ParseNumber();
-                        break;
-                    case TokenType.CallStart:
-                        right = ParseCall();
-                        break;
-                    case TokenType.Variable:
-                        right = ParseVariable();
-                        break;
-                    case TokenType.LeftBracket:
-                        right = ParseBracket();
-                        break;
-                    case TokenType.LogicNot:
-                        right = ParseLogicNot();
-                        break;
-                    case TokenType.Function:
-                        right = ParseScenario();
-                        break;
-                    case TokenType.If:
-                        right = ParseCondition();
-                        break;
-                    case TokenType.Loop:
-                        right = ParseLoop();
-                        break;
-                    case TokenType.Language:
-                        right = ParseLanguage();
-                        break;
-                    default:
-                        throw new CompileException(Identifier, Tokens.Current.Position,
-                            "Expected String, Number, CallStart '[', Variable '@', LeftBracket '(', LogicNot '!', Scenario, If, Loop or Language");
-                }
+                var right = GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot);
                 if (extraSeparator.HasValue && extraSeparator == Tokens.Current.Type) { // 下一个是自定义终结符，视为不是二元运算符
                     result.Right = right;
                     return result;
@@ -502,33 +392,8 @@ namespace Core.VisualNovel.Script.Compiler {
                     Tokens.MoveToNext();
                 } else {
                     Tokens.MoveToNext();
-                    switch (Tokens.Current.Type) {
-                        case TokenType.String:
-                            condition.Condition = ParseString();
-                            break;
-                        case TokenType.Number:
-                            condition.Condition = ParseNumber();
-                            break;
-                        case TokenType.CallStart:
-                            condition.Condition = ParseCall();
-                            break;
-                        case TokenType.Variable:
-                            condition.Condition = ParseVariable();
-                            break;
-                        case TokenType.LeftBracket:
-                            condition.Condition = ParseBracket();
-                            break;
-                        case TokenType.LogicNot:
-                            condition.Condition = ParseLogicNot();
-                            break;
-                        case TokenType.Language:
-                            condition.Condition = ParseLanguage();
-                            break;
-                        default:
-                            throw new CompileException(Identifier, Tokens.Current.Position,
-                                "Expected String, Number, CallStart '[', Variable '@', LeftBracket '(', LogicNot '!' or Language");
-                    }
-                    condition.Condition = ParseBinaryOperator(condition.Condition);
+                    condition.Condition = ParseBinaryOperator(GeneralParser(
+                        TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot));
                 }
                 if (Tokens.Current.Type != TokenType.LineBreak) {
                     throw new CompileException(Identifier, Tokens.Current.Position, "Expected LineBreak");
@@ -550,31 +415,7 @@ namespace Core.VisualNovel.Script.Compiler {
         private Expression ParseLoop() {
             var position = Tokens.Current.Position;
             Tokens.MoveToNext();
-            Expression content;
-            switch (Tokens.Current.Type) {
-                case TokenType.String:
-                    content = ParseString();
-                    break;
-                case TokenType.Number:
-                    content = ParseNumber();
-                    break;
-                case TokenType.CallStart:
-                    content = ParseCall();
-                    break;
-                case TokenType.Variable:
-                    content = ParseVariable();
-                    break;
-                case TokenType.LeftBracket:
-                    content = ParseBracket();
-                    break;
-                case TokenType.LogicNot:
-                    content = ParseLogicNot();
-                    break;
-                default:
-                    throw new CompileException(Identifier, Tokens.Current.Position,
-                        "Expected String, Number, CallStart '[', Variable '@', LeftBracket '(' or LogicNot");
-            }
-            content = ParseBinaryOperator(content);
+            var content = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot));
             if (Tokens.Current.Type != TokenType.LineBreak) {
                 throw new CompileException(Identifier, Tokens.Current.Position, "Expected LineBreak");
             }
@@ -586,10 +427,10 @@ namespace Core.VisualNovel.Script.Compiler {
         }
         
         /// <summary>
-        /// 处理场景
+        /// 处理函数声明
         /// </summary>
         /// <returns></returns>
-        private Expression ParseScenario() {
+        private Expression ParseFunctionDefinition() {
             var result = new FunctionExpression(Tokens.Current.Position);
             Tokens.MoveToNext();
             if (Tokens.Current.Type != TokenType.String || !(Tokens.Current is StringToken nameToken)) {
@@ -610,29 +451,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 Tokens.MoveToNext();
                 if (Tokens.Current.Type == TokenType.Equal) {
                     Tokens.MoveToNext();
-                    switch (Tokens.Current.Type) {
-                        case TokenType.String:
-                            parameter.Value = ParseString();
-                            break;
-                        case TokenType.Number:
-                            parameter.Value = ParseNumber();
-                            break;
-                        case TokenType.CallStart:
-                            parameter.Value = ParseCall();
-                            break;
-                        case TokenType.Variable:
-                            parameter.Value = ParseVariable();
-                            break;
-                        case TokenType.LeftBracket:
-                            parameter.Value = ParseBracket();
-                            break;
-                        case TokenType.Language:
-                            parameter.Value = ParseLanguage();
-                            break;
-                        default:
-                            throw new CompileException(Identifier, Tokens.Current.Position, "Expected String, Number, CallStart '[', LeftBracket '(' or Language");
-                    }
-                    parameter.Value = ParseBinaryOperator(parameter.Value);
+                    parameter.Value = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket));
                 } else {
                     parameter.Value = new EmptyExpression(parameter.Name.Position);
                 }
@@ -656,43 +475,8 @@ namespace Core.VisualNovel.Script.Compiler {
             if (Tokens.Current.Type == TokenType.LineBreak) {
                 return new ReturnExpression(position) {Value = new EmptyExpression(position)};
             }
-            Expression value;
-            switch (Tokens.Current.Type) {
-                case TokenType.String:
-                    value = ParseString();
-                    break;
-                case TokenType.Number:
-                    value = ParseNumber();
-                    break;
-                case TokenType.CallStart:
-                    value = ParseCall();
-                    break;
-                case TokenType.Variable:
-                    value = ParseVariable();
-                    break;
-                case TokenType.LeftBracket:
-                    value = ParseBracket();
-                    break;
-                case TokenType.LogicNot:
-                    value = ParseLogicNot();
-                    break;
-                case TokenType.Function:
-                    value = ParseScenario();
-                    break;
-                case TokenType.If:
-                    value = ParseCondition();
-                    break;
-                case TokenType.Loop:
-                    value = ParseLoop();
-                    break;
-                case TokenType.Language:
-                    value = ParseLanguage();
-                    break;
-                default:
-                    throw new CompileException(Identifier, Tokens.Current.Position,
-                        "Expected String, Number, CallStart '[', Variable '@', LeftBracket '(', LogicNot '!', Scenario, If, Loop or Language");
-            }
-            value = ParseBinaryOperator(value);
+            var value = ParseBinaryOperator(GeneralParser(
+                TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot));
             if (Tokens.Current.Type != TokenType.LineBreak) {
                 throw new CompileException(Identifier, Tokens.Current.Position, "Expected LineBreak");
             }
@@ -707,47 +491,15 @@ namespace Core.VisualNovel.Script.Compiler {
         private Expression ParseBracket() {
             var position = Tokens.Current.Position;
             Tokens.MoveToNext();
-            Expression content;
             if (Tokens.Current.Type == TokenType.RightBracket) {
                 // 空括号等于返回@null
                 return new EmptyExpression(position);
             }
-            switch (Tokens.Current.Type) {
-                case TokenType.String:
-                    content = ParseString();
-                    break;
-                case TokenType.Number:
-                    content = ParseNumber();
-                    break;
-                case TokenType.CallStart:
-                    content = ParseCall();
-                    break;
-                case TokenType.Variable:
-                    content = ParseVariable();
-                    break;
-                case TokenType.LeftBracket:
-                    content = ParseBracket();
-                    break;
-                case TokenType.LogicNot:
-                    content = ParseLogicNot();
-                    break;
-                case TokenType.Function:
-                    content = ParseScenario();
-                    break;
-                case TokenType.If:
-                    content = ParseCondition();
-                    break;
-                case TokenType.Loop:
-                    content = ParseLoop();
-                    break;
-                case TokenType.Language:
-                    content = ParseLanguage();
-                    break;
-                default:
-                    throw new CompileException(Identifier, Tokens.Current.Position,
-                        "Expected String, Number, CallStart '[', Variable '@', LeftBracket '(', RightBracket ')', LogicNot '!', Scenario, If, Loop, or Language");
+            var content = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket,
+                TokenType.LogicNot, TokenType.Function, TokenType.If, TokenType.Loop, TokenType.Language, TokenType.FunctionCall));
+            while (Tokens.Current.Type == TokenType.LineBreak) {
+                Tokens.MoveToNext();
             }
-            content = ParseBinaryOperator(content);
             if (Tokens.Current.Type != TokenType.RightBracket) {
                 throw new CompileException(Identifier, Tokens.Current.Position, "Expected RightBracket");
             }
@@ -798,5 +550,96 @@ namespace Core.VisualNovel.Script.Compiler {
                     return -1;
             }
         }
+        
+        /// <summary>
+        /// 公共标记解析器
+        /// </summary>
+        /// <param name="acceptableTokenTypes">可接受的标记</param>
+        /// <returns></returns>
+        private Expression GeneralParser(params TokenType[] acceptableTokenTypes) {
+            Expression result = null;
+            switch (Tokens.Current.Type) {
+                case TokenType.DialogueSpeaker:
+                    if (acceptableTokenTypes.Contains(TokenType.DialogueSpeaker)) {
+                        result = ParseDialogue();
+                    }
+                    break;
+                case TokenType.DialogueContent:
+                    if (acceptableTokenTypes.Contains(TokenType.DialogueContent)) {
+                        result = ParseDialogue();
+                    }
+                    break;
+                case TokenType.String:
+                    if (acceptableTokenTypes.Contains(TokenType.String)) {
+                        result = ParseString();
+                    }
+                    break;
+                case TokenType.Number:
+                    if (acceptableTokenTypes.Contains(TokenType.Number)) {
+                        result = ParseNumber();
+                    }
+                    break;
+                case TokenType.CreateScope:
+                    if (acceptableTokenTypes.Contains(TokenType.CreateScope)) {
+                        result = ParseScope();
+                    }
+                    break;
+                case TokenType.PluginCallStart:
+                    if (acceptableTokenTypes.Contains(TokenType.PluginCallStart)) {
+                        result = ParsePluginCall();
+                    }
+                    break;
+                case TokenType.Variable:
+                    if (acceptableTokenTypes.Contains(TokenType.Variable)) {
+                        result = ParseVariable();
+                    }
+                    break;
+                case TokenType.LeftBracket:
+                    if (acceptableTokenTypes.Contains(TokenType.LeftBracket)) {
+                        result = ParseBracket();
+                    }
+                    break;
+                case TokenType.LogicNot:
+                    if (acceptableTokenTypes.Contains(TokenType.LogicNot)) {
+                        result = ParseLogicNot();
+                    }
+                    break;
+                case TokenType.Function:
+                    if (acceptableTokenTypes.Contains(TokenType.Function)) {
+                        result = ParseFunctionDefinition();
+                    }
+                    break;
+                case TokenType.If:
+                    if (acceptableTokenTypes.Contains(TokenType.If)) {
+                        result = ParseCondition();
+                    }
+                    break;
+                case TokenType.Loop:
+                    if (acceptableTokenTypes.Contains(TokenType.Loop)) {
+                        result = ParseLoop();
+                    }
+                    break;
+                case TokenType.Language:
+                    if (acceptableTokenTypes.Contains(TokenType.Language)) {
+                        result = ParseLanguage();
+                    }
+                    break;
+                case TokenType.Return:
+                    if (acceptableTokenTypes.Contains(TokenType.Return)) {
+                        result = ParseReturn();
+                    }
+                    break;
+                case TokenType.FunctionCall:
+                    if (acceptableTokenTypes.Contains(TokenType.FunctionCall)) {
+                        result = ParseFunctionCall();
+                    }
+                    break;
+            }
+            if (result == null) {
+                throw new CompileException(Identifier, Tokens.Current.Position, $"Expected {string.Join(", ", acceptableTokenTypes)}");
+            }
+            return result;
+        }
+        
     }
 }

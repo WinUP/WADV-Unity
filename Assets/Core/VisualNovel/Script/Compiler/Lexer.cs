@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Core.Extensions;
 using Core.VisualNovel.Attributes;
 using Core.VisualNovel.Script.Compiler.Tokens;
@@ -11,18 +12,6 @@ namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
     /// WADV VNS词法分析器
     /// </summary>
-    [StaticTranslation(SyntaxIf, "如果")]
-    [StaticTranslation(SyntaxElseIf, "或者")]
-    [StaticTranslation(SyntaxElse, "否则")]
-    [StaticTranslation(SyntaxLoop, "循环")]
-    [StaticTranslation(SyntaxScenario, "场景")]
-    [StaticTranslation(SyntaxReturn, "返回")]
-    [StaticTranslation(SyntaxIf, "if", "en")]
-    [StaticTranslation(SyntaxElseIf, "elseIf", "en")]
-    [StaticTranslation(SyntaxElse, "else", "en")]
-    [StaticTranslation(SyntaxLoop, "loop", "en")]
-    [StaticTranslation(SyntaxScenario, "scene", "en")]
-    [StaticTranslation(SyntaxReturn, "return", "en")]
     public class Lexer {
         /// <summary>
         /// 编译语言选项
@@ -32,27 +21,31 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <summary>
         /// 选择指令
         /// </summary>
-        public const string SyntaxIf = "SYNTAX_IF";
+        public const string SyntaxIf = "if";
         /// <summary>
         /// 分支指令
         /// </summary>
-        public const string SyntaxElseIf = "SYNTAX_ELSEIF";
+        public const string SyntaxElseIf = "elseif";
         /// <summary>
         /// 否则指令
         /// </summary>
-        public const string SyntaxElse = "SYNTAX_ELSE";
+        public const string SyntaxElse = "else";
         /// <summary>
         /// 循环指令
         /// </summary>
-        public const string SyntaxLoop = "SYNTAX_LOOP";
+        public const string SyntaxWhileLoop = "while";
         /// <summary>
-        /// 场景指令
+        /// 函数指令
         /// </summary>
-        public const string SyntaxScenario = "SYNTAX_SCENARIO";
+        public const string SyntaxFunction = "scene";
+        /// <summary>
+        /// 函数调用指令
+        /// </summary>
+        public const string SyntaxCall = "call";
         /// <summary>
         /// 返回指令
         /// </summary>
-        public const string SyntaxReturn = "SYNTAX_RETURN";
+        public const string SyntaxReturn = "return";
         /// <summary>
         /// 所有操作符
         /// </summary>
@@ -62,27 +55,18 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         private CodeFile File { get; }
         /// <summary>
-        /// 脚本标识符（通常是路径）
+        /// 脚本标识符
         /// </summary>
-        public string Identifier { get; }
+        public CodeIdentifier Identifier { get; }
         
         /// <summary>
         /// 声明一个新的VNS词法分析器
         /// </summary>
         /// <param name="content">脚本内容</param>
         /// <param name="identifier">脚本标识符</param>
-        public Lexer(string content, string identifier) {
+        public Lexer(string content, CodeIdentifier identifier) {
             Identifier = identifier;
             File = new CodeFile(content);
-        }
-
-        /// <summary>
-        /// 从文件创建词法分析器
-        /// </summary>
-        /// <param name="path">文件路径</param>
-        /// <returns></returns>
-        public static Lexer FromFile(string path) {
-            return new Lexer(Resources.Load<TextAsset>(path).text, path);
         }
 
         /// <summary>
@@ -190,18 +174,20 @@ namespace Core.VisualNovel.Script.Compiler {
                         position = position.MoveColumn(index);
                     } else {
                         var index = File.IndexOf(' ', '\n');
-                        if (File.StartsWith(TranslationManager.GetStatic(SyntaxScenario, language) + ' ')) {
+                        if (File.StartsWith(SyntaxFunction)) {
                             tokens.Add(new BasicToken(TokenType.Function, position));
-                        } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxIf, language) + ' ')) {
+                        } else if (File.StartsWith(SyntaxIf)) {
                             tokens.Add(new BasicToken(TokenType.If, position));
-                        } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxElse, language) + ' ', TranslationManager.GetStatic(SyntaxElse, language) + '\n')) {
-                            tokens.Add(new BasicToken(TokenType.Else, position));
-                        } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxElseIf, language) + ' ')) {
+                        } else if (File.StartsWith(SyntaxElseIf)) {
                             tokens.Add(new BasicToken(TokenType.ElseIf, position));
-                        } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxLoop, language) + ' ')) {
+                        } else if (File.StartsWith(SyntaxElse)) {
+                            tokens.Add(new BasicToken(TokenType.Else, position));
+                        } else if (File.StartsWith(SyntaxWhileLoop + ' ')) {
                             tokens.Add(new BasicToken(TokenType.Loop, position));
-                        } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxReturn, language) + ' ', TranslationManager.GetStatic(SyntaxReturn, language) + '\n')) {
+                        } else if (File.StartsWith(SyntaxReturn)) {
                             tokens.Add(new BasicToken(TokenType.Return, position));
+                        } else if (File.StartsWith(SyntaxCall)) {
+                            tokens.Add(new BasicToken(TokenType.FunctionCall, position));
                         } else {
                             throw new CompileException(Identifier, position, $"Unknown command {File.CopyContent(index)} in language {language}, may cause by command format error or typo mistake");
                         }
@@ -377,10 +363,10 @@ namespace Core.VisualNovel.Script.Compiler {
                     }
                     break;
                 case '[':
-                    tokens.Add(new BasicToken(TokenType.CallStart, position));
+                    tokens.Add(new BasicToken(TokenType.PluginCallStart, position));
                     break;
                 case ']':
-                    tokens.Add(new BasicToken(TokenType.CallEnd, position));
+                    tokens.Add(new BasicToken(TokenType.PluginCallEnd, position));
                     break;
                 case '!':
                     tokens.Add(new BasicToken(TokenType.LogicNot, position));

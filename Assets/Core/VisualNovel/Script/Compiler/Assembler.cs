@@ -7,15 +7,16 @@ using UnityEngine;
 namespace Core.VisualNovel.Script.Compiler {
     public class Assembler {
         private ScopeExpression RootExpression { get; }
-        private string Identifier { get; }
+        private CodeIdentifier Identifier { get; }
 
-        public Assembler(ScopeExpression root, string identifier) {
+        public Assembler(ScopeExpression root, CodeIdentifier identifier) {
             RootExpression = root;
             Identifier = identifier;
         }
 
         // VNS1 File
         /*   564E5331 | 32
+          source_hash | 32
             str_count | 32
           str_segment | dynamic
           label_count | 32
@@ -36,8 +37,8 @@ namespace Core.VisualNovel.Script.Compiler {
             Assemble(context, RootExpression);
             context.File.OperationCode(OperationCode.RET, new CodePosition());
             // 生成场景程序段
-            for (var i = -1; ++i < context.Scenarios.Count;) {
-                var description = context.Scenarios[i];
+            for (var i = -1; ++i < context.Functions.Count;) {
+                var description = context.Functions[i];
                 description.Offset = context.File.Position;
                 context.Scope = description.Scope;
                 foreach (var parameter in description.Function.Parameters) {
@@ -63,6 +64,8 @@ namespace Core.VisualNovel.Script.Compiler {
             context.File = new AssembleFile();
             // 写入文件标志 (VisualNovelScript Version 1, assembly format)
             context.File.DirectWrite(0x564E5331);
+            // 写入源文件哈希用于跳过重复编译
+            context.File.DirectWrite(Identifier.Hash);
             // 写入字符串常量数
             context.File.DirectWrite(baseFile.Strings.Count);
             // 写入字符串常量表
@@ -70,9 +73,9 @@ namespace Core.VisualNovel.Script.Compiler {
                 context.File.DirectWrite(stringConstant);
             }
             // 写入跳转标签数
-            context.File.DirectWrite(context.Scenarios.Count + baseFile.Labels.Count);
+            context.File.DirectWrite(context.Functions.Count + baseFile.Labels.Count);
             // 写入跳转表
-            foreach (var scenario in context.Scenarios) {
+            foreach (var scenario in context.Functions) {
                 context.File.DirectWrite(scenario.Offset);
                 context.File.DirectWrite(scenario.Label);
             }
@@ -81,9 +84,9 @@ namespace Core.VisualNovel.Script.Compiler {
                 context.File.DirectWrite(label.Key);
             }
             // 写入场景数
-            context.File.DirectWrite(context.Scenarios.Count);
+            context.File.DirectWrite(context.Functions.Count);
             // 写入场景表（即函数表）
-            foreach (var scenario in context.Scenarios) {
+            foreach (var scenario in context.Functions) {
                 context.File.DirectWrite(scenario.Function.Name);
                 context.File.DirectWrite(scenario.Label);
             }
@@ -97,7 +100,7 @@ namespace Core.VisualNovel.Script.Compiler {
             context.File.DirectWrite(baseFile.Code);
             baseFile.Code = context.File.CreateSegment().Code;
             // 更新默认翻译
-            var existedTranslationContent = Resources.Load<TextAsset>($"{Identifier}_tr_default").text;
+            var existedTranslationContent = Resources.Load<TextAsset>($"{Identifier.Name}_tr_default")?.text;
             ScriptTranslation targetTranslation;
             if (string.IsNullOrEmpty(existedTranslationContent)) {
                 var translationContent = new ScriptTranslation(baseFile.Translations);
@@ -208,6 +211,14 @@ namespace Core.VisualNovel.Script.Compiler {
                 case FloatExpression floatExpression:
                     context.File.LoadFloat(floatExpression.Value, floatExpression.Position);
                     break;
+                case FunctionCallExpression functionCallExpression:
+                    foreach (var parameter in functionCallExpression.Parameters) {
+                        Assemble(context, parameter);
+                    }
+                    context.File.LoadInteger(functionCallExpression.Parameters.Count, functionCallExpression.Position);
+                    Assemble(context, functionCallExpression.Target);
+                    context.File.Func(functionCallExpression.Position);
+                    break;
                 case IntegerExpression integerExpression:
                     context.File.LoadInteger(integerExpression.Value, integerExpression.Position);
                     break;
@@ -244,15 +255,15 @@ namespace Core.VisualNovel.Script.Compiler {
                     ++context.Scope;
                     foreach (var (item, i) in scopeExpression.Content.WithIndex()) {
                         Assemble(context, item);
-                        if (item is FunctionExpression scenarioExpression) {
-                            var description = new ScenarioDescription {
-                                Function = scenarioExpression,
-                                Label = $"{context.Scope}S{scenarioExpression.Name}",
+                        if (item is FunctionExpression functionExpression) {
+                            var description = new FunctionDescription {
+                                Function = functionExpression,
+                                Label = $"{context.Scope}S{functionExpression.Name}",
                                 Scope = context.Scope
                             };
-                            context.Scenarios.Add(description);
+                            context.Functions.Add(description);
                             if (i == scopeExpression.Content.Count - 1) {
-                                context.File.OperationCode(OperationCode.LDADDR, scenarioExpression.Position);
+                                context.File.OperationCode(OperationCode.LDADDR, functionExpression.Position);
                                 context.File.DirectWrite(description.Label);
                             }
                             continue;

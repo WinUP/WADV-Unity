@@ -5,10 +5,20 @@ using System.Text;
 using Core.Extensions;
 
 namespace Core.VisualNovel.Translation {
+    /// <summary>
+    /// 表示一个可翻译字符串列表
+    /// </summary>
     public class ScriptTranslation {
+        /// <summary>
+        /// 翻译不存在时的替代字符串
+        /// </summary>
         public const string MissingTranslation = "<MISSING ㄟ( ▔, ▔ )ㄏ TRANSLATION>";
         private readonly Dictionary<int, string> _translatableStrings = new Dictionary<int, string>();
         
+        /// <summary>
+        /// 从可移动字符串新建可翻译字符串列表
+        /// </summary>
+        /// <param name="content">可移动字符串内容</param>
         public ScriptTranslation(string content) {
             var fileContent = (from e in content.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n') where !e.StartsWith("//") select e.Trim()).ToArray();
             for (var i = -1; ++i < fileContent.Length;) {
@@ -25,6 +35,10 @@ namespace Core.VisualNovel.Translation {
             }
         }
         
+        /// <summary>
+        /// 从集合新建可翻译字符串列表
+        /// </summary>
+        /// <param name="content">来源集合</param>
         public ScriptTranslation(IReadOnlyDictionary<int, string> content) {
             foreach (var pair in content) {
                 _translatableStrings.Add(pair.Key, pair.Value);
@@ -43,23 +57,12 @@ namespace Core.VisualNovel.Translation {
 
         /// <summary>
         /// 将新的翻译合并到此翻译中
-        /// <para>目标与此翻译ID相同的条目会被忽略</para>
-        /// <para>目标与此翻译ID和哈希相同的条目会被忽略</para>
-        /// <para>目标与此翻译ID与哈希完全不同的条目会在此翻译中新建</para>
-        /// <para>此翻译中存在但是目标中不存在的条目的处理方式取决于函数第二个参数</para>
-        /// </summary>
-        /// <param name="target">目标翻译</param>
-        /// <param name="removeUnavailableTranslations">是否删除所有不在目标但是存在于此翻译中的条目</param>
-        public void MergeWith(ScriptTranslation target, bool removeUnavailableTranslations = false) {
-            MergeWith(target._translatableStrings, removeUnavailableTranslations);
-        }
-
-        /// <summary>
-        /// 将新的翻译合并到此翻译中
-        /// <para>目标与此翻译ID和哈希相同的条目会被忽略</para>
-        /// <para>目标ID不同但哈希于此翻译中存在的条目会使用此翻译中同哈希的第一个条目的内容</para>
-        /// <para>目标与此翻译ID与哈希完全不同的条目会在此翻译中新建</para>
-        /// <para>此翻译中存在但是目标中不存在的条目的处理方式取决于函数第二个参数</para>
+        /// <list type="bullet">
+        ///     <item><description>目标与此翻译ID和哈希相同的条目会被忽略</description></item>
+        ///     <item><description>目标ID不同但哈希于此翻译中存在的条目会使用此翻译中同哈希的第一个条目的内容</description></item>
+        ///     <item><description>目标与此翻译哈希不同的条目会在此翻译中新建</description></item>
+        ///     <item><description>此翻译中存在但是目标中不存在的条目的处理方式取决于函数第二个参数</description></item>
+        /// </list>
         /// </summary>
         /// <param name="source">目标翻译</param>
         /// <param name="removeUnavailableTranslations">是否删除所有不在目标但是存在于此翻译中的条目</param>
@@ -90,7 +93,7 @@ namespace Core.VisualNovel.Translation {
         }
 
         /// <summary>
-        /// 将此翻译输出为单个字符串
+        /// 将此翻译输出为可移动字符串
         /// </summary>
         /// <returns></returns>
         public string Pack() {

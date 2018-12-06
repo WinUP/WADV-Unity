@@ -53,6 +53,13 @@ namespace Core.VisualNovel.Script.Compiler {
         public void DirectWrite(int value) {
             _writer.Write(value);
         }
+        /// <summary>
+        /// 编写32无符号位整数
+        /// </summary>
+        /// <param name="value">目标数字</param>
+        public void DirectWrite(uint value) {
+            _writer.Write(value);
+        }
 
         /// <summary>
         /// 编写64位整数
@@ -284,6 +291,14 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <param name="position">指令在源文件中的位置</param>
         public void Call(CodePosition position) {
             OperationCode(Compiler.OperationCode.CALL, position);
+        }
+        
+        /// <summary>
+        /// 编写调用栈顶函数指令
+        /// </summary>
+        /// <param name="position">指令在源文件中的位置</param>
+        public void Func(CodePosition position) {
+            OperationCode(Compiler.OperationCode.FUNC, position);
         }
         
         /// <summary>

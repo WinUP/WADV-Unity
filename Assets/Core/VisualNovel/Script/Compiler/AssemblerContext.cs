@@ -14,9 +14,9 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         public int Scope { get; set; }
         /// <summary>
-        /// 场景列表
+        /// 函数列表
         /// </summary>
-        public List<ScenarioDescription> Scenarios { get; } = new List<ScenarioDescription>();
+        public List<FunctionDescription> Functions { get; } = new List<FunctionDescription>();
         /// <summary>
         /// 获取下一个用于跳转标签的唯一ID
         /// </summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using Core.VisualNovel.Script;
 using Core.VisualNovel.Script.Compiler;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -24,10 +25,7 @@ namespace Core.VisualNovel.Editor {
                 EditorGUILayout.LabelField("NextCommand", "<NULL>");
             }
 
-
-            var file = Lexer.FromFile("Logic/!Entrance").CreateParser().CreateAssembler().Assemble();
-            File.WriteAllBytes("Assets/Resources/Logic/!Entrance_bin.bytes", file.Content);
-            File.WriteAllText("Assets/Resources/Logic/!Entrance_tr_default.txt", file.Translations, Encoding.UTF8);
+            ModuleCompiler.CompileFile("Logic/!Entrance", new CompileOption());
 //            var reader = new BinaryReader(new MemoryStream(file.Content), Encoding.UTF8);
 //            var data = new StringBuilder();
 //            if (reader.ReadInt32() != 0x564E5331) {
