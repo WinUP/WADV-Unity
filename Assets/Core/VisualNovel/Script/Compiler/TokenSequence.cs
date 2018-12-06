@@ -3,6 +3,9 @@ using System.Linq;
 using Core.VisualNovel.Script.Compiler.Tokens;
 
 namespace Core.VisualNovel.Script.Compiler {
+    /// <summary>
+    /// 表示一个标记序列
+    /// </summary>
     public class TokenSequence {
         public List<BasicToken> Content { get; }
         
@@ -33,12 +36,14 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <summary>
         /// 确定游标是否还未抵达脚本内容末尾
         /// </summary>
-        public bool HasNext {
-            get { return Offset < Length - 1; }
-        }
-        
+        public bool HasNext => Offset < Length - 1;
+
         private int _offset = -1;
         
+        /// <summary>
+        /// 创建一个标记序列
+        /// </summary>
+        /// <param name="tokens">标记列表</param>
         public TokenSequence(IEnumerable<BasicToken> tokens) {
             Content = tokens.ToList();
             Content.Add(new BasicToken(TokenType.LineBreak, new CodePosition()));

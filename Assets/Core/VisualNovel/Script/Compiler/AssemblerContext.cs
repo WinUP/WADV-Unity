@@ -1,11 +1,25 @@
 using System.Collections.Generic;
-using Core.VisualNovel.Script.Compiler.Expressions;
 
 namespace Core.VisualNovel.Script.Compiler {
+    /// <summary>
+    /// 汇编生成器上下文
+    /// </summary>
     public class AssemblerContext {
+        /// <summary>
+        /// 汇编文件
+        /// </summary>
         public AssembleFile File { get; set; } = new AssembleFile();
+        /// <summary>
+        /// 作用域层次
+        /// </summary>
         public int Scope { get; set; }
+        /// <summary>
+        /// 场景列表
+        /// </summary>
         public List<ScenarioDescription> Scenarios { get; } = new List<ScenarioDescription>();
+        /// <summary>
+        /// 获取下一个用于跳转标签的唯一ID
+        /// </summary>
         public int NextLabelId {
             get {
                 ++_nextLabelId;

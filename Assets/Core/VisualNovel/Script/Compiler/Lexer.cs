@@ -185,13 +185,13 @@ namespace Core.VisualNovel.Script.Compiler {
                         }
                         var optionContent = File.CopyContent(index);
                         language = optionContent;
-                        tokens.Add(new StringToken(TokenType.String, position, language));
+                        tokens.Add(new StringToken(TokenType.String, position, language, false));
                         File.Move(index);
                         position = position.MoveColumn(index);
                     } else {
                         var index = File.IndexOf(' ', '\n');
                         if (File.StartsWith(TranslationManager.GetStatic(SyntaxScenario, language) + ' ')) {
-                            tokens.Add(new BasicToken(TokenType.Scenario, position));
+                            tokens.Add(new BasicToken(TokenType.Function, position));
                         } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxIf, language) + ' ')) {
                             tokens.Add(new BasicToken(TokenType.If, position));
                         } else if (File.StartsWith(TranslationManager.GetStatic(SyntaxElse, language) + ' ', TranslationManager.GetStatic(SyntaxElse, language) + '\n')) {
@@ -234,7 +234,7 @@ namespace Core.VisualNovel.Script.Compiler {
                         if (content[0] >= '0' && content[0] <= '9') {
                             CreateNumberToken(tokens, position, content);
                         } else {
-                            tokens.Add(new StringToken(TokenType.String, position, content));
+                            tokens.Add(new StringToken(TokenType.String, position, content, false));
                         }
                     }
                     File.Move(nextSeparator);
@@ -253,9 +253,9 @@ namespace Core.VisualNovel.Script.Compiler {
                     if (File.Current == ' ') { // 角色描述不能为空
                         throw new CompileException(Identifier, position, "Unable to create quick dialogue: Dialogue starts with character must has character definition");
                     }
-                    tokens.Add(new StringToken(TokenType.DialogueSpeaker, position, File.CopyContent(nextSpace).ExecuteEscapeCharacters()));
+                    tokens.Add(new StringToken(TokenType.DialogueSpeaker, position, File.CopyContent(nextSpace).ExecuteEscapeCharacters(), false));
                     position = position.MoveColumn(nextSpace);
-                    tokens.Add(new StringToken(TokenType.DialogueContent, position, File.CopyContent(nextSpace + 1, lineBreak).ExecuteEscapeCharacters()));
+                    tokens.Add(new StringToken(TokenType.DialogueContent, position, File.CopyContent(nextSpace + 1, lineBreak).ExecuteEscapeCharacters(), false));
                     File.Move(lineBreak);
                     position = position.MoveColumn(lineBreak - nextSpace);
                     continue;
@@ -269,7 +269,7 @@ namespace Core.VisualNovel.Script.Compiler {
 
                 // 如果所有条件都不满足，那么一定是普通的无角色对话
                 var nextLine = File.IndexOf('\n');
-                tokens.Add(new StringToken(TokenType.DialogueContent, position, File.CopyContent(nextLine).ExecuteEscapeCharacters()));
+                tokens.Add(new StringToken(TokenType.DialogueContent, position, File.CopyContent(nextLine).ExecuteEscapeCharacters(), false));
                 tokens.Add(new BasicToken(TokenType.LineBreak, position));
                 File.Move(nextLine);
             }

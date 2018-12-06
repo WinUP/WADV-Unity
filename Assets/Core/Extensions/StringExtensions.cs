@@ -13,50 +13,14 @@ namespace Core.Extensions {
             for (var i = -1; ++i < length;) {
                 switch (value[i]) {
                     case '\n':
-                        result.Append("\\n");
-                        break;
+                        result.Append(@"\n");
+                        continue;
                     case '\t':
-                        result.Append("\\t");
-                        break;
-                    case ' ':
-                        result.Append("\\s");
-                        break;
-                    case ';':
-                        result.Append("\\;");
-                        break;
-                    case '0':
-                        result.Append("\\0");
-                        break;
-                    case '1':
-                        result.Append("\\1");
-                        break;
-                    case '2':
-                        result.Append("\\2");
-                        break;
-                    case '3':
-                        result.Append("\\3");
-                        break;
-                    case '4':
-                        result.Append("\\4");
-                        break;
-                    case '5':
-                        result.Append("\\5");
-                        break;
-                    case '6':
-                        result.Append("\\6");
-                        break;
-                    case '7':
-                        result.Append("\\7");
-                        break;
-                    case '8':
-                        result.Append("\\8");
-                        break;
-                    case '9':
-                        result.Append("\\9");
-                        break;
+                        result.Append(@"\t");
+                        continue;
                     default:
                         result.Append(value[i]);
-                        break;;
+                        continue;
                 }
             }
             return result.ToString();

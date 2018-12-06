@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using Core.Extensions;
 
 namespace Core.VisualNovel.Script.Compiler {
+    /// <summary>
+    /// 表示一个汇编文件
+    /// </summary>
     public class AssembleFile {
         private readonly BinaryWriter _writer = new BinaryWriter(new MemoryStream(), Encoding.UTF8);
         private readonly List<CodePosition> _positions = new List<CodePosition>();
@@ -14,6 +15,9 @@ namespace Core.VisualNovel.Script.Compiler {
         private readonly List<string> _strings = new List<string>();
         private uint _stringCount;
 
+        /// <summary>
+        /// 文件写入指针当前偏移量
+        /// </summary>
         public long Position => _writer.BaseStream.Position;
 
         /// <summary>
@@ -21,7 +25,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="code">指令类型</param>
         /// <param name="position">指令在源文件中的位置</param>
-        public void OpCode(OpCodeType code, CodePosition position) {
+        public void OperationCode(OperationCode code, CodePosition position) {
             _writer.Write((byte) code);
             _positions.Add(position);
         }
@@ -77,7 +81,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 _strings.Add(content);
                 currentIndex = _strings.Count - 1;
             }
-            OpCode(OpCodeType.LDSTR, position);
+            OperationCode(Compiler.OperationCode.LDSTR, position);
             DirectWrite(currentIndex);
         }
         
@@ -92,7 +96,7 @@ namespace Core.VisualNovel.Script.Compiler {
             }
             var key = (_translations.Count << 16) + Hasher.Crc16(Encoding.UTF8.GetBytes(content));
             _translations.Add(key, content);
-            OpCode(OpCodeType.LDSTT, position);
+            OperationCode(Compiler.OperationCode.LDSTT, position);
             DirectWrite(key);
         }
 
@@ -104,34 +108,34 @@ namespace Core.VisualNovel.Script.Compiler {
         public void LoadInteger(int value, CodePosition position) {
             switch (value) {
                 case 0:
-                    OpCode(OpCodeType.LDC_I4_0, position);
+                    OperationCode(Compiler.OperationCode.LDC_I4_0, position);
                     break;
                 case 1:
-                    OpCode(OpCodeType.LDC_I4_1, position);
+                    OperationCode(Compiler.OperationCode.LDC_I4_1, position);
                     break;
                 case 2:
-                    OpCode(OpCodeType.LDC_I4_2, position);
+                    OperationCode(Compiler.OperationCode.LDC_I4_2, position);
                     break;
                 case 3:
-                    OpCode(OpCodeType.LDC_I4_3, position);
+                    OperationCode(Compiler.OperationCode.LDC_I4_3, position);
                     break;
                 case 4:
-                    OpCode(OpCodeType.LDC_I4_4, position);
+                    OperationCode(Compiler.OperationCode.LDC_I4_4, position);
                     break;
                 case 5:
-                    OpCode(OpCodeType.LDC_I4_5, position);
+                    OperationCode(Compiler.OperationCode.LDC_I4_5, position);
                     break;
                 case 6:
-                    OpCode(OpCodeType.LDC_I4_6, position);
+                    OperationCode(Compiler.OperationCode.LDC_I4_6, position);
                     break;
                 case 7:
-                    OpCode(OpCodeType.LDC_I4_7, position);
+                    OperationCode(Compiler.OperationCode.LDC_I4_7, position);
                     break;
                 case 8:
-                    OpCode(OpCodeType.LDC_I4_8, position);
+                    OperationCode(Compiler.OperationCode.LDC_I4_8, position);
                     break;
                 default:
-                    OpCode(OpCodeType.LDC_I4, position);
+                    OperationCode(Compiler.OperationCode.LDC_I4, position);
                     DirectWrite(value);
                     break;
             }
@@ -145,79 +149,79 @@ namespace Core.VisualNovel.Script.Compiler {
         public void LoadFloat(float value, CodePosition position) {
             switch (value) {
                 case 0.0F:
-                    OpCode(OpCodeType.LDC_R4_0, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_0, position);
                     break;
                 case 0.25F:
-                    OpCode(OpCodeType.LDC_R4_025, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_025, position);
                     break;
                 case 0.5F:
-                    OpCode(OpCodeType.LDC_R4_05, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_05, position);
                     break;
                 case 0.75F:
-                    OpCode(OpCodeType.LDC_R4_075, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_075, position);
                     break;
                 case 1.0F:
-                    OpCode(OpCodeType.LDC_R4_1, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_1, position);
                     break;
                 case 1.25F:
-                    OpCode(OpCodeType.LDC_R4_125, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_125, position);
                     break;
                 case 1.5F:
-                    OpCode(OpCodeType.LDC_R4_15, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_15, position);
                     break;
                 case 1.75F:
-                    OpCode(OpCodeType.LDC_R4_175, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_175, position);
                     break;
                 case 2.0F:
-                    OpCode(OpCodeType.LDC_R4_2, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_2, position);
                     break;
                 case 2.25F:
-                    OpCode(OpCodeType.LDC_R4_225, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_225, position);
                     break;
                 case 2.5F:
-                    OpCode(OpCodeType.LDC_R4_25, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_25, position);
                     break;
                 case 2.75F:
-                    OpCode(OpCodeType.LDC_R4_275, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_275, position);
                     break;
                 case 3F:
-                    OpCode(OpCodeType.LDC_R4_3, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_3, position);
                     break;
                 case 3.25F:
-                    OpCode(OpCodeType.LDC_R4_325, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_325, position);
                     break;
                 case 3.5F:
-                    OpCode(OpCodeType.LDC_R4_35, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_35, position);
                     break;
                 case 3.75F:
-                    OpCode(OpCodeType.LDC_R4_375, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_375, position);
                     break;
                 case 4F:
-                    OpCode(OpCodeType.LDC_R4_4, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_4, position);
                     break;
                 case 4.25F:
-                    OpCode(OpCodeType.LDC_R4_425, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_425, position);
                     break;
                 case 4.5F:
-                    OpCode(OpCodeType.LDC_R4_45, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_45, position);
                     break;
                 case 4.75F:
-                    OpCode(OpCodeType.LDC_R4_475, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_475, position);
                     break;
                 case 5F:
-                    OpCode(OpCodeType.LDC_R4_5, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_5, position);
                     break;
                 case 5.25F:
-                    OpCode(OpCodeType.LDC_R4_525, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_525, position);
                     break;
                 case 5.5F:
-                    OpCode(OpCodeType.LDC_R4_55, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_55, position);
                     break;
                 case 5.75F:
-                    OpCode(OpCodeType.LDC_R4_575, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4_575, position);
                     break;
                 default:
-                    OpCode(OpCodeType.LDC_R4, position);
+                    OperationCode(Compiler.OperationCode.LDC_R4, position);
                     DirectWrite(value);
                     break;
             }
@@ -228,7 +232,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="position">指令在源文件中的位置</param>
         public void LoadNull(CodePosition position) {
-            OpCode(OpCodeType.LDNUL, position);
+            OperationCode(Compiler.OperationCode.LDNUL, position);
         }
 
         /// <summary>
@@ -237,7 +241,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <param name="value">目标布尔值</param>
         /// <param name="position">指令在源文件中的位置</param>
         public void LoadBoolean(bool value, CodePosition position) {
-            OpCode(value ? OpCodeType.LDT : OpCodeType.LDF, position);
+            OperationCode(value ? Compiler.OperationCode.LDT : Compiler.OperationCode.LDF, position);
         }
 
         /// <summary>
@@ -253,7 +257,7 @@ namespace Core.VisualNovel.Script.Compiler {
             } else {
                 LoadString(speaker, position);
             }
-            OpCode(OpCodeType.DIALOGUE, position);
+            OperationCode(Compiler.OperationCode.DIALOGUE, position);
         }
 
         /// <summary>
@@ -262,8 +266,8 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <param name="language">目标语言</param>
         /// <param name="position">指令在源文件中的位置</param>
         public void Language(string language, CodePosition position) {
-            LoadString(language, position);
-            OpCode(OpCodeType.LANG, position);
+            OperationCode(Compiler.OperationCode.LANG, position);
+            DirectWrite(language);
         }
 
         /// <summary>
@@ -271,7 +275,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="position">指令在源文件中的位置</param>
         public void Pop(CodePosition position) {
-            OpCode(OpCodeType.POP, position);
+            OperationCode(Compiler.OperationCode.POP, position);
         }
 
         /// <summary>
@@ -279,7 +283,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="position">指令在源文件中的位置</param>
         public void Call(CodePosition position) {
-            OpCode(OpCodeType.CALL, position);
+            OperationCode(Compiler.OperationCode.CALL, position);
         }
         
         /// <summary>
@@ -293,8 +297,12 @@ namespace Core.VisualNovel.Script.Compiler {
             _labels.Add(name, _writer.BaseStream.Position);
         }
 
+        /// <summary>
+        /// 返回汇编文件的各个数据段和程序段
+        /// </summary>
+        /// <returns></returns>
         public (byte[] Code, IReadOnlyDictionary<string, long> Labels, IReadOnlyDictionary<int, string> Translations, IReadOnlyCollection<string> Strings,
-            IReadOnlyCollection<CodePosition> Positions) Create() {
+            IReadOnlyCollection<CodePosition> Positions) CreateSegment() {
             return ((_writer.BaseStream as MemoryStream)?.ToArray(), _labels, _translations, _strings, _positions);
         }
     }

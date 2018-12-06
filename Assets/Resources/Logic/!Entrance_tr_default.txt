@@ -1,4 +1,7 @@
-﻿000077f5
+﻿// Translation file: default
+// Notice: one translation only allows one line, accept all escape characters but only \n is needed 
+
+000077f5
 旁白
 
 000164aa
@@ -8,7 +11,7 @@
 这是隐藏对话。\n因为[粗体]对话框[取消粗体]没有显示。[不暂停]
 
 0003d02e
-+\s这是普通的对话。
++ 这是普通的对话。
 
 000430a1
 这里可以做各种运算了
@@ -20,5 +23,5 @@
 Assets/Resources/Intro
 
 0007bff4
-测试对话\2。
+测试对话2。
 

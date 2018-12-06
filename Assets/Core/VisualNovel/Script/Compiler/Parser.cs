@@ -64,7 +64,7 @@ namespace Core.VisualNovel.Script.Compiler {
                     case TokenType.LogicNot:
                         result.Content.Add(ParseBinaryOperator(ParseLogicNot()));
                         break;
-                    case TokenType.Scenario:
+                    case TokenType.Function:
                         result.Content.Add(ParseBinaryOperator(ParseScenario()));
                         break;
                     case TokenType.If:
@@ -226,7 +226,7 @@ namespace Core.VisualNovel.Script.Compiler {
         private Expression ParseCall() {
             // 指令采取自左至右贪心匹配，因此[A->B+ C+(@D=E)=F]被解析为[A->B+C+(@D=E)=F]不算错误，反正执行会崩
             Tokens.MoveToNext();
-            var command = new CommandExpression(Tokens.Current.Position) {Target = ParseCallName()};
+            var command = new CallExpression(Tokens.Current.Position) {Target = ParseCallName()};
             while (Tokens.Current.Type != TokenType.CallEnd) {
                 if (Tokens.Current.Type == TokenType.LineBreak) {
                     throw new CompileException(Identifier, Tokens.Current.Position, "Unexpected LineBreak when parsing call");
@@ -451,7 +451,7 @@ namespace Core.VisualNovel.Script.Compiler {
                     case TokenType.LogicNot:
                         right = ParseLogicNot();
                         break;
-                    case TokenType.Scenario:
+                    case TokenType.Function:
                         right = ParseScenario();
                         break;
                     case TokenType.If:
@@ -590,7 +590,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <returns></returns>
         private Expression ParseScenario() {
-            var result = new ScenarioExpression(Tokens.Current.Position);
+            var result = new FunctionExpression(Tokens.Current.Position);
             Tokens.MoveToNext();
             if (Tokens.Current.Type != TokenType.String || !(Tokens.Current is StringToken nameToken)) {
                 throw new CompileException(Identifier, Tokens.Current.Position, "Expected String as scenario name");
@@ -676,7 +676,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 case TokenType.LogicNot:
                     value = ParseLogicNot();
                     break;
-                case TokenType.Scenario:
+                case TokenType.Function:
                     value = ParseScenario();
                     break;
                 case TokenType.If:
@@ -731,7 +731,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 case TokenType.LogicNot:
                     content = ParseLogicNot();
                     break;
-                case TokenType.Scenario:
+                case TokenType.Function:
                     content = ParseScenario();
                     break;
                 case TokenType.If:

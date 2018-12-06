@@ -1,54 +1,20 @@
-using System;
-
 namespace Core.VisualNovel.Script.Compiler.Expressions {
+    /// <summary>
+    /// 表示一个基础表达式
+    /// <para>基础表达式是抽象语法树的所有节点的基础，但其自身不能作为节点使用，必须由其他继承类表示</para>
+    /// </summary>
     public abstract class Expression {
+        /// <summary>
+        /// 该表达式在源代码中的对应位置
+        /// </summary>
         public CodePosition Position { get; }
 
+        /// <summary>
+        /// 创建一个表达式
+        /// </summary>
+        /// <param name="position">该表达式在源代码中的对应位置</param>
         protected Expression(CodePosition position) {
             Position = position;
-        }
-
-        public ExpressionType GetExpressionType() {
-            switch (this) {
-                case BinaryExpression _:
-                    return ExpressionType.Binary;
-                case CommandExpression _:
-                    return ExpressionType.Command;
-                case ConditionContentExpression _:
-                    return ExpressionType.ConditionContent;
-                case ConditionExpression _:
-                    return ExpressionType.Condition;
-                case DialogueExpression _:
-                    return ExpressionType.Dialogue;
-                case EmptyExpression _:
-                    return ExpressionType.Empty;
-                case FloatExpression _:
-                    return ExpressionType.Float;
-                case IntegerExpression _:
-                    return ExpressionType.Integer;
-                case LanguageExpression _:
-                    return ExpressionType.Language;
-                case LogicNotExpression _:
-                    return ExpressionType.LogicNot;
-                case LoopExpression _:
-                    return ExpressionType.Loop;
-                case ParameterExpression _:
-                    return ExpressionType.Parameter;
-                case ReturnExpression _:
-                    return ExpressionType.Return;
-                case ScenarioExpression _:
-                    return ExpressionType.Scenario;
-                case ScopeExpression _:
-                    return ExpressionType.Scope;
-                case StringExpression _:
-                    return ExpressionType.String;
-                case ToBooleanExpression _:
-                    return ExpressionType.ToBoolean;
-                case VariableExpression _:
-                    return ExpressionType.Variable;
-                default:
-                    throw new ArgumentException("Unrecognized expression type");
-            }
         }
     }
 }
