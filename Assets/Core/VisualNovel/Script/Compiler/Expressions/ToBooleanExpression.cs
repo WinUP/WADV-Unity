@@ -14,6 +14,6 @@ namespace Core.VisualNovel.Script.Compiler.Expressions {
         /// 创建一个布尔转换表达式
         /// </summary>
         /// <param name="position">该表达式在源代码中的对应位置</param>
-        public ToBooleanExpression(CodePosition position) : base(position) {}
+        public ToBooleanExpression(SourcePosition position) : base(position) {}
     }
 }

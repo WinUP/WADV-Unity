@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Core.Extensions;
 using Core.VisualNovel.Script.Compiler.Expressions;
@@ -5,6 +6,9 @@ using Core.VisualNovel.Translation;
 using UnityEngine;
 
 namespace Core.VisualNovel.Script.Compiler {
+    /// <summary>
+    /// WADV VNS 字节码生成器
+    /// </summary>
     public class Assembler {
         private ScopeExpression RootExpression { get; }
         private CodeIdentifier Identifier { get; }
@@ -13,107 +17,46 @@ namespace Core.VisualNovel.Script.Compiler {
             RootExpression = root;
             Identifier = identifier;
         }
-
-        // VNS1 File
-        /*   564E5331 | 32
-          source_hash | 32
-            str_count | 32
-          str_segment | dynamic
-          label_count | 32
-        label_segment | dynamic
-          scene_count | 32
-        scene_segment | dynamic
-       position_count | 32
-     position_segment | dynamic
-         code_segment | dynamic */
         
         /// <summary>
-        /// 生成程序码
+        /// 生成字节码
         /// </summary>
         /// <returns></returns>
         public (byte[] Content, string Translations) Assemble() {
             var context = new AssemblerContext();
             // 生成主程序段
             Assemble(context, RootExpression);
-            context.File.OperationCode(OperationCode.RET, new CodePosition());
-            // 生成场景程序段
-            for (var i = -1; ++i < context.Functions.Count;) {
-                var description = context.Functions[i];
-                description.Offset = context.File.Position;
-                context.Scope = description.Scope;
-                foreach (var parameter in description.Function.Parameters) {
-                    if (!(parameter.Value is EmptyExpression)) {
-                        var nextParameterCheck = $"{description.Label}P{context.NextLabelId}";
-                        context.File.LoadNull(parameter.Position);
-                        Assemble(context, parameter.Name);
-                        context.File.OperationCode(OperationCode.EQL, parameter.Position);
-                        context.File.OperationCode(OperationCode.BF_S, parameter.Position);
-                        context.File.DirectWrite(nextParameterCheck);
-                        Assemble(context, parameter.Value);
-                        Assemble(context, parameter.Name);
-                        context.File.OperationCode(OperationCode.STLOC, parameter.Position);
-                        context.File.CreateLabel(nextParameterCheck);
-                    }
-                }
-                Assemble(context, description.Function.Body);
-                context.File.OperationCode(OperationCode.RET, description.Function.Position);
-                context.Scope = 0;
-            }
-            // 准备文件头
-            var baseFile = context.File.CreateSegment();
-            context.File = new AssembleFile();
-            // 写入文件标志 (VisualNovelScript Version 1, assembly format)
-            context.File.DirectWrite(0x564E5331);
+            context.File.OperationCode(OperationCode.RET, new SourcePosition());
+            // 生成各种段
+            var segments = context.File.CreateSegments();
+            context.File.Close();
+            // 准备目标文件
+            var targetFile = new ByteCodeWriter();
+            // 写入文件标志 ("VisualNovelScript Version 1, assembly format"的CRC32)
+            targetFile.DirectWrite(0x963EFE4A);
             // 写入源文件哈希用于跳过重复编译
-            context.File.DirectWrite(Identifier.Hash);
-            // 写入字符串常量数
-            context.File.DirectWrite(baseFile.Strings.Count);
-            // 写入字符串常量表
-            foreach (var stringConstant in baseFile.Strings) {
-                context.File.DirectWrite(stringConstant);
-            }
-            // 写入跳转标签数
-            context.File.DirectWrite(context.Functions.Count + baseFile.Labels.Count);
-            // 写入跳转表
-            foreach (var scenario in context.Functions) {
-                context.File.DirectWrite(scenario.Offset);
-                context.File.DirectWrite(scenario.Label);
-            }
-            foreach (var label in baseFile.Labels) {
-                context.File.DirectWrite(label.Value);
-                context.File.DirectWrite(label.Key);
-            }
-            // 写入场景数
-            context.File.DirectWrite(context.Functions.Count);
-            // 写入场景表（即函数表）
-            foreach (var scenario in context.Functions) {
-                context.File.DirectWrite(scenario.Function.Name);
-                context.File.DirectWrite(scenario.Label);
-            }
-            // 写入调试信息
-            context.File.DirectWrite(baseFile.Positions.Count);
-            foreach (var position in baseFile.Positions) {
-                context.File.DirectWrite(position.Line);
-                context.File.DirectWrite(position.Column);
-            }
-            // 复制程序段
-            context.File.DirectWrite(baseFile.Code);
-            baseFile.Code = context.File.CreateSegment().Code;
+            targetFile.DirectWrite(Identifier.Hash);
+            // 写入各种段
+            targetFile.DirectWrite(segments.Strings);
+            targetFile.DirectWrite(segments.Labels);
+            targetFile.DirectWrite(segments.Positions);
+            targetFile.DirectWrite(segments.Code);
             // 更新默认翻译
             var existedTranslationContent = Resources.Load<TextAsset>($"{Identifier.Name}_tr_default")?.text;
             ScriptTranslation targetTranslation;
             if (string.IsNullOrEmpty(existedTranslationContent)) {
-                var translationContent = new ScriptTranslation(baseFile.Translations);
+                var translationContent = segments.Translations;
                 targetTranslation = translationContent;
             } else {
                 var existedTranslation = new ScriptTranslation(existedTranslationContent);
-                existedTranslation.MergeWith(baseFile.Translations);
+                existedTranslation.MergeWith(segments.Translations);
                 targetTranslation = existedTranslation;
             }
-            return (baseFile.Code, "// Translation file: default\n// Notice: one translation only allows one line, accept all escape characters but only \\n is needed \n\n" + targetTranslation.Pack());
+            context.File.Close();
+            return (targetFile.CreateCodeSegment(), "// Translation file: default\n// Notice: one translation only allows one line, accept all escape characters but only \\n is needed \n\n" + targetTranslation.Pack());
         }
 
-        private void Assemble(AssemblerContext context, Expression expression, params CompilerFlag[] flags) {
+        private static void Assemble(AssemblerContext context, Expression expression, params CompilerFlag[] flags) {
             switch (expression) {
                 case BinaryExpression binaryExpression:
                     Assemble(context, binaryExpression.Right);
@@ -187,11 +130,11 @@ namespace Core.VisualNovel.Script.Compiler {
                     context.File.Call(commandExpression.Position);
                     break;
                 case ConditionExpression conditionExpression: // 协同处理ConditionContentExpression
-                    var conditionEndLabel = $"{context.Scope}C{context.NextLabelId}";
-                    var conditionNextLabel = $"{context.Scope}C{context.NextLabelId}";
+                    var conditionEndLabel = context.NextLabelId;
+                    var conditionNextLabel = context.NextLabelId;
                     foreach (var branch in conditionExpression.Contents) {
                         context.File.CreateLabel(conditionNextLabel);
-                        conditionNextLabel = $"{context.Scope}C{context.NextLabelId}";
+                        conditionNextLabel = context.NextLabelId;
                         Assemble(context, branch.Condition);
                         context.File.OperationCode(OperationCode.BVAL, branch.Position);
                         context.File.OperationCode(OperationCode.BF_S, branch.Position);
@@ -201,6 +144,30 @@ namespace Core.VisualNovel.Script.Compiler {
                         context.File.DirectWrite(conditionEndLabel);
                     }
                     context.File.CreateLabel(conditionEndLabel);
+                    break;
+                case ConstantExpression constantExpression:
+                    if (flags.Any(e => e == CompilerFlag.UseSetLocalVariable)) {
+                        throw new NotSupportedException("Cannot assign value to constant variable");
+                    }
+                    if (constantExpression.Name is StringExpression constantNameExpression) {
+                        switch (constantNameExpression.Value.ToUpper()) {
+                            case "TRUE":
+                                context.File.LoadBoolean(true, constantExpression.Position);
+                                return;
+                            case "FALSE":
+                                context.File.LoadBoolean(false, constantExpression.Position);
+                                return;
+                            case "NULL":
+                                context.File.LoadNull(constantExpression.Position);
+                                return;
+                            default:
+                                Assemble(context, constantNameExpression);
+                                break;
+                        }
+                    } else {
+                        Assemble(context, constantExpression.Name);
+                    }
+                    context.File.OperationCode(OperationCode.LDCONS, constantExpression.Position);
                     break;
                 case DialogueExpression dialogueExpression:
                     context.File.LoadDialogue(dialogueExpression.Character, dialogueExpression.Content, dialogueExpression.Position);
@@ -219,6 +186,42 @@ namespace Core.VisualNovel.Script.Compiler {
                     Assemble(context, functionCallExpression.Target);
                     context.File.Func(functionCallExpression.Position);
                     break;
+                case FunctionExpression functionExpression:
+                    var functionStart = context.NextLabelId;
+                    var functionEnd = context.NextLabelId;
+                    // 场景表现为一个声明在当前作用域内的变量
+                    context.File.OperationCode(OperationCode.LDADDR, functionExpression.Position);
+                    context.File.DirectWrite(functionStart);
+                    context.File.LoadString(functionExpression.Name, functionExpression.Position);
+                    context.File.OperationCode(OperationCode.STLOC, functionExpression.Position);
+                    context.File.OperationCode(OperationCode.POP, functionExpression.Position);
+                    // 令外部代码执行时跳过函数部分
+                    context.File.OperationCode(OperationCode.BR_S, SourcePosition.UnavailablePosition);
+                    context.File.DirectWrite(functionEnd);
+                    // 开始函数生成
+                    context.File.CreateLabel(functionStart);
+                    // 默认值赋值
+                    foreach (var parameter in functionExpression.Parameters) {
+                        if (!(parameter.Value is EmptyExpression)) {
+                            var nextParameterCheck = context.NextLabelId;
+                            context.File.LoadNull(parameter.Position);
+                            Assemble(context, parameter.Name);
+                            context.File.OperationCode(OperationCode.EQL, parameter.Position);
+                            context.File.OperationCode(OperationCode.BF_S, parameter.Position);
+                            context.File.DirectWrite(nextParameterCheck);
+                            Assemble(context, parameter.Value);
+                            Assemble(context, parameter.Name);
+                            context.File.OperationCode(OperationCode.STLOC, parameter.Position);
+                            context.File.Pop(parameter.Position);
+                            context.File.CreateLabel(nextParameterCheck);
+                        }
+                    }
+                    // 生成函数体
+                    Assemble(context, functionExpression.Body);
+                    // 结束函数生成
+                    context.File.OperationCode(OperationCode.RET, SourcePosition.UnavailablePosition);
+                    context.File.CreateLabel(functionEnd);
+                    break;
                 case IntegerExpression integerExpression:
                     context.File.LoadInteger(integerExpression.Value, integerExpression.Position);
                     break;
@@ -230,8 +233,8 @@ namespace Core.VisualNovel.Script.Compiler {
                     context.File.OperationCode(OperationCode.NOT, logicNotExpression.Position);
                     break;
                 case LoopExpression loopExpression:
-                    var loopStartLabel = $"{context.Scope}L{context.NextLabelId}";
-                    var loopEndLabel = $"{context.Scope}L{context.NextLabelId}";
+                    var loopStartLabel = context.NextLabelId;
+                    var loopEndLabel = context.NextLabelId;
                     context.File.CreateLabel(loopStartLabel);
                     Assemble(context, loopExpression.Condition);
                     context.File.OperationCode(OperationCode.BVAL, loopExpression.Position);
@@ -250,24 +253,11 @@ namespace Core.VisualNovel.Script.Compiler {
                     Assemble(context, returnExpression.Value);
                     context.File.OperationCode(OperationCode.RET, returnExpression.Position);
                     break;
-                case ScopeExpression scopeExpression: // 协同处理ScenarioExpression
+                case ScopeExpression scopeExpression:
                     context.File.OperationCode(OperationCode.SCOPE, scopeExpression.Position);
                     ++context.Scope;
                     foreach (var (item, i) in scopeExpression.Content.WithIndex()) {
                         Assemble(context, item);
-                        if (item is FunctionExpression functionExpression) {
-                            var description = new FunctionDescription {
-                                Function = functionExpression,
-                                Label = $"{context.Scope}S{functionExpression.Name}",
-                                Scope = context.Scope
-                            };
-                            context.Functions.Add(description);
-                            if (i == scopeExpression.Content.Count - 1) {
-                                context.File.OperationCode(OperationCode.LDADDR, functionExpression.Position);
-                                context.File.DirectWrite(description.Label);
-                            }
-                            continue;
-                        }
                         if (i < scopeExpression.Content.Count - 1) {
                             context.File.Pop(item.Position);
                         }
@@ -287,35 +277,8 @@ namespace Core.VisualNovel.Script.Compiler {
                     context.File.OperationCode(OperationCode.BVAL, toBooleanExpression.Position);
                     break;
                 case VariableExpression variableExpression:
-                    var variableAssignMode = flags.Any(e => e == CompilerFlag.UseSetLocalVariable);
-                    if (variableExpression.Name is StringExpression nameExpression) {
-                        switch (nameExpression.Value.ToUpper()) {
-                            case "TRUE":
-                                if (variableAssignMode) {
-                                    throw new UnassignedReferenceException("Cannot assign value to constant variable TRUE/FALSE/NULL");
-                                }
-                                context.File.LoadBoolean(true, variableExpression.Position);
-                                return;
-                            case "FALSE":
-                                if (variableAssignMode) {
-                                    throw new UnassignedReferenceException("Cannot assign value to constant variable TRUE/FALSE/NULL");
-                                }
-                                context.File.LoadBoolean(false, variableExpression.Position);
-                                return;
-                            case "NULL":
-                                if (variableAssignMode) {
-                                    throw new UnassignedReferenceException("Cannot assign value to constant variable TRUE/FALSE/NULL");
-                                }
-                                context.File.LoadNull(variableExpression.Position);
-                                return;
-                            default:
-                                Assemble(context, nameExpression);
-                                break;
-                        }
-                    } else {
-                        Assemble(context, variableExpression.Name);
-                    }
-                    context.File.OperationCode(variableAssignMode ? OperationCode.STLOC : OperationCode.LDLOC, variableExpression.Position);
+                    Assemble(context, variableExpression.Name);
+                    context.File.OperationCode(flags.Any(e => e == CompilerFlag.UseSetLocalVariable) ? OperationCode.STLOC : OperationCode.LDLOC, variableExpression.Position);
                     break;
             }
         }

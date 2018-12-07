@@ -70,13 +70,10 @@
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginDescription.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginIdentifier.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginManager.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\AssembleFile.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Assembler.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\AssemblerContext.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CodeFile.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\ByteCodeWriter.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CodeIdentifier.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CodeIndent.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CodePosition.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CompileException.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CompileOption.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CompilerFlag.cs" />
@@ -84,6 +81,7 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\CallExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ConditionContentExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ConditionExpression.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ConstantExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\DialogueExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\EmptyExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\Expression.cs" />
@@ -98,21 +96,27 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ParameterExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ReturnExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ScopeExpression.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\StaticNameParameterExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\StringExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ToBooleanExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\VariableExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\FunctionDescription.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Keywords.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Lexer.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\OperationCode.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Parser.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\SourceCode.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\SourceIndent.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\SourcePosition.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\SourceTokens.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\BasicToken.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\FloatToken.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\IntegerToken.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\StringToken.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\TokenType.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\TokenSequence.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Hasher.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\ModuleCompiler.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\ScriptCompiler.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\PlaySoundMessageContent.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundChannel.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundManager.cs" />
@@ -124,6 +128,7 @@
     <Compile Include="Assets\Core\VisualNovelPlugins\SoundPlugin.cs" />
     <None Include="Assets\Resources\Logic\!Entrance_tr_default.txt" />
     <None Include="Assets\Resources\Logic\!Entrance.txt" />
+    <None Include="Assets\Resources\Logic\Init.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/bo/SCB_YUME_NO_MISAKI_SAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

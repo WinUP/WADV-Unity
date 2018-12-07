@@ -18,6 +18,6 @@ namespace Core.VisualNovel.Script.Compiler.Expressions {
         /// 创建一个快捷对话表达式
         /// </summary>
         /// <param name="position">该表达式在源代码中的对应位置</param>
-        public DialogueExpression(CodePosition position) : base(position) {}
+        public DialogueExpression(SourcePosition position) : base(position) {}
     }
 }

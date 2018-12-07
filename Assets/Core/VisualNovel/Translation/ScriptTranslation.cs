@@ -13,7 +13,7 @@ namespace Core.VisualNovel.Translation {
         /// 翻译不存在时的替代字符串
         /// </summary>
         public const string MissingTranslation = "<MISSING ㄟ( ▔, ▔ )ㄏ TRANSLATION>";
-        private readonly Dictionary<int, string> _translatableStrings = new Dictionary<int, string>();
+        private readonly Dictionary<uint, string> _translatableStrings = new Dictionary<uint, string>();
         
         /// <summary>
         /// 从可移动字符串新建可翻译字符串列表
@@ -26,7 +26,7 @@ namespace Core.VisualNovel.Translation {
                 if (line.Length == 0) {
                     continue;
                 }
-                var idList = line.Split(':').Select(e => e.Length == 8 ? Convert.ToInt32(e, 16) : throw new ArgumentException($"Translate file format error: {e} is not valid string id"));
+                var idList = line.Split(':').Select(e => e.Length == 8 ? Convert.ToUInt32(e, 16) : throw new ArgumentException($"Translate file format error: {e} is not valid string id"));
                 ++i;
                 line = fileContent[i];
                 foreach (var id in idList) {
@@ -39,7 +39,7 @@ namespace Core.VisualNovel.Translation {
         /// 从集合新建可翻译字符串列表
         /// </summary>
         /// <param name="content">来源集合</param>
-        public ScriptTranslation(IReadOnlyDictionary<int, string> content) {
+        public ScriptTranslation(IReadOnlyDictionary<uint, string> content) {
             foreach (var pair in content) {
                 _translatableStrings.Add(pair.Key, pair.Value);
             }
@@ -51,7 +51,7 @@ namespace Core.VisualNovel.Translation {
         /// </summary>
         /// <param name="id">翻译字符串ID</param>
         /// <returns></returns>
-        public string GetTranslation(int id) {
+        public string GetTranslation(uint id) {
             return _translatableStrings.ContainsKey(id) ? _translatableStrings[id] : MissingTranslation;
         }
 
@@ -66,9 +66,9 @@ namespace Core.VisualNovel.Translation {
         /// </summary>
         /// <param name="source">目标翻译</param>
         /// <param name="removeUnavailableTranslations">是否删除所有不在目标但是存在于此翻译中的条目</param>
-        public void MergeWith(IReadOnlyDictionary<int, string> source, bool removeUnavailableTranslations = false) {
-            var proceedIds = new List<int>();
-            foreach (var newTranslation in source) {
+        public void MergeWith(ScriptTranslation source, bool removeUnavailableTranslations = false) {
+            var proceedIds = new List<uint>();
+            foreach (var newTranslation in source._translatableStrings) {
                 // 情况1
                 if (_translatableStrings.ContainsKey(newTranslation.Key)) {
                     proceedIds.Add(newTranslation.Key);

@@ -13,7 +13,7 @@ namespace Core.VisualNovel.Script.Compiler.Expressions {
         /// <summary>
         /// 函数参数及默认值
         /// </summary>
-        public List<ParameterExpression> Parameters { get; } = new List<ParameterExpression>();
+        public List<StaticNameParameterExpression> Parameters { get; } = new List<StaticNameParameterExpression>();
         /// <summary>
         /// 函数内容
         /// </summary>
@@ -24,6 +24,6 @@ namespace Core.VisualNovel.Script.Compiler.Expressions {
         /// 创建一个函数表达式
         /// </summary>
         /// <param name="position">该表达式在源代码中的对应位置</param>
-        public FunctionExpression(CodePosition position) : base(position) {}
+        public FunctionExpression(SourcePosition position) : base(position) {}
     }
 }

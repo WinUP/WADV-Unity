@@ -52,6 +52,12 @@ namespace Core.Extensions {
                             case ';':
                                 result.Append(';');
                                 break;
+                            case '"':
+                                result.Append('"');
+                                break;
+                            case '\'':
+                                result.Append('\'');
+                                break;
                             case '0':
                                 result.Append('0');
                                 break;

@@ -20,6 +20,6 @@ namespace Core.VisualNovel.Script.Compiler.Expressions {
         /// 创建一个调用表达式
         /// </summary>
         /// <param name="position">该表达式在源代码中的对应位置</param>
-        public CallExpression(CodePosition position) : base(position) {}
+        public CallExpression(SourcePosition position) : base(position) {}
     }
 }

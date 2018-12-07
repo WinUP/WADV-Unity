@@ -11,30 +11,22 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <summary>
         /// Token序列内容
         /// </summary>
-        private TokenSequence Tokens { get; }
+        private SourceTokens Tokens { get; }
         /// <summary>
         /// Token序列标识符
         /// </summary>
         public CodeIdentifier Identifier { get; }
 
         public Parser(IEnumerable<BasicToken> tokens, CodeIdentifier identifier) {
-            Tokens = new TokenSequence(tokens);
+            Tokens = new SourceTokens(tokens);
             Identifier = identifier;
-        }
-
-        /// <summary>
-        /// 运行语法解析器并创建汇编生成器
-        /// </summary>
-        /// <returns></returns>
-        public Assembler CreateAssembler() {
-            return new Assembler(Parse(), Identifier);
         }
 
         /// <summary>
         /// 构建抽象语法树
         /// </summary>
         public ScopeExpression Parse() {
-            var result = new ScopeExpression(new CodePosition());
+            var result = new ScopeExpression(new SourcePosition());
             while (Tokens.HasNext) {
                 switch (Tokens.Current.Type) {
                     case TokenType.DialogueContent:
@@ -58,6 +50,9 @@ namespace Core.VisualNovel.Script.Compiler {
                         break;
                     case TokenType.Variable:
                         result.Content.Add(ParseBinaryOperator(ParseVariable()));
+                        break;
+                    case TokenType.Constant:
+                        result.Content.Add(ParseBinaryOperator(ParseConstant()));
                         break;
                     case TokenType.LeftBracket:
                         result.Content.Add(ParseBinaryOperator(ParseBracket()));
@@ -127,12 +122,12 @@ namespace Core.VisualNovel.Script.Compiler {
         private Expression ParseFunctionCall() {
             Tokens.MoveToNext();
             var function = new FunctionCallExpression(Tokens.Current.Position) {
-                Target = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket))
+                Target = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket))
             };
             while (Tokens.Current.Type != TokenType.LineBreak && Tokens.Current.Type != TokenType.RightBracket) {
                 var parameter = new ParameterExpression(Tokens.Current.Position) {
                     Name = ParseBinaryOperator(
-                        GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket),
+                        GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket),
                         0,
                         TokenType.Equal)
                 };
@@ -141,7 +136,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 }
                 Tokens.MoveToNext();
                 parameter.Value = ParseBinaryOperator(GeneralParser(
-                    TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot));
+                    TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket, TokenType.LogicNot));
                 function.Parameters.Add(parameter);
             }
             return function;
@@ -227,8 +222,19 @@ namespace Core.VisualNovel.Script.Compiler {
         private Expression ParseVariable() {
             var position = Tokens.Current.Position;
             Tokens.MoveToNext();
-            var content = GeneralParser(TokenType.String, TokenType.PluginCallStart, TokenType.Variable, TokenType.Number, TokenType.LeftBracket);
+            var content = GeneralParser(TokenType.String, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.Number, TokenType.LeftBracket);
             return new VariableExpression(position) {Name = content};
+        }
+        
+        /// <summary>
+        /// 处理变量
+        /// </summary>
+        /// <returns></returns>
+        private Expression ParseConstant() {
+            var position = Tokens.Current.Position;
+            Tokens.MoveToNext();
+            var content = GeneralParser(TokenType.String, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.Number, TokenType.LeftBracket);
+            return new ConstantExpression(position) {Name = content};
         }
 
         /// <summary>
@@ -238,7 +244,7 @@ namespace Core.VisualNovel.Script.Compiler {
         private Expression ParsePluginCall() {
             Tokens.MoveToNext();
             var command = new CallExpression(Tokens.Current.Position) {
-                Target = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket))
+                Target = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket))
             };
             while (Tokens.Current.Type != TokenType.PluginCallEnd) {
                 if (Tokens.Current.Type == TokenType.LineBreak) {
@@ -247,7 +253,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 }
                 var parameter = new ParameterExpression(Tokens.Current.Position) {
                     Name = ParseBinaryOperator(
-                        GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket),
+                        GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket),
                         0,
                         TokenType.Equal)
                 };
@@ -258,7 +264,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 }
                 Tokens.MoveToNext();
                 parameter.Value = ParseBinaryOperator(GeneralParser(
-                    TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot));
+                    TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket, TokenType.LogicNot));
                 command.Parameters.Add(parameter);
             }
             Tokens.MoveToNext();
@@ -272,7 +278,7 @@ namespace Core.VisualNovel.Script.Compiler {
         private Expression ParseLogicNot() {
             var position = Tokens.Current.Position;
             Tokens.MoveToNext();
-            var content = GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot);
+            var content = GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket, TokenType.LogicNot);
             // 双重取否改布尔转换
             Expression result = new LogicNotExpression(position) {Content = content};
             if (!(content is LogicNotExpression contentLevel1)) return result;
@@ -356,7 +362,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 if (Tokens.Current.Type == TokenType.LineBreak) {
                     throw new CompileException(Identifier, Tokens.Current.Position, "Unexpected LineBreak");
                 }
-                var right = GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot);
+                var right = GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket, TokenType.LogicNot);
                 if (extraSeparator.HasValue && extraSeparator == Tokens.Current.Type) { // 下一个是自定义终结符，视为不是二元运算符
                     result.Right = right;
                     return result;
@@ -393,7 +399,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 } else {
                     Tokens.MoveToNext();
                     condition.Condition = ParseBinaryOperator(GeneralParser(
-                        TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot));
+                        TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket, TokenType.LogicNot));
                 }
                 if (Tokens.Current.Type != TokenType.LineBreak) {
                     throw new CompileException(Identifier, Tokens.Current.Position, "Expected LineBreak");
@@ -415,7 +421,7 @@ namespace Core.VisualNovel.Script.Compiler {
         private Expression ParseLoop() {
             var position = Tokens.Current.Position;
             Tokens.MoveToNext();
-            var content = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot));
+            var content = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket, TokenType.LogicNot));
             if (Tokens.Current.Type != TokenType.LineBreak) {
                 throw new CompileException(Identifier, Tokens.Current.Position, "Expected LineBreak");
             }
@@ -439,7 +445,7 @@ namespace Core.VisualNovel.Script.Compiler {
             result.Name = nameToken.Content;
             Tokens.MoveToNext();
             while (Tokens.Current.Type != TokenType.LineBreak) {
-                var parameter = new ParameterExpression(Tokens.Current.Position);
+                var parameter = new StaticNameParameterExpression(Tokens.Current.Position);
                 if (Tokens.Current.Type != TokenType.Variable) {
                     throw new CompileException(Identifier, Tokens.Current.Position, "Expected scenario parameter name starts with variable mark");
                 }
@@ -451,7 +457,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 Tokens.MoveToNext();
                 if (Tokens.Current.Type == TokenType.Equal) {
                     Tokens.MoveToNext();
-                    parameter.Value = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket));
+                    parameter.Value = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket));
                 } else {
                     parameter.Value = new EmptyExpression(parameter.Name.Position);
                 }
@@ -476,7 +482,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 return new ReturnExpression(position) {Value = new EmptyExpression(position)};
             }
             var value = ParseBinaryOperator(GeneralParser(
-                TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket, TokenType.LogicNot));
+                TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket, TokenType.LogicNot));
             if (Tokens.Current.Type != TokenType.LineBreak) {
                 throw new CompileException(Identifier, Tokens.Current.Position, "Expected LineBreak");
             }
@@ -495,7 +501,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 // 空括号等于返回@null
                 return new EmptyExpression(position);
             }
-            var content = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.LeftBracket,
+            var content = ParseBinaryOperator(GeneralParser(TokenType.String, TokenType.Number, TokenType.PluginCallStart, TokenType.Variable, TokenType.Constant, TokenType.LeftBracket,
                 TokenType.LogicNot, TokenType.Function, TokenType.If, TokenType.Loop, TokenType.Language, TokenType.FunctionCall));
             while (Tokens.Current.Type == TokenType.LineBreak) {
                 Tokens.MoveToNext();
@@ -592,6 +598,11 @@ namespace Core.VisualNovel.Script.Compiler {
                 case TokenType.Variable:
                     if (acceptableTokenTypes.Contains(TokenType.Variable)) {
                         result = ParseVariable();
+                    }
+                    break;
+                case TokenType.Constant:
+                    if (acceptableTokenTypes.Contains(TokenType.Constant)) {
+                        result = ParseConstant();
                     }
                     break;
                 case TokenType.LeftBracket:

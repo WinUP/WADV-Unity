@@ -3,10 +3,10 @@ using System.Linq;
 
 namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
-    /// 表示脚本内容
-    /// <para>脚本内容提供大多数与字符串类相似的操作，不过均以当前偏移值为0索引处理</para>
+    /// 表示源代码内容
+    /// <para>源代码内容提供大多数与字符串类相似的操作，不过均以当前偏移值为0索引处理</para>
     /// </summary>
-    public class CodeFile {
+    public class SourceCode {
         /// <summary>
         /// 脚本内容字符串
         /// </summary>
@@ -54,7 +54,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 声明脚本内容
         /// </summary>
         /// <param name="content">脚本原始内容</param>
-        public CodeFile(string content) {
+        public SourceCode(string content) {
             if (content.Contains('\t')) {
                 throw new ArgumentException("Unable to create code content: WADV VNS string/file cannot includes \\t");
             }

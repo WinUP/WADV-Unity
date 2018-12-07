@@ -6,7 +6,7 @@ namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
     /// 表示一个标记序列
     /// </summary>
-    public class TokenSequence {
+    public class SourceTokens {
         public List<BasicToken> Content { get; }
         
         /// <summary>
@@ -44,9 +44,9 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 创建一个标记序列
         /// </summary>
         /// <param name="tokens">标记列表</param>
-        public TokenSequence(IEnumerable<BasicToken> tokens) {
+        public SourceTokens(IEnumerable<BasicToken> tokens) {
             Content = tokens.ToList();
-            Content.Add(new BasicToken(TokenType.LineBreak, new CodePosition()));
+            Content.Add(new BasicToken(TokenType.LineBreak, new SourcePosition()));
             Length = Content.Count;
             MoveToNext();
         }

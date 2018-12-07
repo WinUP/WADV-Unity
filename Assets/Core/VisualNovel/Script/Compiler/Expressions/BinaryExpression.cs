@@ -22,6 +22,6 @@ namespace Core.VisualNovel.Script.Compiler.Expressions {
         /// 创建一个二元运算符表达式
         /// </summary>
         /// <param name="position">该表达式在源代码中的对应位置</param>
-        public BinaryExpression(CodePosition position) : base(position) {}
+        public BinaryExpression(SourcePosition position) : base(position) {}
     }
 }

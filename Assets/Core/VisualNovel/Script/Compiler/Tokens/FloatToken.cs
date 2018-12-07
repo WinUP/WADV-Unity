@@ -16,7 +16,7 @@ namespace Core.VisualNovel.Script.Compiler.Tokens {
         /// <param name="type">标记类型</param>
         /// <param name="position">该标记在源代码中的对应位置</param>
         /// <param name="content">浮点数值</param>
-        public FloatToken(TokenType type, CodePosition position, float content) : base(type, position) {
+        public FloatToken(TokenType type, SourcePosition position, float content) : base(type, position) {
             Content = content;
         }
     }

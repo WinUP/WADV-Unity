@@ -8,7 +8,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <summary>
         /// 汇编文件
         /// </summary>
-        public AssembleFile File { get; set; } = new AssembleFile();
+        public ByteCodeWriter File { get; set; } = new ByteCodeWriter();
         /// <summary>
         /// 作用域层次
         /// </summary>

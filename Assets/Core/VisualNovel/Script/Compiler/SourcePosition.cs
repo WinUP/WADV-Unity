@@ -2,7 +2,7 @@ namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
     /// 表示一个源代码坐标
     /// </summary>
-    public struct CodePosition {
+    public struct SourcePosition {
         /// <summary>
         /// 行号（从0开始）
         /// </summary>
@@ -12,12 +12,14 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         public int Column { get; private set; }
 
+        public static readonly SourcePosition UnavailablePosition = new SourcePosition {Line = -1, Column = -1};
+
         /// <summary>
         /// 移动到下一行
         /// </summary>
         /// <returns></returns>
-        public CodePosition NextLine() {
-            return new CodePosition {
+        public SourcePosition NextLine() {
+            return new SourcePosition {
                 Line = Line + 1,
                 Column = 0
             };
@@ -27,8 +29,8 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 移动到下一列
         /// </summary>
         /// <returns></returns>
-        public CodePosition NextColumn() {
-            return new CodePosition {
+        public SourcePosition NextColumn() {
+            return new SourcePosition {
                 Line = Line,
                 Column = Column + 1
             };
@@ -39,8 +41,8 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="offset">要移动的距离</param>
         /// <returns></returns>
-        public CodePosition MoveColumn(int offset) {
-            return new CodePosition {
+        public SourcePosition MoveColumn(int offset) {
+            return new SourcePosition {
                 Line = Line,
                 Column = Column + offset
             };
@@ -51,8 +53,8 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="offset">要移动的距离</param>
         /// <returns></returns>
-        public CodePosition MoveLine(int offset) {
-            return new CodePosition {
+        public SourcePosition MoveLine(int offset) {
+            return new SourcePosition {
                 Line = Line + offset,
                 Column = Column
             };

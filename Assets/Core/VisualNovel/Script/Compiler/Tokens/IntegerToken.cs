@@ -16,7 +16,7 @@ namespace Core.VisualNovel.Script.Compiler.Tokens {
         /// <param name="type">标记类型</param>
         /// <param name="position">该标记在源代码中的对应位置</param>
         /// <param name="content">整数值</param>
-        public IntegerToken(TokenType type, CodePosition position, int content) : base(type, position) {
+        public IntegerToken(TokenType type, SourcePosition position, int content) : base(type, position) {
             Content = content;
         }
     }

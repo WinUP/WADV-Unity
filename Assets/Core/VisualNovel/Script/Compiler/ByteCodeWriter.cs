@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using Core.VisualNovel.Translation;
 
 namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
-    /// 表示一个汇编文件
+    /// 表示一个字节码文件
     /// </summary>
-    public class AssembleFile {
+    public class ByteCodeWriter {
         private readonly BinaryWriter _writer = new BinaryWriter(new MemoryStream(), Encoding.UTF8);
-        private readonly List<CodePosition> _positions = new List<CodePosition>();
-        private readonly Dictionary<string, long> _labels = new Dictionary<string, long>();
-        private readonly Dictionary<int, string> _translations = new Dictionary<int, string>();
+        private readonly List<SourcePosition> _positions = new List<SourcePosition>();
+        private readonly Dictionary<int, long> _labels = new Dictionary<int, long>();
+        private readonly Dictionary<uint, string> _translations = new Dictionary<uint, string>();
         private readonly List<string> _strings = new List<string>();
-        private uint _stringCount;
 
         /// <summary>
         /// 文件写入指针当前偏移量
@@ -25,7 +26,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="code">指令类型</param>
         /// <param name="position">指令在源文件中的位置</param>
-        public void OperationCode(OperationCode code, CodePosition position) {
+        public void OperationCode(OperationCode code, SourcePosition position) {
             _writer.Write((byte) code);
             _positions.Add(position);
         }
@@ -82,7 +83,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="content">字符串内容</param>
         /// <param name="position">指令在源文件中的位置</param>
-        public void LoadString(string content, CodePosition position) {
+        public void LoadString(string content, SourcePosition position) {
             var currentIndex = _strings.IndexOf(content);
             if (currentIndex < 0) {
                 _strings.Add(content);
@@ -97,11 +98,11 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="content">字符串内容</param>
         /// <param name="position">指令在源文件中的位置</param>
-        public void LoadTranslatableString(string content, CodePosition position) {
+        public void LoadTranslatableString(string content, SourcePosition position) {
             if (_translations.Count >= 0xFFFF) {
                 throw new OutOfMemoryException("Only 65535 translatable strings are allowed in one VNS file");
             }
-            var key = (_translations.Count << 16) + Hasher.Crc16(Encoding.UTF8.GetBytes(content));
+            var key = ((uint) _translations.Count << 16) + Hasher.Crc16(Encoding.UTF8.GetBytes(content));
             _translations.Add(key, content);
             OperationCode(Compiler.OperationCode.LDSTT, position);
             DirectWrite(key);
@@ -112,7 +113,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="value">目标数字</param>
         /// <param name="position">指令在源文件中的位置</param>
-        public void LoadInteger(int value, CodePosition position) {
+        public void LoadInteger(int value, SourcePosition position) {
             switch (value) {
                 case 0:
                     OperationCode(Compiler.OperationCode.LDC_I4_0, position);
@@ -153,7 +154,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="value">目标数字</param>
         /// <param name="position">指令在源文件中的位置</param>
-        public void LoadFloat(float value, CodePosition position) {
+        public void LoadFloat(float value, SourcePosition position) {
             switch (value) {
                 case 0.0F:
                     OperationCode(Compiler.OperationCode.LDC_R4_0, position);
@@ -238,7 +239,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 编写入栈空值指令
         /// </summary>
         /// <param name="position">指令在源文件中的位置</param>
-        public void LoadNull(CodePosition position) {
+        public void LoadNull(SourcePosition position) {
             OperationCode(Compiler.OperationCode.LDNUL, position);
         }
 
@@ -247,7 +248,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="value">目标布尔值</param>
         /// <param name="position">指令在源文件中的位置</param>
-        public void LoadBoolean(bool value, CodePosition position) {
+        public void LoadBoolean(bool value, SourcePosition position) {
             OperationCode(value ? Compiler.OperationCode.LDT : Compiler.OperationCode.LDF, position);
         }
 
@@ -257,7 +258,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <param name="speaker">角色</param>
         /// <param name="content">对话内容</param>
         /// <param name="position">指令在源文件中的位置</param>
-        public void LoadDialogue(string speaker, string content, CodePosition position) {
+        public void LoadDialogue(string speaker, string content, SourcePosition position) {
             LoadTranslatableString(content, position);
             if (speaker == null) {
                 LoadNull(position);
@@ -272,7 +273,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         /// <param name="language">目标语言</param>
         /// <param name="position">指令在源文件中的位置</param>
-        public void Language(string language, CodePosition position) {
+        public void Language(string language, SourcePosition position) {
             OperationCode(Compiler.OperationCode.LANG, position);
             DirectWrite(language);
         }
@@ -281,7 +282,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 编写出栈指令
         /// </summary>
         /// <param name="position">指令在源文件中的位置</param>
-        public void Pop(CodePosition position) {
+        public void Pop(SourcePosition position) {
             OperationCode(Compiler.OperationCode.POP, position);
         }
 
@@ -289,7 +290,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 编写调用栈顶插件指令
         /// </summary>
         /// <param name="position">指令在源文件中的位置</param>
-        public void Call(CodePosition position) {
+        public void Call(SourcePosition position) {
             OperationCode(Compiler.OperationCode.CALL, position);
         }
         
@@ -297,28 +298,62 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 编写调用栈顶函数指令
         /// </summary>
         /// <param name="position">指令在源文件中的位置</param>
-        public void Func(CodePosition position) {
+        public void Func(SourcePosition position) {
             OperationCode(Compiler.OperationCode.FUNC, position);
         }
         
         /// <summary>
         /// 在下一条指令起始处创建跳转标签
+        /// <param name="id">标签ID</param>
         /// </summary>
-        /// <param name="name">标签名</param>
-        public void CreateLabel(string name) {
-            if (_labels.ContainsKey(name)) {
-                throw new ArgumentException($"Label {name} is already existed");
-            }
-            _labels.Add(name, _writer.BaseStream.Position);
+        public void CreateLabel(int id) {
+            _labels.Add(id, _writer.BaseStream.Position);
+        }
+
+        /// <summary>
+        /// 关闭文件
+        /// </summary>
+        public void Close() {
+            _writer.Close();
+        }
+
+        /// <summary>
+        /// 生成程序段
+        /// </summary>
+        /// <returns></returns>
+        public byte[] CreateCodeSegment() {
+            return (_writer.BaseStream as MemoryStream)?.ToArray();
         }
 
         /// <summary>
         /// 返回汇编文件的各个数据段和程序段
         /// </summary>
         /// <returns></returns>
-        public (byte[] Code, IReadOnlyDictionary<string, long> Labels, IReadOnlyDictionary<int, string> Translations, IReadOnlyCollection<string> Strings,
-            IReadOnlyCollection<CodePosition> Positions) CreateSegment() {
-            return ((_writer.BaseStream as MemoryStream)?.ToArray(), _labels, _translations, _strings, _positions);
+        public (byte[] Code, byte[] Labels, byte[] Strings, byte[] Positions, ScriptTranslation Translations) CreateSegments() {
+            var segmentWriter = new BinaryWriter(new MemoryStream());
+            segmentWriter.Write(_labels.Count);
+            foreach (var label in _labels) {
+                segmentWriter.Write(label.Key);
+                segmentWriter.Write(label.Value);
+            }
+            var labelSegment = (segmentWriter.BaseStream as MemoryStream)?.ToArray();
+            segmentWriter.Close();
+            segmentWriter = new BinaryWriter(new MemoryStream());
+            segmentWriter.Write(_strings.Count);
+            foreach (var stringConstant in _strings) {
+                segmentWriter.Write(stringConstant);
+            }
+            var stringSegment = (segmentWriter.BaseStream as MemoryStream)?.ToArray();
+            segmentWriter.Close();
+            segmentWriter = new BinaryWriter(new MemoryStream());
+            segmentWriter.Write(_positions.Count);
+            foreach (var position in _positions) {
+                segmentWriter.Write(position.Line);
+                segmentWriter.Write(position.Column);
+            }
+            var positionSegment = (segmentWriter.BaseStream as MemoryStream)?.ToArray();
+            segmentWriter.Close();
+            return (CreateCodeSegment(), labelSegment, stringSegment, positionSegment, new ScriptTranslation(_translations));
         }
     }
 }

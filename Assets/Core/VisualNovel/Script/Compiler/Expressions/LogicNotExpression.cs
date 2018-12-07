@@ -14,6 +14,6 @@ namespace Core.VisualNovel.Script.Compiler.Expressions {
         /// 创建一个逻辑取反表达式
         /// </summary>
         /// <param name="position">该表达式在源代码中的对应位置</param>
-        public LogicNotExpression(CodePosition position) : base(position) {}
+        public LogicNotExpression(SourcePosition position) : base(position) {}
     }
 }

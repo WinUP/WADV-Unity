@@ -44,6 +44,10 @@
         /// </summary>
         Variable,
         /// <summary>
+        /// 常量引用
+        /// </summary>
+        Constant,
+        /// <summary>
         /// 左小括号
         /// </summary>
         LeftBracket,
@@ -146,6 +150,14 @@
         /// <summary>
         /// 函数调用
         /// </summary>
-        FunctionCall
+        FunctionCall,
+        /// <summary>
+        /// 导入脚本
+        /// </summary>
+        Import,
+        /// <summary>
+        /// 导出脚本
+        /// </summary>
+        Export
     }
 }

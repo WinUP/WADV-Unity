@@ -6,7 +6,7 @@ namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
     /// 表示脚本缩进
     /// </summary>
-    public class CodeIndent {
+    public class SourceIndent {
         /// <summary>
         /// 当前缩进总长度
         /// </summary>

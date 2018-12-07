@@ -1,59 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Core.Extensions;
-using Core.VisualNovel.Attributes;
 using Core.VisualNovel.Script.Compiler.Tokens;
-using Core.VisualNovel.Translation;
-using UnityEngine;
 
 namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
-    /// WADV VNS词法分析器
+    /// WADV VNS 词法分析器
     /// </summary>
     public class Lexer {
         /// <summary>
-        /// 编译语言选项
-        /// <para>该指令在所有语言中表示一致，且不能对特定语言添加字面表示</para>
-        /// </summary>
-        public const string SyntaxLanguage = "lang";
-        /// <summary>
-        /// 选择指令
-        /// </summary>
-        public const string SyntaxIf = "if";
-        /// <summary>
-        /// 分支指令
-        /// </summary>
-        public const string SyntaxElseIf = "elseif";
-        /// <summary>
-        /// 否则指令
-        /// </summary>
-        public const string SyntaxElse = "else";
-        /// <summary>
-        /// 循环指令
-        /// </summary>
-        public const string SyntaxWhileLoop = "while";
-        /// <summary>
-        /// 函数指令
-        /// </summary>
-        public const string SyntaxFunction = "scene";
-        /// <summary>
-        /// 函数调用指令
-        /// </summary>
-        public const string SyntaxCall = "call";
-        /// <summary>
-        /// 返回指令
-        /// </summary>
-        public const string SyntaxReturn = "return";
-        /// <summary>
-        /// 所有操作符
-        /// </summary>
-        public static readonly string[] Separators = {"->", "+=", "-=", "*=", "/=", ">", "<", ">=", "<=", "[", "]", "!", "+", "-", "*", "/", "@", ";", "=", "==", "(", ")", " ", "\"", "\n"};
-        /// <summary>
         /// 脚本内容
         /// </summary>
-        private CodeFile File { get; }
+        private SourceCode File { get; }
         /// <summary>
         /// 脚本标识符
         /// </summary>
@@ -66,25 +25,17 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <param name="identifier">脚本标识符</param>
         public Lexer(string content, CodeIdentifier identifier) {
             Identifier = identifier;
-            File = new CodeFile(content);
-        }
-
-        /// <summary>
-        /// 运行词法解析器并创建语法解析器
-        /// </summary>
-        /// <returns></returns>
-        public Parser CreateParser() {
-            return new Parser(Lex(), Identifier);
+            File = new SourceCode(content);
         }
 
         /// <summary>
         /// 执行词法分析
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<BasicToken> Lex() {
-            var position = new CodePosition();
+        public IReadOnlyCollection<BasicToken> Lex() {
+            var position = new SourcePosition();
             var tokens = new List<BasicToken>();
-            var indent = new CodeIndent();
+            var indent = new SourceIndent();
             var language = "default";
             while (File.HasNext) {
                 if (File.Current == '/' && File.Next == '/') { // 跳过所有注释
@@ -135,7 +86,19 @@ namespace Core.VisualNovel.Script.Compiler {
                     break;
                 }
                 
-                if (File.Current == '"') { // 字符串常量
+                if (File.Current == '\'') { // 不可翻译字符串常量
+                    File.MoveToNext();
+                    var stringEnd = File.IndexOfWithEscapeRecognize('\'');
+                    var result = File.CopyContent(stringEnd);
+                    tokens.Add(new StringToken(TokenType.String, position, result.ExecuteEscapeCharacters(), false));
+                    position = result.Contains('\n')
+                        ? position.NextLine().MoveLine(result.Count(e => e == '\n') - 1).MoveColumn(result.Length - result.LastIndexOf('\n') - 1)
+                        : position.MoveColumn(stringEnd + 2);
+                    File.Move(stringEnd + 1);
+                    continue;
+                }
+                
+                if (File.Current == '"') { // 可翻译字符串常量
                     File.MoveToNext();
                     var stringEnd = File.IndexOfWithEscapeRecognize('"');
                     var result = File.CopyContent(stringEnd);
@@ -159,11 +122,11 @@ namespace Core.VisualNovel.Script.Compiler {
                 if (File.Current == ';' && File.Previous != '\\') { // 指令
                     File.MoveToNext();
                     position = position.NextColumn();
-                    if (File.StartsWith(SyntaxLanguage)) {
+                    if (File.StartsWith(Keywords.SyntaxLanguage)) {
                         tokens.Add(new BasicToken(TokenType.Language, position));
                         File.Move(5);
                         position = position.MoveColumn(5);
-                        var index = File.IndexOf(Separators);
+                        var index = File.IndexOf(Keywords.Separators);
                         if (index <= 0) {
                             throw new CompileException(Identifier, position, "Need language name for language command");
                         }
@@ -174,20 +137,24 @@ namespace Core.VisualNovel.Script.Compiler {
                         position = position.MoveColumn(index);
                     } else {
                         var index = File.IndexOf(' ', '\n');
-                        if (File.StartsWith(SyntaxFunction)) {
+                        if (File.StartsWith(Keywords.SyntaxFunction)) {
                             tokens.Add(new BasicToken(TokenType.Function, position));
-                        } else if (File.StartsWith(SyntaxIf)) {
+                        } else if (File.StartsWith(Keywords.SyntaxIf)) {
                             tokens.Add(new BasicToken(TokenType.If, position));
-                        } else if (File.StartsWith(SyntaxElseIf)) {
+                        } else if (File.StartsWith(Keywords.SyntaxElseIf)) {
                             tokens.Add(new BasicToken(TokenType.ElseIf, position));
-                        } else if (File.StartsWith(SyntaxElse)) {
+                        } else if (File.StartsWith(Keywords.SyntaxElse)) {
                             tokens.Add(new BasicToken(TokenType.Else, position));
-                        } else if (File.StartsWith(SyntaxWhileLoop + ' ')) {
+                        } else if (File.StartsWith(Keywords.SyntaxWhileLoop + ' ')) {
                             tokens.Add(new BasicToken(TokenType.Loop, position));
-                        } else if (File.StartsWith(SyntaxReturn)) {
+                        } else if (File.StartsWith(Keywords.SyntaxReturn)) {
                             tokens.Add(new BasicToken(TokenType.Return, position));
-                        } else if (File.StartsWith(SyntaxCall)) {
+                        } else if (File.StartsWith(Keywords.SyntaxCall)) {
                             tokens.Add(new BasicToken(TokenType.FunctionCall, position));
+                        } else if (File.StartsWith(Keywords.SyntaxImport)) {
+                            tokens.Add(new BasicToken(TokenType.Import, position));
+                        } else if (File.StartsWith(Keywords.SyntaxExport)) {
+                            tokens.Add(new BasicToken(TokenType.Export, position));
                         } else {
                             throw new CompileException(Identifier, position, $"Unknown command {File.CopyContent(index)} in language {language}, may cause by command format error or typo mistake");
                         }
@@ -197,9 +164,10 @@ namespace Core.VisualNovel.Script.Compiler {
                     continue;
                 }
 
-                if (File.StartsWith(Separators)) { // 操作符和分隔符
+                if (File.StartsWith(Keywords.Separators)) { // 操作符和分隔符
                     AddSeparator(tokens, position);
                     if (File.Current == '-' && (File.Next == '>' || File.Next == '=') ||
+                        File.Current == '@' && File.Next == '#' ||
                         File.Current == '+' && File.Next == '=' ||
                         File.Current == '*' && File.Next == '=' ||
                         File.Current == '>' && File.Next == '=' ||
@@ -211,7 +179,7 @@ namespace Core.VisualNovel.Script.Compiler {
                     }
                     File.MoveToNext();
                     position = position.NextColumn();
-                    var nextSeparator = File.IndexOfWithEscapeRecognize(Separators); // 有可能是换行，如果有问题待到语法分析时再报错，这里因为没有足够的状态记录，无法检测是否合法
+                    var nextSeparator = File.IndexOfWithEscapeRecognize(Keywords.Separators); // 有可能是换行，如果有问题待到语法分析时再报错，这里因为没有足够的状态记录，无法检测是否合法
                     if (nextSeparator < 0) {
                         break;
                     }
@@ -269,7 +237,7 @@ namespace Core.VisualNovel.Script.Compiler {
             return tokens;
         }
 
-        private void CreateNumberToken(ICollection<BasicToken> tokens, CodePosition position, string number) {
+        private void CreateNumberToken(ICollection<BasicToken> tokens, SourcePosition position, string number) {
             number = number.ExecuteEscapeCharacters().ToUpper();
             if (number.StartsWith("0X")) { // 二进制整数转十进制
                 number = number.Substring(2);
@@ -297,7 +265,7 @@ namespace Core.VisualNovel.Script.Compiler {
             }
         }
 
-        private void AddSeparator(ICollection<BasicToken> tokens, CodePosition position) {
+        private void AddSeparator(ICollection<BasicToken> tokens, SourcePosition position) {
             switch (File.Current) {
                 case '-':
                     switch (File.Next) {
@@ -372,7 +340,14 @@ namespace Core.VisualNovel.Script.Compiler {
                     tokens.Add(new BasicToken(TokenType.LogicNot, position));
                     break;
                 case '@':
-                    tokens.Add(new BasicToken(TokenType.Variable, position));
+                    switch (File.Next) {
+                        case '#':
+                            tokens.Add(new BasicToken(TokenType.Constant, position));
+                            break;
+                        default:
+                            tokens.Add(new BasicToken(TokenType.Variable, position));
+                            break;
+                    }
                     break;
                 case '=':
                     switch (File.Next) {

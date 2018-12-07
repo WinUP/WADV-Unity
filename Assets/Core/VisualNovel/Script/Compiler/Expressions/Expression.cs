@@ -7,13 +7,13 @@ namespace Core.VisualNovel.Script.Compiler.Expressions {
         /// <summary>
         /// 该表达式在源代码中的对应位置
         /// </summary>
-        public CodePosition Position { get; }
+        public SourcePosition Position { get; }
 
         /// <summary>
         /// 创建一个表达式
         /// </summary>
         /// <param name="position">该表达式在源代码中的对应位置</param>
-        protected Expression(CodePosition position) {
+        protected Expression(SourcePosition position) {
             Position = position;
         }
     }

@@ -10,14 +10,14 @@
         /// <summary>
         /// 该标记在源代码中的对应位置
         /// </summary>
-        public CodePosition Position { get; }
+        public SourcePosition Position { get; }
 
         /// <summary>
         /// 创建一个基础标记
         /// </summary>
         /// <param name="type">标记类型</param>
         /// <param name="position">该标记在源代码中的对应位置</param>
-        public BasicToken(TokenType type, CodePosition position) {
+        public BasicToken(TokenType type, SourcePosition position) {
             Type = type;
             Position = position;
         }
