@@ -24,8 +24,6 @@ namespace Core.VisualNovel.Editor {
                 EditorGUILayout.LabelField("RunCommand", "<VisualCommand>");
                 EditorGUILayout.LabelField("NextCommand", "<NULL>");
             }
-
-            ModuleCompiler.CompileFile("Logic/!Entrance", new CompileOption());
         }
     }
 }

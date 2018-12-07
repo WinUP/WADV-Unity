@@ -21,8 +21,8 @@ namespace Core.VisualNovel.Script {
             var existedHash = ReadBinaryHash($"{path}_bin");
             if (!existedHash.HasValue || existedHash.Value != identifier.Hash) {
                 var file = new Assembler(new Parser(new Lexer(source, identifier).Lex(), identifier).Parse(), identifier).Assemble();
-                File.WriteAllBytes($"Assets/Resources/{path}_bin.bytes", file.Content);
-                File.WriteAllText($"Assets/Resources/{path}_tr_default.txt", file.Translations, Encoding.UTF8);
+                File.WriteAllBytes($"Assets/Resources/{path}.bin.bytes", file.Content);
+                File.WriteAllText($"Assets/Resources/{path}.tr.default.txt", file.Translations, Encoding.UTF8);
                 // TODO: import语句
                 return new string[] { };
             } else {
@@ -37,7 +37,7 @@ namespace Core.VisualNovel.Script {
                 return null;
             }
             var reader = new BinaryReader(new MemoryStream(binaryContent));
-            if (reader.ReadInt32() != 0x963EFE4A) {
+            if (reader.ReadUInt32() != 0x963EFE4A) {
                 return null;
             }
             var hash = reader.ReadUInt32();

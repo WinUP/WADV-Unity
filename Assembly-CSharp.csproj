@@ -84,10 +84,12 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ConstantExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\DialogueExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\EmptyExpression.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ExportExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\Expression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\FloatExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\FunctionCallExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\FunctionExpression.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ImportExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\IntegerExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\LanguageExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\LogicNotExpression.cs" />
@@ -117,6 +119,7 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Hasher.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\ModuleCompiler.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\ScriptCompiler.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\ScriptImporter.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\PlaySoundMessageContent.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundChannel.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundManager.cs" />
@@ -126,9 +129,7 @@
     <Compile Include="Assets\Core\VisualNovel\Translation\TranslationManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\VisualNetwork.cs" />
     <Compile Include="Assets\Core\VisualNovelPlugins\SoundPlugin.cs" />
-    <None Include="Assets\Resources\Logic\!Entrance_tr_default.txt" />
-    <None Include="Assets\Resources\Logic\!Entrance.txt" />
-    <None Include="Assets\Resources\Logic\Init.txt" />
+    <None Include="Assets\Resources\Logic\!Entrance.tr.default.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/bo/SCB_YUME_NO_MISAKI_SAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

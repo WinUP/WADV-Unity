@@ -46,7 +46,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <summary>
         /// 所有操作符
         /// </summary>
-        public static readonly string[] Separators = {"->", "+=", "-=", "*=", "/=", ">", "<", ">=", "<=", "[", "]", "!", "+", "-", "*", "/", "@", "@#", ";", "=", "==", "(", ")", " ", "\"", "\n"};
+        public static readonly string[] Separators = {"->", "+=", "-=", "*=", "/=", ">", "<", ">=", "<=", "[", "]", "!", "+", "-", "*", "/", "@", "@#", ";", "=", "==", "(", ")", " ", "\"", "\n", "'"};
 
     }
 }

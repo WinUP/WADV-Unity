@@ -211,7 +211,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <para>格式：<code>28</code></para>
         /// <para>栈结构要求：栈顶元素描述常量名</para>
         /// </summary>
-        LDCONS,
+        LDCON,
         /// <summary>
         /// 入栈布尔值true
         /// <para>格式：<code>29</code></para>
@@ -364,6 +364,18 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 无条件跳转到指定标签处，同时记录当前偏移地址
         /// <para>格式：<code>43 &lt;int32&gt;</code></para>
         /// </summary>
-        BR
+        BR,
+        /// <summary>
+        /// 导入脚本执行结果
+        /// <para>格式：<code>44</code></para>
+        /// <para>栈结构要求：栈顶元素描述目标脚本路径</para>
+        /// </summary>
+        LOAD,
+        /// <summary>
+        /// 导出表达式结果
+        /// <para>格式：<code>45</code></para>
+        /// <para>栈结构要求：栈顶元素描述导出项名，第二个元素描述项值</para>
+        /// </summary>
+        EXP
     }
 }

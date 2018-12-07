@@ -167,13 +167,18 @@ namespace Core.VisualNovel.Script.Compiler {
                     } else {
                         Assemble(context, constantExpression.Name);
                     }
-                    context.File.OperationCode(OperationCode.LDCONS, constantExpression.Position);
+                    context.File.OperationCode(OperationCode.LDCON, constantExpression.Position);
                     break;
                 case DialogueExpression dialogueExpression:
                     context.File.LoadDialogue(dialogueExpression.Character, dialogueExpression.Content, dialogueExpression.Position);
                     break;
                 case EmptyExpression emptyExpression:
                     context.File.LoadNull(emptyExpression.Position);
+                    break;
+                case ExportExpression exportExpression:
+                    Assemble(context, exportExpression.Value);
+                    Assemble(context, exportExpression.Name);
+                    context.File.OperationCode(OperationCode.EXP, expression.Position);
                     break;
                 case FloatExpression floatExpression:
                     context.File.LoadFloat(floatExpression.Value, floatExpression.Position);
@@ -221,6 +226,10 @@ namespace Core.VisualNovel.Script.Compiler {
                     // 结束函数生成
                     context.File.OperationCode(OperationCode.RET, SourcePosition.UnavailablePosition);
                     context.File.CreateLabel(functionEnd);
+                    break;
+                case ImportExpression importExpression:
+                    Assemble(context, importExpression.Target);
+                    context.File.OperationCode(OperationCode.LOAD, importExpression.Position);
                     break;
                 case IntegerExpression integerExpression:
                     context.File.LoadInteger(integerExpression.Value, integerExpression.Position);
