@@ -1,7 +1,4 @@
-﻿// Translation file: default
-// Notice: one translation only allows one line, accept all escape characters but only \n is needed 
-
-0000b6d0
+﻿0000b6d0
 VNS测试脚本。首先测试无角色对话。
 
 0001d8bd

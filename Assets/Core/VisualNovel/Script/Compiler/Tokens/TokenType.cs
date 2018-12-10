@@ -50,11 +50,11 @@
         /// <summary>
         /// 左小括号
         /// </summary>
-        LeftBracket,
+        LeftParenthesis,
         /// <summary>
         /// 右小括号
         /// </summary>
-        RightBracket,
+        RightParenthesis,
         /// <summary>
         /// 取子元素/子插件
         /// </summary>

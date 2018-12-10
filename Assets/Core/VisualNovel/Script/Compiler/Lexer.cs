@@ -360,10 +360,10 @@ namespace Core.VisualNovel.Script.Compiler {
                     }
                     break;
                 case '(':
-                    tokens.Add(new BasicToken(TokenType.LeftBracket, position));
+                    tokens.Add(new BasicToken(TokenType.LeftParenthesis, position));
                     break;
                 case ')':
-                    tokens.Add(new BasicToken(TokenType.RightBracket, position));
+                    tokens.Add(new BasicToken(TokenType.RightParenthesis, position));
                     break;
             }
         }

@@ -18,12 +18,14 @@ namespace Core.VisualNovel.Editor {
                 throw new NullReferenceException("Inspected Visual Network is null");
             }
             EditorGUILayout.LabelField("Message System", EditorStyles.boldLabel);
+            ++EditorGUI.indentLevel;
             network.Awaking = EditorGUILayout.Toggle("Awaking", network.Awaking);
             _isMessageDetailOpened[0] = EditorGUILayout.Foldout(_isMessageDetailOpened[0], "Mask: VisualNetwork");
             if (_isMessageDetailOpened[0]) {
                 EditorGUILayout.LabelField("RunCommand", "<VisualCommand>");
                 EditorGUILayout.LabelField("NextCommand", "<NULL>");
             }
+            --EditorGUI.indentLevel;
         }
     }
 }

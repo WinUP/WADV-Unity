@@ -22,7 +22,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 生成字节码
         /// </summary>
         /// <returns></returns>
-        public (byte[] Content, string Translations) Assemble() {
+        public (byte[] Content, ScriptTranslation Translations) Assemble() {
             var context = new AssemblerContext();
             // 生成主程序段
             Assemble(context, RootExpression);
@@ -41,19 +41,7 @@ namespace Core.VisualNovel.Script.Compiler {
             targetFile.DirectWrite(segments.Labels);
             targetFile.DirectWrite(segments.Positions);
             targetFile.DirectWrite(segments.Code);
-            // 更新默认翻译
-            var existedTranslationContent = Resources.Load<TextAsset>($"{Identifier.Name}_tr_default")?.text;
-            ScriptTranslation targetTranslation;
-            if (string.IsNullOrEmpty(existedTranslationContent)) {
-                var translationContent = segments.Translations;
-                targetTranslation = translationContent;
-            } else {
-                var existedTranslation = new ScriptTranslation(existedTranslationContent);
-                existedTranslation.MergeWith(segments.Translations);
-                targetTranslation = existedTranslation;
-            }
-            context.File.Close();
-            return (targetFile.CreateCodeSegment(), "// Translation file: default\n// Notice: one translation only allows one line, accept all escape characters but only \\n is needed \n\n" + targetTranslation.Pack());
+            return (targetFile.CreateCodeSegment(), segments.Translations);
         }
 
         private static void Assemble(AssemblerContext context, Expression expression, params CompilerFlag[] flags) {

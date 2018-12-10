@@ -66,12 +66,14 @@ namespace Core.VisualNovel.Translation {
         /// </summary>
         /// <param name="source">目标翻译</param>
         /// <param name="removeUnavailableTranslations">是否删除所有不在目标但是存在于此翻译中的条目</param>
-        public void MergeWith(ScriptTranslation source, bool removeUnavailableTranslations = false) {
+        public bool MergeWith(ScriptTranslation source, bool removeUnavailableTranslations = false) {
             var proceedIds = new List<uint>();
+            var changed = false;
             foreach (var newTranslation in source._translatableStrings) {
                 // 情况1
                 if (_translatableStrings.ContainsKey(newTranslation.Key)) {
                     proceedIds.Add(newTranslation.Key);
+                    changed = true;
                     continue;
                 }
                 // 情况2
@@ -79,17 +81,21 @@ namespace Core.VisualNovel.Translation {
                 if (similarIds.Any()) {
                     proceedIds.Add(newTranslation.Key);
                     _translatableStrings.Add(newTranslation.Key, _translatableStrings[similarIds.First()]);
+                    changed = true;
                     continue;
                 }
                 // 情况3
                 _translatableStrings.Add(newTranslation.Key, newTranslation.Value);
                 proceedIds.Add(newTranslation.Key);
+                changed = true;
             }
             // 删除多余条目（可选）
-            if (!removeUnavailableTranslations) return;
+            if (!removeUnavailableTranslations) return changed;
             foreach (var id in _translatableStrings.Keys.Where(e => !proceedIds.Contains(e))) {
                 _translatableStrings.Remove(id);
+                changed = true;
             }
+            return changed;
         }
 
         /// <summary>
