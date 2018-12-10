@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 
 namespace Core {
@@ -13,10 +12,12 @@ namespace Core {
             return Path.Combine(Path.GetDirectoryName(path) ?? "", Path.GetFileNameWithoutExtension(path) ?? "");
         }
 
+        public static string DropBase(string path) {
+            return path.StartsWith(BaseDirectory) ? path.Substring(BaseDirectory.Length) : path;
+        }
+
         public static string Combine(string path, string extensionFormat, params object[] parts) {
-            return parts.Length > 0
-                ? $"{path}{string.Format(extensionFormat, parts)}"
-                : $"{path}{extensionFormat}";
+            return Path.Combine(path, parts.Length > 0 ? string.Format(extensionFormat, parts) : extensionFormat);
         }
     }
 }

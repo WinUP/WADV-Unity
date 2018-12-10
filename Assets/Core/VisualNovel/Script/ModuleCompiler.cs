@@ -31,23 +31,17 @@ namespace Core.VisualNovel.Script {
             var file = new Assembler(new Parser(new Lexer(source, identifier).Lex(), identifier).Parse(), identifier).Assemble();
             File.WriteAllBytes(binPath, file.Content);
             changedFiles.Add(binPath);
-            // 生成默认翻译
-            var defaultTranslation = MergeDefaultTranslation(path, file.Translations, option);
-            if (defaultTranslation.Changed) {
-                File.WriteAllText(defaultTranslationPath, defaultTranslation.Translation.Pack(), Encoding.UTF8);
-                changedFiles.Add(defaultTranslationPath);
-            }
             // 处理其他翻译
             foreach (var language in option.ExtraTranslationLanguages) {
                 var extraPath = PathUtilities.Combine(path, PathUtilities.TranslationFileFormat, language);
                 if (File.Exists(extraPath)) {
                     var existedTranslation = new ScriptTranslation(File.ReadAllText(path));
-                    if (!existedTranslation.MergeWith(defaultTranslation.Translation)) continue;
+                    if (!existedTranslation.MergeWith(file.Translations)) continue;
                     File.WriteAllText(extraPath, existedTranslation.Pack(), Encoding.UTF8);
                     changedFiles.Add(extraPath);
                 } else {
                     // 如果翻译不存在，以默认翻译为蓝本新建翻译文件
-                    File.WriteAllText(extraPath, defaultTranslation.Translation.Pack(), Encoding.UTF8);
+                    File.WriteAllText(extraPath, file.Translations.Pack(), Encoding.UTF8);
                     changedFiles.Add(extraPath);
                 }
             }

@@ -37,6 +37,7 @@ namespace Core.VisualNovel.Script.Compiler {
             // 写入源文件哈希用于跳过重复编译
             targetFile.DirectWrite(Identifier.Hash);
             // 写入各种段
+            targetFile.DirectWrite(segments.Translations.Pack());
             targetFile.DirectWrite(segments.Strings);
             targetFile.DirectWrite(segments.Labels);
             targetFile.DirectWrite(segments.Positions);

@@ -31,7 +31,7 @@ namespace Core.VisualNovel.Translation {
         /// <param name="language">目标语言</param>
         /// <returns></returns>
         public static string GetPluginName(string translatedName, string language) {
-            CheckLanguageName(language);
+            EnsureLanguageName(language);
             if (language == DefaultLanguage) {
                 return translatedName;
             }
@@ -50,7 +50,7 @@ namespace Core.VisualNovel.Translation {
         /// <param name="translatedName">目标语言下的插件名</param>
         /// <param name="language">目标语言</param>
         public static void SetPluginName(string name, string translatedName, string language) {
-            CheckLanguageName(language);
+            EnsureLanguageName(language);
             if (language == DefaultLanguage) {
                 return;
             }
@@ -75,7 +75,7 @@ namespace Core.VisualNovel.Translation {
         /// <param name="name">插件名</param>
         /// <param name="language">目标语言（为空代表移除所有语言中的对应翻译）</param>
         public static void RemovePluginName(string name, string language = null) {
-            CheckLanguageName(language);
+            EnsureLanguageName(language);
             foreach (var list in PluginTranslations.Where(e => language == null || e.Key == language).Select(e => e.Value)) {
                 list.RemoveAll(e => e.Name == name);
             }
@@ -88,7 +88,7 @@ namespace Core.VisualNovel.Translation {
         /// <param name="language">目标语言</param>
         /// <returns></returns>
         public static string GetStatic(string name, string language = DefaultLanguage) {
-            CheckLanguageName(language);
+            EnsureLanguageName(language);
             return StaticTranslations.ContainsKey(name) ? StaticTranslations[name].FirstOrDefault(e => e.Name == language)?.Value : null;
         }
 
@@ -100,7 +100,7 @@ namespace Core.VisualNovel.Translation {
         /// <param name="value">项值</param>
         /// <param name="language">目标语言</param>
         public static void SetStatic(string name, string value, string language = DefaultLanguage) {
-            CheckLanguageName(language);
+            EnsureLanguageName(language);
             List<Translation> translations;
             if (StaticTranslations.ContainsKey(name)) {
                 translations = StaticTranslations[name];
@@ -122,7 +122,7 @@ namespace Core.VisualNovel.Translation {
         /// <param name="name">项名</param>
         /// <param name="language">目标语言（为空代表移除所有语言中的对应翻译）</param>
         public static void RemoveStatic(string name, string language = null) {
-            CheckLanguageName(language);
+            EnsureLanguageName(language);
             if (!StaticTranslations.ContainsKey(name)) return;
             if (language == null) {
                 StaticTranslations.Remove(name);
@@ -130,16 +130,17 @@ namespace Core.VisualNovel.Translation {
                 StaticTranslations[name].RemoveAll(e => e.Name == language);
             }
         }
-
+        
         /// <summary>
         /// 检查语言名是否包含非法字符
         /// </summary>
         /// <param name="language">目标语言</param>
-        private static void CheckLanguageName(string language) {
-            if (language == null) {
-                return;
-            }
-            if (!language.All(e => e >= '0' && e <= '9' || e >= 'a' && e <= 'z' || e >= 'A' && e <= 'Z' || e =='_')) {
+        public static bool CheckLanguageName(string language) {
+            return language != null && language.All(e => e >= '0' && e <= '9' || e >= 'a' && e <= 'z' || e >= 'A' && e <= 'Z' || e =='_');
+        }
+
+        private static void EnsureLanguageName(string language) {
+            if (!CheckLanguageName(language)) {
                 throw new ArgumentException("Language name can only has numbers, alphabets and underlines");
             }
         }
