@@ -130,8 +130,6 @@
     <Compile Include="Assets\Core\VisualNovel\Translation\TranslationManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\VisualNetwork.cs" />
     <Compile Include="Assets\Core\VisualNovelPlugins\SoundPlugin.cs" />
-    <None Include="Assets\Resources\Logic\!Entrance.tr.default.txt" />
-    <None Include="Assets\Resources\Logic\Init.tr.default.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/bo/SCB_YUME_NO_MISAKI_SAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

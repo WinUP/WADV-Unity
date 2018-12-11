@@ -15,6 +15,7 @@ namespace Core.VisualNovel.Script {
                 var file = new FileStream(SavedPath, FileMode.Open);
                 var formatter = new BinaryFormatter();
                 Options = formatter.Deserialize(file) as Dictionary<string, CompileOption>;
+                file.Close();
             } else {
                 var file = new FileStream(SavedPath, FileMode.Create);
                 var formatter = new BinaryFormatter();
@@ -37,6 +38,12 @@ namespace Core.VisualNovel.Script {
                 option = Options[id];
             }
             return option;
+        }
+
+        public static void Remove(string id) {
+            if (Options.ContainsKey(id)) {
+                Options.Remove(id);
+            }
         }
 
         public static void Save() {

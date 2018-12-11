@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Core {
     public static class PathUtilities {
@@ -17,7 +19,16 @@ namespace Core {
         }
 
         public static string Combine(string path, string extensionFormat, params object[] parts) {
-            return Path.Combine(path, parts.Length > 0 ? string.Format(extensionFormat, parts) : extensionFormat);
+            return parts.Length > 0 ? $"{path}{string.Format(extensionFormat, parts)}" : $"{path}{extensionFormat}";
+        }
+
+        public static IEnumerable<string> FindFileNameGroup(string id) {
+            var basePath = Path.GetDirectoryName(Path.Combine(BaseDirectory, id));
+            if (string.IsNullOrEmpty(basePath)) {
+                return new string[] { };
+            }
+            id = Path.GetFileName(id) ?? id;
+            return Directory.GetFiles(basePath).Where(e => e.StartsWith(id));
         }
     }
 }
