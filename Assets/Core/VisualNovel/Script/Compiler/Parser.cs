@@ -13,13 +13,17 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         private SourceTokens Tokens { get; }
         /// <summary>
-        /// Token序列标识符
+        /// 源文件ID
         /// </summary>
         public CodeIdentifier Identifier { get; }
 
-        public Parser(IEnumerable<BasicToken> tokens, CodeIdentifier identifier) {
+        private Parser(IEnumerable<BasicToken> tokens, CodeIdentifier identifier) {
             Tokens = new SourceTokens(tokens);
             Identifier = identifier;
+        }
+
+        public static ScopeExpression Parse(IEnumerable<BasicToken> tokens, CodeIdentifier identifier) {
+            return new Parser(tokens, identifier).Parse();
         }
 
         /// <summary>

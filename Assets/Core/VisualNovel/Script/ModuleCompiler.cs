@@ -20,7 +20,6 @@ namespace Core.VisualNovel.Script {
             var source = File.ReadAllText(path, Encoding.UTF8);
             path = PathUtilities.DropExtension(path); // 与Unity资源格式统一
             var binPath = PathUtilities.Combine(path, PathUtilities.BinaryFile);
-            var defaultTranslationPath = PathUtilities.Combine(path, PathUtilities.TranslationFileFormat, "default");
             // 编译文件
             var identifier = new CodeIdentifier {Name = path, Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source))};
             var existedHash = ReadBinaryHash(binPath);
@@ -28,20 +27,20 @@ namespace Core.VisualNovel.Script {
                 return new string[] { }; // 如果源代码内容没有变化则直接跳过编译
             }
             var changedFiles = new List<string>();
-            var file = new Assembler(new Parser(new Lexer(source, identifier).Lex(), identifier).Parse(), identifier).Assemble();
+            var file = Assembler.Assemble(Parser.Parse(Lexer.Lex(source, identifier), identifier), identifier);
             File.WriteAllBytes(binPath, file.Content);
             changedFiles.Add(binPath);
             // 处理其他翻译
             foreach (var language in option.ExtraTranslationLanguages) {
                 var extraPath = PathUtilities.Combine(path, PathUtilities.TranslationFileFormat, language);
                 if (File.Exists(extraPath)) {
-                    var existedTranslation = new ScriptTranslation(File.ReadAllText(path));
-                    if (!existedTranslation.MergeWith(file.Translations)) continue;
+                    var existedTranslation = new ScriptTranslation(File.ReadAllText(extraPath));
+                    if (!existedTranslation.MergeWith(file.DefaultTranslations, option.RemoveUselessTranslations)) continue;
                     File.WriteAllText(extraPath, existedTranslation.Pack(), Encoding.UTF8);
                     changedFiles.Add(extraPath);
                 } else {
                     // 如果翻译不存在，以默认翻译为蓝本新建翻译文件
-                    File.WriteAllText(extraPath, file.Translations.Pack(), Encoding.UTF8);
+                    File.WriteAllText(extraPath, file.DefaultTranslations.Pack(), Encoding.UTF8);
                     changedFiles.Add(extraPath);
                 }
             }
@@ -58,20 +57,17 @@ namespace Core.VisualNovel.Script {
             var source = Resources.Load<TextAsset>(path)?.text ?? "";
             // 编译文件
             var identifier = new CodeIdentifier {Name = path, Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source))};
-            var file = new Assembler(new Parser(new Lexer(source, identifier).Lex(), identifier).Parse(), identifier).Assemble();
-            // 生成默认翻译
+            var file = Assembler.Assemble(Parser.Parse(Lexer.Lex(source, identifier), identifier), identifier);
+            // 生成翻译
             var translations = new Dictionary<string, ScriptTranslation>();
-            var defaultTranslation = MergeDefaultTranslationRuntime(path, file.Translations, option);
-            translations.Add("default", defaultTranslation);
-            // 处理其他翻译
             foreach (var language in option.ExtraTranslationLanguages) {
                 var extraPath = PathUtilities.Combine(path, PathUtilities.TranslationFileFormat, language);
                 var content = Resources.Load<TextAsset>(extraPath)?.text;
                 if (string.IsNullOrEmpty(content)) {
-                    translations.Add(language, defaultTranslation);
+                    translations.Add(language, file.DefaultTranslations);
                 } else {
                     var existedTranslation = new ScriptTranslation(content);
-                    existedTranslation.MergeWith(defaultTranslation);
+                    existedTranslation.MergeWith(file.DefaultTranslations, option.RemoveUselessTranslations);
                     translations.Add(language, existedTranslation);
                 }
             }

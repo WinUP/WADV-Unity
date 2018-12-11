@@ -321,7 +321,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// 生成程序段
         /// </summary>
         /// <returns></returns>
-        public byte[] CreateCodeSegment() {
+        public byte[] CreateMainSegment() {
             return (_writer.BaseStream as MemoryStream)?.ToArray();
         }
 
@@ -353,7 +353,7 @@ namespace Core.VisualNovel.Script.Compiler {
             }
             var positionSegment = (segmentWriter.BaseStream as MemoryStream)?.ToArray();
             segmentWriter.Close();
-            return (CreateCodeSegment(), labelSegment, stringSegment, positionSegment, new ScriptTranslation(_translations));
+            return (CreateMainSegment(), labelSegment, stringSegment, positionSegment, new ScriptTranslation(_translations));
         }
     }
 }

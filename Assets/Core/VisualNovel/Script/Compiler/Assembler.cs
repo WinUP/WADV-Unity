@@ -3,29 +3,22 @@ using System.Linq;
 using Core.Extensions;
 using Core.VisualNovel.Script.Compiler.Expressions;
 using Core.VisualNovel.Translation;
-using UnityEngine;
 
 namespace Core.VisualNovel.Script.Compiler {
     /// <summary>
     /// WADV VNS 字节码生成器
     /// </summary>
-    public class Assembler {
-        private ScopeExpression RootExpression { get; }
-        private CodeIdentifier Identifier { get; }
-
-        public Assembler(ScopeExpression root, CodeIdentifier identifier) {
-            RootExpression = root;
-            Identifier = identifier;
-        }
-        
+    public static class Assembler {
         /// <summary>
         /// 生成字节码
         /// </summary>
+        /// <param name="root">根表达式</param>
+        /// <param name="identifier">源文件ID</param>
         /// <returns></returns>
-        public (byte[] Content, ScriptTranslation Translations) Assemble() {
+        public static (byte[] Content, ScriptTranslation DefaultTranslations) Assemble(ScopeExpression root, CodeIdentifier identifier) {
             var context = new AssemblerContext();
             // 生成主程序段
-            Assemble(context, RootExpression);
+            Assemble(context, root);
             context.File.OperationCode(OperationCode.RET, new SourcePosition());
             // 生成各种段
             var segments = context.File.CreateSegments();
@@ -35,14 +28,14 @@ namespace Core.VisualNovel.Script.Compiler {
             // 写入文件标志 ("VisualNovelScript Version 1, assembly format"的CRC32)
             targetFile.DirectWrite(0x963EFE4A);
             // 写入源文件哈希用于跳过重复编译
-            targetFile.DirectWrite(Identifier.Hash);
+            targetFile.DirectWrite(identifier.Hash);
             // 写入各种段
-            targetFile.DirectWrite(segments.Translations.Pack());
+            targetFile.DirectWrite(segments.Translations.ToByteArray());
             targetFile.DirectWrite(segments.Strings);
             targetFile.DirectWrite(segments.Labels);
             targetFile.DirectWrite(segments.Positions);
             targetFile.DirectWrite(segments.Code);
-            return (targetFile.CreateCodeSegment(), segments.Translations);
+            return (targetFile.CreateMainSegment(), segments.Translations);
         }
 
         private static void Assemble(AssemblerContext context, Expression expression, params CompilerFlag[] flags) {

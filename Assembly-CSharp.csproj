@@ -120,6 +120,7 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\TokenType.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Hasher.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\ModuleCompiler.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\RuntimeFile.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\ScriptImporter.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\PlaySoundMessageContent.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundChannel.cs" />

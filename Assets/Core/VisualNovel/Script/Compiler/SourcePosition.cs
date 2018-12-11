@@ -15,6 +15,16 @@ namespace Core.VisualNovel.Script.Compiler {
         public static readonly SourcePosition UnavailablePosition = new SourcePosition {Line = -1, Column = -1};
 
         /// <summary>
+        /// 新建一个源代码坐标
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="column"></param>
+        /// <returns></returns>
+        public static SourcePosition Create(int line, int column) {
+            return new SourcePosition {Line = line, Column = column};
+        }
+
+        /// <summary>
         /// 移动到下一行
         /// </summary>
         /// <returns></returns>

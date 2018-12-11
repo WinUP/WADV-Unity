@@ -45,7 +45,7 @@ namespace Core.VisualNovel.Script.Editor {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(language, "text file");
                 if (GUILayout.Button("-", EditorStyles.miniButton)) {
-                    if (EditorUtility.DisplayDialog($"Remove \"{language}\" translation for {id}?", "This cannot be reversed", "Continue", "Cancel")) {
+                    if (EditorUtility.DisplayDialog($"Remove \"{language}\" translation for {id}?", "This action cannot be reversed", "Continue", "Cancel")) {
                         AssetDatabase.DeleteAsset(PathUtilities.Combine(Path.Combine(PathUtilities.BaseDirectory, id), PathUtilities.TranslationFileFormat, language));
                     }
                 }

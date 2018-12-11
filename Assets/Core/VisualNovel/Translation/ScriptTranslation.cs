@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Core.Extensions;
@@ -96,6 +97,18 @@ namespace Core.VisualNovel.Translation {
                 changed = true;
             }
             return changed;
+        }
+
+        public byte[] ToByteArray() {
+            var writer = new BinaryWriter(new MemoryStream());
+            writer.Write(_translatableStrings.Count);
+            foreach (var item in _translatableStrings) {
+                writer.Write(item.Key);
+                writer.Write(item.Value);
+            }
+            var result = ((MemoryStream) writer.BaseStream).ToArray();
+            writer.Close();
+            return result;
         }
 
         /// <summary>
