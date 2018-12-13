@@ -22,6 +22,12 @@ namespace Core.VisualNovel.Script.Compiler {
             Identifier = identifier;
         }
 
+        /// <summary>
+        /// 构建抽象语法树
+        /// </summary>
+        /// <param name="tokens">Token序列内容</param>
+        /// <param name="identifier">源文件ID</param>
+        /// <returns></returns>
         public static ScopeExpression Parse(IEnumerable<BasicToken> tokens, CodeIdentifier identifier) {
             return new Parser(tokens, identifier).Parse();
         }

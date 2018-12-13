@@ -4,9 +4,9 @@ namespace Core.VisualNovel.Script.Compiler {
     /// </summary>
     public class CodeIdentifier {
         /// <summary>
-        /// 脚本名称
+        /// 脚本ID
         /// </summary>
-        public string Name { get; set; }
+        public string Id { get; set; }
         /// <summary>
         /// 脚本哈希
         /// </summary>

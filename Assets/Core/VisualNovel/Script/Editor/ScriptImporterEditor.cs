@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Core.VisualNovel.Script.Compiler;
+using Core.VisualNovel.Translation;
 using UnityEditor;
 using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
@@ -17,18 +18,17 @@ namespace Core.VisualNovel.Script.Editor {
             if (importer == null) {
                 throw new TypeLoadException("Inspected type is not VisualNovelScriptImporter");
             }
-            // 获取编译选项
-            var option = CompileOptions.Get(PathUtilities.DropExtension(PathUtilities.DropBase(importer.assetPath)));
             // 显示ID
-            var basePath = PathUtilities.DropExtension(importer.assetPath);
-            var binaryPath = PathUtilities.Combine(basePath, PathUtilities.BinaryFile);
-            var hash = ModuleCompiler.ReadBinaryHash(binaryPath);
-            var id = PathUtilities.DropBase(basePath).Replace("\\", "/");
+            var paths = CodeCompiler.CreatePathFromAsset(importer.assetPath);
+            var hash = ModuleCompiler.ReadBinaryHash(paths.Binary);
+            var id = paths.SourceResource.Replace("\\", "/");
             EditorGUILayout.LabelField("Resource ID", id);
+            // 获取编译选项
+            var option = CompileOptions.Get(id);
             // 检查编译状态
             if (hash.HasValue) {
-                var current = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(importer.assetPath)));
-                EditorGUILayout.LabelField("Precompiled", current == hash.Value ? "Yes" : "Outdated");
+                var currentHash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(importer.assetPath)));
+                EditorGUILayout.LabelField("Precompiled", currentHash == hash.Value ? "Yes" : "Outdated");
             } else {
                 EditorGUILayout.LabelField("Precompiled", "No");
             }
@@ -46,7 +46,7 @@ namespace Core.VisualNovel.Script.Editor {
                 EditorGUILayout.LabelField(language, "text file");
                 if (GUILayout.Button("-", EditorStyles.miniButton)) {
                     if (EditorUtility.DisplayDialog($"Remove \"{language}\" translation for {id}?", "This action cannot be reversed", "Continue", "Cancel")) {
-                        AssetDatabase.DeleteAsset(PathUtilities.Combine(Path.Combine(PathUtilities.BaseDirectory, id), PathUtilities.TranslationFileFormat, language));
+                        AssetDatabase.DeleteAsset(CodeCompiler.CreateLanguageAssetPathFromId(id, language));
                     }
                 }
                 EditorGUILayout.EndHorizontal();
@@ -59,7 +59,14 @@ namespace Core.VisualNovel.Script.Editor {
                 } else if (option.ExtraTranslationLanguages.Contains(_newLanguage)) {
                     EditorUtility.DisplayDialog("Language name conflict", $"Language {_newLanguage} is already existed", "Close");
                 } else {
-                    File.CreateText(PathUtilities.Combine(Path.Combine(PathUtilities.BaseDirectory, id), PathUtilities.TranslationFileFormat, _newLanguage)).Close();
+                    ScriptTranslation defaultTranslationContent;
+                    try {
+                        var runtimeFile = new RuntimeFile(id);
+                        defaultTranslationContent = runtimeFile.DefaultTranslation;
+                    } catch (Exception) {
+                        defaultTranslationContent = new ScriptTranslation("");
+                    }
+                    File.WriteAllText(CodeCompiler.CreateLanguageAssetPathFromId(id, _newLanguage), defaultTranslationContent.Pack(), Encoding.UTF8);
                     AssetDatabase.Refresh();
                     _newLanguage = "";
                 }

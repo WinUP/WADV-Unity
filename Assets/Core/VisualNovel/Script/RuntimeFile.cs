@@ -14,7 +14,7 @@ namespace Core.VisualNovel.Script {
         private readonly BinaryReader _reader;
         
         public RuntimeFile(string id) {
-            var source = Resources.Load<TextAsset>(id)?.bytes;
+            var source = Resources.Load<TextAsset>(CodeCompiler.CreatePathFromId(id).BinaryResource)?.bytes;
             if (source == null) {
                 throw new FileNotFoundException($"Could not find resource {id}");
             }

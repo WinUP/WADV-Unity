@@ -2,36 +2,40 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Core.VisualNovel.Script.Compiler;
+using UnityEditor;
 using UnityEngine;
 
 namespace Core.VisualNovel.Script {
+    /// <summary>
+    /// 此项目中所有VNS文件的编译选项
+    /// </summary>
     public static class CompileOptions {
-        public static string SavedPath { get; } = Application.streamingAssetsPath + "/VisualNovelScriptDefaultCompileOptions.bytes";
+        private static readonly string RecordFilePath = Application.streamingAssetsPath + "/VisualNovelScriptDefaultCompileOptions.bytes";
         
-        private static Dictionary<string, CompileOption> Options { get; } = new Dictionary<string, CompileOption>();
+        private static Dictionary<string, ScriptCompileOption> Options { get; } = new Dictionary<string, ScriptCompileOption>();
+        public static IReadOnlyDictionary<string, ScriptCompileOption> Collection { get; } = Options;
 
         static CompileOptions() {
-            if (File.Exists(SavedPath)) {
-                var file = new FileStream(SavedPath, FileMode.Open);
-                var formatter = new BinaryFormatter();
-                Options = formatter.Deserialize(file) as Dictionary<string, CompileOption>;
-                file.Close();
-            } else {
-                var file = new FileStream(SavedPath, FileMode.Create);
-                var formatter = new BinaryFormatter();
-                formatter.Serialize(file, Options);
-                file.Close();
-            }
+            if (!File.Exists(RecordFilePath)) return;
+            var file = new FileStream(RecordFilePath, FileMode.Open);
+            var formatter = new BinaryFormatter();
+            Options = formatter.Deserialize(file) as Dictionary<string, ScriptCompileOption>;
+            file.Close();
         }
 
+        [MenuItem("Window/Visual Novel/Reload All Compile Options")]
+        public static void Reload() {
+            
+        }
+        
         public static bool Has(string id) {
             return Options.ContainsKey(id);
         }
 
-        public static CompileOption Get(string id) {
-            CompileOption option;
+        public static ScriptCompileOption Get(string id) {
+            ScriptCompileOption option;
             if (!Options.ContainsKey(id)) {
-                option = new CompileOption();
+                option = new ScriptCompileOption();
                 Options.Add(id, option);
                 Save();
             } else {
@@ -47,7 +51,7 @@ namespace Core.VisualNovel.Script {
         }
 
         public static void Save() {
-            var file = new FileStream(SavedPath, FileMode.Truncate);
+            var file = new FileStream(RecordFilePath, FileMode.Truncate);
             var formatter = new BinaryFormatter();
             formatter.Serialize(file, Options);
             file.Close();

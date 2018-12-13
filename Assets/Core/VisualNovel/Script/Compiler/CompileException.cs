@@ -12,6 +12,6 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <param name="position">错误位置</param>
         /// <param name="message">错误信息</param>
         public CompileException(CodeIdentifier identifier, SourcePosition position, string message)
-            :base($"{message} (at {identifier.Name}[{identifier.Hash}]:{position.Line + 1}:{position.Column + 1})") {}
+            :base($"{message} (at {identifier.Id}[{identifier.Hash}]:{position.Line + 1}:{position.Column + 1})") {}
     }
 }

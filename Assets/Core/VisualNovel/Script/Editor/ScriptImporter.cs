@@ -1,16 +1,15 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Core.VisualNovel.Script.Compiler;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 
 namespace Core.VisualNovel.Script {
+    /// <inheritdoc />
+    /// <summary>
+    /// 适用于Unity 2017.2+的资源导入器
+    /// </summary>
     [ScriptedImporter(1, "vns")]
-    [UsedImplicitly]
     public class ScriptImporter : ScriptedImporter {
         public override void OnImportAsset(AssetImportContext ctx) {
             var text = new TextAsset(File.ReadAllText(ctx.assetPath, Encoding.UTF8));
@@ -18,10 +17,17 @@ namespace Core.VisualNovel.Script {
             ctx.SetMainObject(text);
         }
 
-        [MenuItem("Assets/Create/VisualNovel/Script", false, 82)]
+        /// <summary>
+        /// 用于新建VNS文件的Unity资源管理器新建项目选单扩展
+        /// </summary>
+        [MenuItem("Assets/Create/VisualNovel Script", false, 82)]
         public static void CreateScriptFile() {
             var selectPath = AssetDatabase.GetAssetPath(Selection.activeObject);
-            File.WriteAllText(Path.Combine(selectPath, $"{Guid.NewGuid().ToString()}.vns"), "// Write your script here\n\n", Encoding.UTF8);
+            if (File.Exists(selectPath)) {
+                selectPath = Path.GetDirectoryName(selectPath) ?? selectPath;
+            }
+            ProjectWindowUtil.CreateAssetWithContent(Path.Combine(selectPath, "NewScript.vns"), "// Write your script here\n\n", AssetPreview.GetMiniThumbnail(new TextAsset()));
+            AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
     }

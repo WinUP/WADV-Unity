@@ -55,12 +55,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Core\Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Assets\Core\Extensions\ListExtensions.cs" />
     <Compile Include="Assets\Core\Extensions\StringExtensions.cs" />
     <Compile Include="Assets\Core\IMessager.cs" />
     <Compile Include="Assets\Core\Message.cs" />
     <Compile Include="Assets\Core\MessageService.cs" />
-    <Compile Include="Assets\Core\PathUtilities.cs" />
     <Compile Include="Assets\Core\VisualNovel\Attributes\PluginTranslationAttribute.cs" />
     <Compile Include="Assets\Core\VisualNovel\Attributes\StaticTranslationAttribute.cs" />
     <Compile Include="Assets\Core\VisualNovel\ExecutionContext.cs" />
@@ -72,12 +70,12 @@
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginIdentifier.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\CompileOptions.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Assembler.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\AssemblerContext.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\ByteCodeGenerator.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\ByteCodeGeneratorContext.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\ByteCodeWriter.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CodeCompiler.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CodeIdentifier.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CompileException.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CompileOption.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\CompilerFlag.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\BinaryExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\CallExpression.cs" />
@@ -104,11 +102,11 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\StringExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\ToBooleanExpression.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Expressions\VariableExpression.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\FunctionDescription.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Keywords.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Lexer.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\OperationCode.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Parser.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Script\Compiler\ScriptCompileOption.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\SourceCode.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\SourceIndent.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\SourcePosition.cs" />
@@ -121,7 +119,6 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Hasher.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\ModuleCompiler.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\RuntimeFile.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\ScriptImporter.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\PlaySoundMessageContent.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundChannel.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundManager.cs" />

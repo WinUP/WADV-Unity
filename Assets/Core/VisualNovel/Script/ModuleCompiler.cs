@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -16,32 +17,34 @@ namespace Core.VisualNovel.Script {
         /// <param name="path">文件路径</param>
         /// <param name="option">编译选项</param>
         /// <returns>发生变化的文件列表</returns>
-        public static IEnumerable<string> CompileFile(string path, CompileOption option) {
+        public static IEnumerable<string> CompileFile(string path, ScriptCompileOption option) {
+            if (!path.EndsWith(".vns")) {
+                throw new NotSupportedException($"Cannot compile {path}: File name extension must be vns");
+            }
             var source = File.ReadAllText(path, Encoding.UTF8);
-            path = PathUtilities.DropExtension(path); // 与Unity资源格式统一
-            var binPath = PathUtilities.Combine(path, PathUtilities.BinaryFile);
+            var paths = CodeCompiler.CreatePathFromAsset(path);
             // 编译文件
-            var identifier = new CodeIdentifier {Name = path, Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source))};
-            var existedHash = ReadBinaryHash(binPath);
+            var identifier = new CodeIdentifier {Id = path, Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source))};
+            var existedHash = ReadBinaryHash(paths.Binary);
             if (existedHash.HasValue && existedHash.Value == identifier.Hash) {
                 return new string[] { }; // 如果源代码内容没有变化则直接跳过编译
             }
             var changedFiles = new List<string>();
-            var file = Assembler.Assemble(Parser.Parse(Lexer.Lex(source, identifier), identifier), identifier);
-            File.WriteAllBytes(binPath, file.Content);
-            changedFiles.Add(binPath);
+            var file = CodeCompiler.Compile(source, identifier);
+            File.WriteAllBytes(paths.Binary, file.Content);
+            changedFiles.Add(paths.Binary);
             // 处理其他翻译
             foreach (var language in option.ExtraTranslationLanguages) {
-                var extraPath = PathUtilities.Combine(path, PathUtilities.TranslationFileFormat, language);
-                if (File.Exists(extraPath)) {
-                    var existedTranslation = new ScriptTranslation(File.ReadAllText(extraPath));
-                    if (!existedTranslation.MergeWith(file.DefaultTranslations, option.RemoveUselessTranslations)) continue;
-                    File.WriteAllText(extraPath, existedTranslation.Pack(), Encoding.UTF8);
-                    changedFiles.Add(extraPath);
+                var languageFilePath = CodeCompiler.CreateLanguageAssetPathFromId(paths.SourceResource, language);
+                if (File.Exists(languageFilePath)) {
+                    var existedTranslation = new ScriptTranslation(File.ReadAllText(languageFilePath));
+                    if (!existedTranslation.MergeWith(file.DefaultTranslation, option.RemoveUselessTranslations)) continue;
+                    File.WriteAllText(languageFilePath, existedTranslation.Pack(), Encoding.UTF8);
+                    changedFiles.Add(languageFilePath);
                 } else {
                     // 如果翻译不存在，以默认翻译为蓝本新建翻译文件
-                    File.WriteAllText(extraPath, file.DefaultTranslations.Pack(), Encoding.UTF8);
-                    changedFiles.Add(extraPath);
+                    File.WriteAllText(languageFilePath, file.DefaultTranslation.Pack(), Encoding.UTF8);
+                    changedFiles.Add(languageFilePath);
                 }
             }
             return changedFiles;
@@ -50,26 +53,23 @@ namespace Core.VisualNovel.Script {
         /// <summary>
         /// 运行时编译文件
         /// </summary>
-        /// <param name="path">资源路径</param>
+        /// <param name="id">资源ID</param>
         /// <param name="option">编译选项</param>
         /// <returns></returns>
-        public static (byte[] Code, IReadOnlyDictionary<string, ScriptTranslation> Translations) CompileFileRuntime(string path, CompileOption option) {
-            var source = Resources.Load<TextAsset>(path)?.text ?? "";
+        public static (byte[] Code, IReadOnlyDictionary<string, ScriptTranslation> Translations) CompileFileRuntime(string id, ScriptCompileOption option) {
+            var source = Resources.Load<TextAsset>(id)?.text ?? "";
             // 编译文件
-            var identifier = new CodeIdentifier {Name = path, Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source))};
-            var file = Assembler.Assemble(Parser.Parse(Lexer.Lex(source, identifier), identifier), identifier);
+            var identifier = new CodeIdentifier {Id = id, Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source))};
+            var file = CodeCompiler.Compile(source, identifier);
             // 生成翻译
             var translations = new Dictionary<string, ScriptTranslation>();
             foreach (var language in option.ExtraTranslationLanguages) {
-                var extraPath = PathUtilities.Combine(path, PathUtilities.TranslationFileFormat, language);
-                var content = Resources.Load<TextAsset>(extraPath)?.text;
-                if (string.IsNullOrEmpty(content)) {
-                    translations.Add(language, file.DefaultTranslations);
-                } else {
-                    var existedTranslation = new ScriptTranslation(content);
-                    existedTranslation.MergeWith(file.DefaultTranslations, option.RemoveUselessTranslations);
-                    translations.Add(language, existedTranslation);
-                }
+                var languageFilePath = CodeCompiler.CreateLanguageResourcePathFromId(id, language);
+                var content = Resources.Load<TextAsset>(languageFilePath)?.text;
+                if (string.IsNullOrEmpty(content)) continue;
+                var existedTranslation = new ScriptTranslation(content);
+                existedTranslation.MergeWith(file.DefaultTranslation, option.RemoveUselessTranslations);
+                translations.Add(language, existedTranslation);
             }
             return (file.Content, translations);
         }
@@ -80,43 +80,24 @@ namespace Core.VisualNovel.Script {
         /// <param name="path">文件路径</param>
         /// <returns></returns>
         public static uint? ReadBinaryHash(string path) {
-            return File.Exists(path) ? ReadBinaryHash(File.ReadAllBytes(path)) : null;
+            return File.Exists(path) ? ReadBinaryHash(new FileStream(path, FileMode.Open)) : null;
         }
         
         /// <summary>
         /// 运行时读取预编译VNS文件哈希值
         /// </summary>
-        /// <param name="assetPath">资源路径</param>
+        /// <param name="resource">资源路径</param>
         /// <returns></returns>
-        public static uint? ReadBinaryHashRuntime(string assetPath) {
-            var binaryContent = Resources.Load<TextAsset>(assetPath)?.bytes;
-            return binaryContent == null ? null : ReadBinaryHash(binaryContent);
-        }
-        
-        private static (ScriptTranslation Translation, bool Changed) MergeDefaultTranslation(string basePath, ScriptTranslation newTranslation, CompileOption option) {
-            var path = PathUtilities.Combine(basePath, PathUtilities.TranslationFileFormat, "default");
-            if (!File.Exists(path)) return (newTranslation, true);
-            var existedDefaultTranslation = new ScriptTranslation(File.ReadAllText(path));
-            var changed = existedDefaultTranslation.MergeWith(newTranslation, option.RemoveUselessTranslations);
-            return (existedDefaultTranslation, changed);
+        public static uint? ReadBinaryHashRuntime(string resource) {
+            var binaryContent = Resources.Load<TextAsset>(resource)?.bytes;
+            return binaryContent == null ? null : ReadBinaryHash(new MemoryStream(binaryContent));
         }
 
-        private static ScriptTranslation MergeDefaultTranslationRuntime(string basePath, ScriptTranslation newTranslation, CompileOption option) {
-            var path = PathUtilities.Combine(basePath, PathUtilities.TranslationResourceFormat, "default");
-            var content = Resources.Load<TextAsset>(path)?.text;
-            if (content == null) {
-                return newTranslation;
-            }
-            var existedDefaultTranslation = new ScriptTranslation(content);
-            existedDefaultTranslation.MergeWith(newTranslation, option.RemoveUselessTranslations);
-            return existedDefaultTranslation;
-        }
-
-        private static uint? ReadBinaryHash(byte[] data) {
+        private static uint? ReadBinaryHash(Stream data) {
             if (data.Length == 0) {
                 return null;
             }
-            var reader = new BinaryReader(new MemoryStream(data));
+            var reader = new BinaryReader(data);
             if (reader.ReadUInt32() != 0x963EFE4A) {
                 return null;
             }

@@ -73,6 +73,9 @@ namespace Core.VisualNovel.Script.Compiler {
                 if (file.Current == '\'') { // 不可翻译字符串常量
                     file.MoveToNext();
                     var stringEnd = file.IndexOfWithEscapeRecognize('\'');
+                    if (stringEnd < 0) {
+                        throw new CompileException(identifier, position, "String constant has no end mark");
+                    }
                     var result = file.CopyContent(stringEnd);
                     tokens.Add(new StringToken(TokenType.String, position, result.ExecuteEscapeCharacters(), false));
                     position = result.Contains('\n')
@@ -85,6 +88,9 @@ namespace Core.VisualNovel.Script.Compiler {
                 if (file.Current == '"') { // 可翻译字符串常量
                     file.MoveToNext();
                     var stringEnd = file.IndexOfWithEscapeRecognize('"');
+                    if (stringEnd < 0) {
+                        throw new CompileException(identifier, position, "Translatable string constant has no end mark");
+                    }
                     var result = file.CopyContent(stringEnd);
                     tokens.Add(new StringToken(TokenType.String, position, result.ExecuteEscapeCharacters(), true));
                     position = result.Contains('\n')
