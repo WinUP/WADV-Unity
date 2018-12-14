@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using Core.VisualNovel.Script.Compiler;
 using UnityEditor;
 using UnityEngine;
@@ -25,7 +28,20 @@ namespace Core.VisualNovel.Script {
 
         [MenuItem("Window/Visual Novel/Reload All Compile Options")]
         public static void Reload() {
-            
+            Options.Clear();
+            ReloadDirectory("Assets/Resources");
+            Save();
+        }
+
+        private static void ReloadDirectory(string root) {
+            foreach (var directory in Directory.GetDirectories(root)) {
+                ReloadDirectory(directory);
+            }
+            foreach (var file in Directory.GetFiles(root).Where(e => e.EndsWith(".vns"))) {
+                var target = CodeCompiler.CreatePathFromAsset(file);
+                if (target == null) continue;
+                CreateOrUpdateScript(target);
+            }
         }
         
         public static bool Has(string id) {
@@ -44,9 +60,58 @@ namespace Core.VisualNovel.Script {
             return option;
         }
 
+        public static void Rename(string from, string to) {
+            if (!Has(from) || Has(to)) {
+                throw new ArgumentException($"Cannot rename compile option {from} -> {to}: Source unavailable or Name existed");
+            }
+            Options.Add(to, Options[from]);
+            Options.Remove(from);
+        }
+
+        public static void Rename(CodeCompiler.ScriptPaths from, CodeCompiler.ScriptPaths to) {
+            Rename(from.SourceResource, to.SourceResource);
+        }
+
         public static void Remove(string id) {
             if (Options.ContainsKey(id)) {
                 Options.Remove(id);
+            }
+        }
+
+        public static void Remove(CodeCompiler.ScriptPaths target) {
+            Remove(target.SourceResource);
+        }
+        
+        public static void CreateOrUpdateScript(CodeCompiler.ScriptPaths target) {
+            var option = Get(target.SourceResource);
+            var language = (from e in CodeCompiler.FilterAssetFromId(Directory.GetFiles(target.Directory), target.SourceResource)
+                where !string.IsNullOrEmpty(e.Language) && !option.ExtraTranslationLanguages.Contains(e.Language)
+                select e.Language).ToList();
+            if (language.Any()) {
+                option.ExtraTranslationLanguages.AddRange(language);
+            }
+            option.SourceHash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(target.Source, Encoding.UTF8)));
+            UpdateBinaryHash(target);
+        }
+        
+        public static void UpdateBinaryHash(CodeCompiler.ScriptPaths target) {
+            if (!Has(target.SourceResource)) return;
+            Get(target.SourceResource).BinaryHash = CodeCompiler.ReadBinaryHash(target.Binary);
+        }
+
+        public static void ApplyLanguage(CodeCompiler.ScriptPaths target) {
+            if (string.IsNullOrEmpty(target.Language) || !Has(target.SourceResource)) return;
+            var option = Get(target.SourceResource);
+            if (!option.ExtraTranslationLanguages.Contains(target.Language)) {
+                option.ExtraTranslationLanguages.Add(target.Language);
+            }
+        }
+
+        public static void RemoveLanguage(CodeCompiler.ScriptPaths target) {
+            if (string.IsNullOrEmpty(target.Language) || !Has(target.SourceResource)) return;
+            var option = Get(target.SourceResource);
+            if (option.ExtraTranslationLanguages.Contains(target.Language)) {
+                option.ExtraTranslationLanguages.Remove(target.Language);
             }
         }
 

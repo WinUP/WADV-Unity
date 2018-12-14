@@ -17,8 +17,8 @@ namespace Core.VisualNovel.Script.Compiler {
         /// </summary>
         public List<string> ExtraTranslationLanguages { get; } = new List<string>();
 
-        public uint SourceHash { get; internal set; }
+        public uint SourceHash { get; set; }
         
-        public uint? BinaryHash { get; internal set; }
+        public uint? BinaryHash { get; set; }
     }
 }

@@ -19,16 +19,17 @@ namespace Core.VisualNovel.Script.Editor {
                 throw new TypeLoadException("Inspected type is not VisualNovelScriptImporter");
             }
             // 显示ID
-            var paths = CodeCompiler.CreatePathFromAsset(importer.assetPath);
-            var hash = ModuleCompiler.ReadBinaryHash(paths.Binary);
-            var id = paths.SourceResource.Replace("\\", "/");
-            EditorGUILayout.LabelField("Resource ID", id);
-            // 获取编译选项
-            var option = CompileOptions.Get(id);
+            var assetPaths = CodeCompiler.CreatePathFromAsset(importer.assetPath);
+            if (assetPaths == null) {
+                EditorGUILayout.LabelField("Error: Unable to parse source file");
+                return;
+            }
+            var option = CompileOptions.Get(assetPaths.SourceResource);
+            EditorGUILayout.LabelField("Resource ID", assetPaths.SourceResource);
             // 检查编译状态
-            if (hash.HasValue) {
+            if (option.BinaryHash.HasValue) {
                 var currentHash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(importer.assetPath)));
-                EditorGUILayout.LabelField("Precompiled", currentHash == hash.Value ? "Yes" : "Outdated");
+                EditorGUILayout.LabelField("Precompiled", option.BinaryHash == option.SourceHash ? "Yes" : "Outdated");
             } else {
                 EditorGUILayout.LabelField("Precompiled", "No");
             }
@@ -45,8 +46,8 @@ namespace Core.VisualNovel.Script.Editor {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(language, "text file");
                 if (GUILayout.Button("-", EditorStyles.miniButton)) {
-                    if (EditorUtility.DisplayDialog($"Remove \"{language}\" translation for {id}?", "This action cannot be reversed", "Continue", "Cancel")) {
-                        AssetDatabase.DeleteAsset(CodeCompiler.CreateLanguageAssetPathFromId(id, language));
+                    if (EditorUtility.DisplayDialog($"Remove \"{language}\" translation for {assetPaths.SourceResource}?", "This action cannot be reversed", "Continue", "Cancel")) {
+                        AssetDatabase.DeleteAsset(CodeCompiler.CreateLanguageAssetPathFromId(assetPaths.SourceResource, language));
                     }
                 }
                 EditorGUILayout.EndHorizontal();
@@ -61,12 +62,12 @@ namespace Core.VisualNovel.Script.Editor {
                 } else {
                     ScriptTranslation defaultTranslationContent;
                     try {
-                        var runtimeFile = new RuntimeFile(id);
+                        var runtimeFile = new RuntimeFile(assetPaths.SourceResource);
                         defaultTranslationContent = runtimeFile.DefaultTranslation;
                     } catch (Exception) {
                         defaultTranslationContent = new ScriptTranslation("");
                     }
-                    File.WriteAllText(CodeCompiler.CreateLanguageAssetPathFromId(id, _newLanguage), defaultTranslationContent.Pack(), Encoding.UTF8);
+                    File.WriteAllText(CodeCompiler.CreateLanguageAssetPathFromId(assetPaths.SourceResource, _newLanguage), defaultTranslationContent.Pack(), Encoding.UTF8);
                     AssetDatabase.Refresh();
                     _newLanguage = "";
                 }
@@ -77,13 +78,14 @@ namespace Core.VisualNovel.Script.Editor {
             // 重编译按钮
             if (GUILayout.Button("Precompile")) {
                 try {
-                    var changedFiles = ModuleCompiler.CompileFile(importer.assetPath, option).ToArray();
+                    var changedFiles = CodeCompiler.CompileAsset(importer.assetPath, option).ToArray();
                     EditorUtility.DisplayDialog(
                         "Compile finished",
                         changedFiles.Any()
                             ? $"File changed:\n{string.Join("\n", changedFiles)}"
                             : "No change detected, skip compilation",
                         "Close");
+                    CompileOptions.CreateOrUpdateScript(assetPaths);
                 } catch (CompileException compileException) {
                     EditorUtility.DisplayDialog("Script has error", compileException.Message, "Close");
                 } catch (Exception exception) {

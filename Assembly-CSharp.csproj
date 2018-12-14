@@ -117,7 +117,6 @@
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\StringToken.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Compiler\Tokens\TokenType.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\Hasher.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\ModuleCompiler.cs" />
     <Compile Include="Assets\Core\VisualNovel\Script\RuntimeFile.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\PlaySoundMessageContent.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundChannel.cs" />
@@ -128,6 +127,8 @@
     <Compile Include="Assets\Core\VisualNovel\Translation\TranslationManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\VisualNetwork.cs" />
     <Compile Include="Assets\Core\VisualNovelPlugins\SoundPlugin.cs" />
+    <None Include="Assets\Resources\Logic\Init.tr.jp.txt" />
+    <None Include="Assets\Resources\Logic\Init.tr.en.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/bo/SCB_YUME_NO_MISAKI_SAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

@@ -1,8 +1,8 @@
 fileFormatVersion: 2
-guid: 1c11490799d946a6aa6e0aac99d90ca5
+guid: 6ebd18efae7664064a90a44826164801
 ScriptedImporter:
   fileIDToRecycleName:
-    4900000: VNScript:Assets/Resources/Logic/Init.vns
+    4900002: VNScript:Assets/Resources/Logic/Init.vns
   externalObjects: {}
   userData: 
   assetBundleName: 
