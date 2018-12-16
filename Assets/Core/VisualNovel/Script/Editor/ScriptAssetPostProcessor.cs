@@ -96,6 +96,7 @@ namespace Core.VisualNovel.Script.Editor {
                     CompileOptions.RemoveLanguage(target);
                 }
             }
+            AssetDatabase.Refresh();
         }
     }
 }

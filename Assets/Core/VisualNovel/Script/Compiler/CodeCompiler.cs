@@ -127,7 +127,7 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <param name="id">脚本ID</param>
         /// <returns></returns>
         public static ScriptPaths CreatePathFromId(string id) {
-            var directory = Path.GetDirectoryName(id) ?? id;
+            var directory = (Path.GetDirectoryName(id) ?? id).UnifySlash();
             return new ScriptPaths {
                 Source = id + ".vns",
                 SourceResource = id,
@@ -145,7 +145,8 @@ namespace Core.VisualNovel.Script.Compiler {
         /// <returns></returns>
         [CanBeNull]
         public static ScriptPaths CreatePathFromAsset(string asset) {
-            var assetDirectory = Path.GetDirectoryName(asset) ?? asset;
+            asset = asset.UnifySlash();
+            var assetDirectory = (Path.GetDirectoryName(asset) ?? asset).UnifySlash();
             var idDirectory = assetDirectory.Remove("Assets/Resources/");
             if (asset.EndsWith(".vns")) {
                 var assetWithoutExtension = asset.RemoveLast(".vns");

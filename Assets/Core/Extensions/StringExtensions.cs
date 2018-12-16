@@ -28,6 +28,15 @@ namespace Core.Extensions {
                     ? value.Remove(index, part.Length)
                     : value.Substring(0, index);
         }
+
+        /// <summary>
+        /// 统一所有斜线至左斜线
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string UnifySlash(this string value) {
+            return value.Replace('\\', '/');
+        }
         
         /// <summary>
         /// 反向转义字符串
