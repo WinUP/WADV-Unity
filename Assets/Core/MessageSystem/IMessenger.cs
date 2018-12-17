@@ -1,4 +1,6 @@
-﻿namespace Core {
+﻿using System.Collections;
+
+namespace Core.MessageSystem {
     /// <summary>
     /// Message service receiver
     /// </summary>
@@ -7,7 +9,7 @@
         /// Process a message
         /// </summary>
         /// <param name="message">Message object</param>
-        Message Receive(Message message);
+        IEnumerator Receive(Message message);
 
         /// <summary>
         /// Get the mask of which kind of message should be received
@@ -15,10 +17,5 @@
         /// </summary>
         /// <returns></returns>
         int Mask { get; }
-
-        /// <summary>
-        /// Get the status of messenger
-        /// </summary>
-        bool Awaking { get; }
     }
 }

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Core.VisualNovel.Script.Compiler;
 using UnityEditor;
 
