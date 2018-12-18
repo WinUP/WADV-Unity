@@ -2,17 +2,17 @@
     /// <summary>
     /// Base system message
     /// </summary>
-    public abstract class Message {
+    public class Message {
 
         /// <summary>
         /// Message tag
         /// </summary>
-        public string Tag;
+        public string Tag { get; set; }
 
         /// <summary>
         /// Message mask
         /// </summary>
-        public int Mask;
+        public int Mask { get; set; }
     }
 
     /// <inheritdoc />
@@ -23,7 +23,7 @@
         /// <summary>
         /// Message content
         /// </summary>
-        public T Content;
+        public T Content { get; set; }
 
         /// <inheritdoc />
         /// <summary>

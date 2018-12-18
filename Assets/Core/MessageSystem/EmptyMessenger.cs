@@ -1,4 +1,6 @@
-using System.Collections;
+#pragma warning disable 1998
+
+using System.Threading.Tasks;
 
 namespace Core.MessageSystem {
     /// <inheritdoc />
@@ -12,8 +14,8 @@ namespace Core.MessageSystem {
             Mask = mask;
         }
         
-        public IEnumerator Receive(Message message) {
-            yield return message;
+        public async Task<Message> Receive(Message message) {
+            return message;
         }
     }
 }

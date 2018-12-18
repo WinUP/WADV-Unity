@@ -1,7 +1,11 @@
+#pragma warning disable 1998
+
 using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using Core.MessageSystem;
 using Core.VisualNovel.Script.Compiler;
 using Core.VisualNovel.Translation;
 using UnityEditor;
@@ -10,9 +14,32 @@ using UnityEngine;
 
 namespace Core.VisualNovel.Script.Editor {
     [CustomEditor(typeof(ScriptImporter))]
-    public class ScriptImporterEditor : ScriptedImporterEditor {
-        private string _newLanguage;
+    public class ScriptImporterEditor : ScriptedImporterEditor, IMessenger {
+        public int Mask { get; } = CoreConstant.Mask;
         
+        private string _newLanguage;
+        private LinkedTreeNode<IMessenger> _node;
+        private static readonly LinkedTreeNode<IMessenger> ImporterEditorRoot;
+
+        static ScriptImporterEditor() {
+            ImporterEditorRoot = MessageService.Receivers.CreateChild(new EmptyMessenger());
+        }
+        
+        public async Task<Message> Receive(Message message) {
+            if (message.Tag == CoreConstant.ReloadAllCompileOptionsTag) {
+                Repaint();
+            }
+            return message;
+        }
+
+        public override void OnEnable() {
+            _node = ImporterEditorRoot.CreateChild(this);
+        }
+
+        public override void OnDisable() {
+            ImporterEditorRoot.RemoveChild(_node);
+        }
+
         public override void OnInspectorGUI() {
             var importer = target as ScriptImporter;
             if (importer == null) {
@@ -28,7 +55,6 @@ namespace Core.VisualNovel.Script.Editor {
             EditorGUILayout.LabelField("Resource ID", assetPaths.SourceResource);
             // 检查编译状态
             if (option.BinaryHash.HasValue) {
-                var currentHash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(importer.assetPath)));
                 EditorGUILayout.LabelField("Precompiled", option.BinaryHash == option.SourceHash ? "Yes" : "Outdated");
             } else {
                 EditorGUILayout.LabelField("Precompiled", "No");

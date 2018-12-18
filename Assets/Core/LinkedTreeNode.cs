@@ -189,8 +189,8 @@ namespace Core {
         /// </summary>
         /// <param name="item">子节点内容</param>
         /// <returns></returns>
-        public bool Remove(T item) {
-            return Remove(e => e.Content.Equals(item));
+        public bool RemoveChild(T item) {
+            return RemoveChild(e => e.Content.Equals(item));
         }
 
         /// <summary>
@@ -198,8 +198,8 @@ namespace Core {
         /// </summary>
         /// <param name="node">目标子节点</param>
         /// <returns></returns>
-        public bool Remove(LinkedTreeNode<T> node) {
-            return Remove(e => e == node);
+        public bool RemoveChild(LinkedTreeNode<T> node) {
+            return RemoveChild(e => e == node);
         }
 
         /// <summary>
@@ -207,7 +207,7 @@ namespace Core {
         /// </summary>
         /// <param name="prediction">用于确定目标子节点的函数</param>
         /// <returns></returns>
-        public bool Remove(Func<LinkedTreeNode<T>, bool> prediction) {
+        public bool RemoveChild(Func<LinkedTreeNode<T>, bool> prediction) {
             var processingChild = FirstChild;
             while (processingChild != null) {
                 if (prediction.Invoke(processingChild)) {
@@ -243,7 +243,7 @@ namespace Core {
         /// <param name="prediction">用于确定目标子节点的函数</param>
         /// <returns></returns>
         public bool RemoveChildRecursion(Func<LinkedTreeNode<T>, bool> prediction) {
-            if (Remove(prediction)) return true;
+            if (RemoveChild(prediction)) return true;
             var processingChild = FirstChild;
             while (processingChild != null) {
                 if (processingChild.RemoveChildRecursion(prediction)) return true;

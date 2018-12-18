@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Core.VisualNovel.Script.Compiler;
-using UnityEditor;
 using UnityEngine;
 
 namespace Core.VisualNovel.Script {
@@ -15,7 +14,7 @@ namespace Core.VisualNovel.Script {
     public static class CompileOptions {
         private static readonly string RecordFilePath = Application.streamingAssetsPath + "/VisualNovelScriptDefaultCompileOptions.bytes";
         
-        private static Dictionary<string, ScriptCompileOption> Options { get; } = new Dictionary<string, ScriptCompileOption>();
+        private static readonly Dictionary<string, ScriptCompileOption> Options = new Dictionary<string, ScriptCompileOption>();
         public static IReadOnlyDictionary<string, ScriptCompileOption> Collection { get; } = Options;
 
         static CompileOptions() {
@@ -24,24 +23,6 @@ namespace Core.VisualNovel.Script {
             var formatter = new BinaryFormatter();
             Options = formatter.Deserialize(file) as Dictionary<string, ScriptCompileOption>;
             file.Close();
-        }
-
-        [MenuItem("Window/Visual Novel/Reload All Compile Options")]
-        public static void Reload() {
-            Options.Clear();
-            ReloadDirectory("Assets/Resources");
-            Save();
-        }
-
-        private static void ReloadDirectory(string root) {
-            foreach (var directory in Directory.GetDirectories(root)) {
-                ReloadDirectory(directory);
-            }
-            foreach (var file in Directory.GetFiles(root).Where(e => e.EndsWith(".vns"))) {
-                var target = CodeCompiler.CreatePathFromAsset(file);
-                if (target == null) continue;
-                CreateOrUpdateScript(target);
-            }
         }
         
         public static bool Has(string id) {
@@ -66,6 +47,7 @@ namespace Core.VisualNovel.Script {
             }
             Options.Add(to, Options[from]);
             Options.Remove(from);
+            Save();
         }
 
         public static void Rename(CodeCompiler.ScriptPaths from, CodeCompiler.ScriptPaths to) {
@@ -73,9 +55,9 @@ namespace Core.VisualNovel.Script {
         }
 
         public static void Remove(string id) {
-            if (Options.ContainsKey(id)) {
-                Options.Remove(id);
-            }
+            if (!Options.ContainsKey(id)) return;
+            Options.Remove(id);
+            Save();
         }
 
         public static void Remove(CodeCompiler.ScriptPaths target) {
@@ -97,22 +79,23 @@ namespace Core.VisualNovel.Script {
         public static void UpdateBinaryHash(CodeCompiler.ScriptPaths target) {
             if (!Has(target.SourceResource)) return;
             Get(target.SourceResource).BinaryHash = CodeCompiler.ReadBinaryHash(target.Binary);
+            Save();
         }
 
         public static void ApplyLanguage(CodeCompiler.ScriptPaths target) {
             if (string.IsNullOrEmpty(target.Language) || !Has(target.SourceResource)) return;
             var option = Get(target.SourceResource);
-            if (!option.ExtraTranslationLanguages.Contains(target.Language)) {
-                option.ExtraTranslationLanguages.Add(target.Language);
-            }
+            if (option.ExtraTranslationLanguages.Contains(target.Language)) return;
+            option.ExtraTranslationLanguages.Add(target.Language);
+            Save();
         }
 
         public static void RemoveLanguage(CodeCompiler.ScriptPaths target) {
             if (string.IsNullOrEmpty(target.Language) || !Has(target.SourceResource)) return;
             var option = Get(target.SourceResource);
-            if (option.ExtraTranslationLanguages.Contains(target.Language)) {
-                option.ExtraTranslationLanguages.Remove(target.Language);
-            }
+            if (!option.ExtraTranslationLanguages.Contains(target.Language)) return;
+            option.ExtraTranslationLanguages.Remove(target.Language);
+            Save();
         }
 
         public static void Save() {
@@ -120,6 +103,11 @@ namespace Core.VisualNovel.Script {
             var formatter = new BinaryFormatter();
             formatter.Serialize(file, Options);
             file.Close();
+        }
+
+        public static void Clear() {
+            Options.Clear();
+            Save();
         }
     }
 }

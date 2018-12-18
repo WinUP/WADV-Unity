@@ -1,5 +1,7 @@
+#pragma warning disable 1998
+
 using System;
-using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Core.MessageSystem {
@@ -10,11 +12,11 @@ namespace Core.MessageSystem {
             Mask = mask;
         }
             
-        public IEnumerator Receive(Message message) {
+        public async Task<Message> Receive(Message message) {
             if (Application.isEditor) {
-                Debug.Log($"HH:mm:ss,fff[{message.Mask}]: Message {message.Tag}[{Convert.ToString(message.Mask, 2)}]");
+                Debug.Log($"{DateTime.Now:HH:mm:ss,fff}: {message.Tag}[{Convert.ToString(message.Mask, 2)}]");
             }
-            yield break;
+            return message;
         }
     }
 }

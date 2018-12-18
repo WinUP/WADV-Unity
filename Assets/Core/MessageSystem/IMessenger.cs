@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System.Threading.Tasks;
 
 namespace Core.MessageSystem {
     /// <summary>
@@ -9,7 +9,7 @@ namespace Core.MessageSystem {
         /// Process a message
         /// </summary>
         /// <param name="message">Message object</param>
-        IEnumerator Receive(Message message);
+        Task<Message> Receive(Message message);
 
         /// <summary>
         /// Get the mask of which kind of message should be received

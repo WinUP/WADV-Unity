@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Threading.Tasks;
+using Core.Extensions;
 using UnityEngine;
 
 namespace Core.MessageSystem {
@@ -13,34 +12,27 @@ namespace Core.MessageSystem {
         /// </summary>
         public static readonly LinkedTreeNode<IMessenger> Receivers = new LinkedTreeNode<IMessenger>(Application.isEditor ? (IMessenger) new DebugLogMessenger() : new EmptyMessenger());
 
-        public static MessageListener ActiveListener { get; private set; }
-
-        public static void UseListener(MessageListener listener) {
-            if (Listeners.Contains(listener)) {
-                Listeners.Remove(listener);
+        public static async Task<Message> ProcessAsync(Message message) {
+            foreach (var receiver in Receivers) {
+                if ((receiver.Mask & message.Mask) == 0) {
+                    continue;
+                }
+                message = await receiver.Receive(message);
             }
-            Listeners.Add(listener);
-            ActiveListener = listener;
+            return message;
         }
 
-        public static void CancelListener(MessageListener listener) {
-            if (Listeners.Contains(listener)) {
-                Listeners.Remove(listener);
+        public static Message Process(Message message) {
+            foreach (var receiver in Receivers) {
+                if ((receiver.Mask & message.Mask) == 0) {
+                    continue;
+                }
+                // ReSharper disable once AccessToModifiedClosure
+                var task = receiver.Receive(message).WrapErrors();
+                task.Wait();
+                message = task.GetAwaiter().GetResult();
             }
-            ActiveListener = Listeners.Count > 0 ? Listeners.Last() : null;
-        }
-        
-        private static readonly List<MessageListener> Listeners = new List<MessageListener>();
-        
-        /// <summary>
-        /// 在协程中处理消息
-        /// </summary>
-        /// <param name="message">目标消息</param>
-        public static void Process(Message message) {
-            if (ActiveListener == null) {
-                throw new NotSupportedException("No MessageListener detected, must have one MessageListener component activate in current scene");
-            }
-            ActiveListener.Process(message, Receivers);
+            return message;
         }
     }
 }

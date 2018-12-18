@@ -1,3 +1,7 @@
+using System.IO;
+using System.Linq;
+using Core.MessageSystem;
+using Core.VisualNovel.Script.Compiler;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,6 +17,28 @@ namespace Core.VisualNovel.Script.Editor {
         public static void ShowWindow() {
             GetWindow<CompileOptionsWindow>();
         }
+        
+        [MenuItem("Window/Visual Novel/Reload All Compile Options")]
+        public static void Reload() {
+            CompileOptions.Clear();
+            ReloadDirectory("Assets/Resources");
+            MessageService.Process(new Message {Mask = CoreConstant.Mask, Tag = CoreConstant.ReloadAllCompileOptionsTag});
+        }
+
+        private static void ReloadDirectory(string root) {
+            foreach (var directory in Directory.GetDirectories(root)) {
+                ReloadDirectory(directory);
+            }
+            foreach (var file in Directory.GetFiles(root).Where(e => e.EndsWith(".vns"))) {
+                var target = CodeCompiler.CreatePathFromAsset(file);
+                if (target == null) continue;
+                CompileOptions.CreateOrUpdateScript(target);
+            }
+        }
+
+        private void OnEnable() {
+            titleContent.image = EditorGUIUtility.Load("Assets/Gizmos/Core/VisualNovel/Script/Editor/CompileOptionsWindow Icon.png") as Texture2D;
+        }
 
         private void OnGUI() {
             // 左栏
@@ -20,7 +46,9 @@ namespace Core.VisualNovel.Script.Editor {
             GUILayout.BeginVertical();
             EditorGUILayout.LabelField("Global Options", EditorStyles.boldLabel);
             GUILayout.BeginHorizontal();
-            GUILayout.Button("test");
+            if (GUILayout.Button("test")) {
+                Debug.Log(CompileOptions.Collection.Count);
+            }
             GUILayout.Button("test");
             GUILayout.EndHorizontal();
             GUILayout.Button("test");
