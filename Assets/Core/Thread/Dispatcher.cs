@@ -3,7 +3,7 @@
 using System;
 using UnityEngine;
 
-namespace Core.Dispatcher {
+namespace Core.Thread {
     /// <summary>
     /// 线程任务分发器
     /// </summary>

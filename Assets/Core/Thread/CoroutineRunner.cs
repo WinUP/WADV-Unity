@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using UnityEngine;
 
-namespace Core.Dispatcher {
+namespace Core.Thread {
     /// <inheritdoc />
     /// <summary>
     /// Unity协程执行器
@@ -21,7 +21,7 @@ namespace Core.Dispatcher {
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void DetectUnityThreadContext() {
-            MainThreadId = Thread.CurrentThread.ManagedThreadId;
+            MainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
             MainThreadContext = SynchronizationContext.Current;
         }
 

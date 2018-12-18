@@ -14,8 +14,7 @@ namespace Core.VisualNovel.Script {
     public static class CompileOptions {
         private static readonly string RecordFilePath = Application.streamingAssetsPath + "/VisualNovelScriptDefaultCompileOptions.bytes";
         
-        private static readonly Dictionary<string, ScriptCompileOption> Options = new Dictionary<string, ScriptCompileOption>();
-        public static IReadOnlyDictionary<string, ScriptCompileOption> Collection { get; } = Options;
+        public static readonly Dictionary<string, ScriptCompileOption> Options = new Dictionary<string, ScriptCompileOption>();
 
         static CompileOptions() {
             if (!File.Exists(RecordFilePath)) return;

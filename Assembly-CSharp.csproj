@@ -54,10 +54,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Core\Dispatcher\CoroutineRunner.cs" />
-    <Compile Include="Assets\Core\Dispatcher\Dispatcher.cs" />
-    <Compile Include="Assets\Core\Dispatcher\WaitForBackgroundThread.cs" />
-    <Compile Include="Assets\Core\Dispatcher\WaitForUpdate.cs" />
     <Compile Include="Assets\Core\Extensions\AwaitExtensions.cs" />
     <Compile Include="Assets\Core\Extensions\EnumerableExtensions.cs" />
     <Compile Include="Assets\Core\Extensions\EnumeratorExtensions.cs" />
@@ -70,6 +66,10 @@
     <Compile Include="Assets\Core\MessageSystem\IMessenger.cs" />
     <Compile Include="Assets\Core\MessageSystem\Message.cs" />
     <Compile Include="Assets\Core\MessageSystem\MessageService.cs" />
+    <Compile Include="Assets\Core\Thread\CoroutineRunner.cs" />
+    <Compile Include="Assets\Core\Thread\Dispatcher.cs" />
+    <Compile Include="Assets\Core\Thread\WaitForBackgroundThread.cs" />
+    <Compile Include="Assets\Core\Thread\WaitForUpdate.cs" />
     <Compile Include="Assets\Core\VisualNovel\Attributes\PluginTranslationAttribute.cs" />
     <Compile Include="Assets\Core\VisualNovel\Attributes\StaticTranslationAttribute.cs" />
     <Compile Include="Assets\Core\VisualNovel\ExecutionContext.cs" />

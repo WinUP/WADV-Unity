@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core.Extensions;
 using Core.MessageSystem;
 using Core.VisualNovel.Script.Compiler;
 using Core.VisualNovel.Translation;
@@ -34,10 +35,12 @@ namespace Core.VisualNovel.Script.Editor {
 
         public override void OnEnable() {
             _node = ImporterEditorRoot.CreateChild(this);
+            base.OnEnable();
         }
 
         public override void OnDisable() {
             ImporterEditorRoot.RemoveChild(_node);
+            base.OnDisable();
         }
 
         public override void OnInspectorGUI() {
@@ -100,7 +103,11 @@ namespace Core.VisualNovel.Script.Editor {
             }
             EditorGUILayout.EndHorizontal();
             --EditorGUI.indentLevel;
-            EditorGUILayout.HelpBox("You can control global settings under menu Window/VisualNovel", MessageType.Info);
+            GUILayout.Space(5);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Global Options")) {
+                EditorWindow.GetWindow(typeof(CompileOptionsWindow));
+            }
             // 重编译按钮
             if (GUILayout.Button("Precompile")) {
                 try {
@@ -119,6 +126,7 @@ namespace Core.VisualNovel.Script.Editor {
                 }
                 AssetDatabase.Refresh();
             }
+            EditorGUILayout.EndHorizontal();
         }
     }
 }
