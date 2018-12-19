@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Core.MessageSystem;
-using Core.VisualNovel.Script.Compiler;
+using Core.VisualNovel.Compiler;
 using UnityEngine;
 
 namespace Core.VisualNovel.Script {
@@ -18,7 +18,10 @@ namespace Core.VisualNovel.Script {
         public static readonly Dictionary<string, ScriptCompileOption> Options = new Dictionary<string, ScriptCompileOption>();
 
         static CompileOptions() {
-            if (!File.Exists(RecordFilePath)) return;
+            if (!File.Exists(RecordFilePath)) {
+                File.CreateText(RecordFilePath).Close();
+                return;
+            }
             var file = new FileStream(RecordFilePath, FileMode.Open);
             var formatter = new BinaryFormatter();
             Options = formatter.Deserialize(file) as Dictionary<string, ScriptCompileOption>;

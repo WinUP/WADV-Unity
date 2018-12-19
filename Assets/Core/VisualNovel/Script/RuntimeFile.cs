@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Core.VisualNovel.Script.Compiler;
+using Core.VisualNovel.Compiler;
 using Core.VisualNovel.Translation;
 using UnityEngine;
 

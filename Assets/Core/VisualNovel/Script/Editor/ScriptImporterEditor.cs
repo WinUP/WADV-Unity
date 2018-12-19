@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.MessageSystem;
-using Core.VisualNovel.Script.Compiler;
+using Core.VisualNovel.Compiler;
 using Core.VisualNovel.Translation;
 using UnityEditor;
 using UnityEditor.Experimental.AssetImporters;

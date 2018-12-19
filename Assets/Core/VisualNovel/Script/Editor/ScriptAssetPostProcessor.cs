@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Core.VisualNovel.Script.Compiler;
+using Core.VisualNovel.Compiler;
 using UnityEditor;
 
 namespace Core.VisualNovel.Script.Editor {

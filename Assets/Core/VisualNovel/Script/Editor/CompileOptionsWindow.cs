@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.Extensions;
 using Core.MessageSystem;
-using Core.VisualNovel.Script.Compiler;
+using Core.VisualNovel.Compiler;
 using Core.VisualNovel.Translation;
 using UnityEditor;
 using UnityEngine;
@@ -116,7 +116,8 @@ namespace Core.VisualNovel.Script.Editor {
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(key, rate.ToString("P2"));
                 if (rate < 1.0 && GUILayout.Button("+", EditorStyles.miniButtonLeft)) {
-                    if (EditorUtility.DisplayDialog("Create missing translation files", $"Would you want to create all missing files for translation \"{key}\"?", "Continue", "Cancel")) {
+                    if (EditorUtility.DisplayDialog("Create missing translation files", $"Would you want to create all missing files for translation \"{key}\"? This will precompile all script files.", "Continue", "Cancel")) {
+                        PrecompileAll(false);
                         CreateGlobalTranslation(key);
                         GUILayout.BeginVertical(); // ? 不知为何不加这一句Unity会找不到水平布局，似乎前面什么代码有副作用把布局清了
                         GUILayout.BeginHorizontal(); // ? 不知为何不加这一句Unity会找不到水平布局，似乎前面什么代码有副作用把布局清了
