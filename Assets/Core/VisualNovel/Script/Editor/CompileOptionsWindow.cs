@@ -230,28 +230,25 @@ namespace Core.VisualNovel.Script.Editor {
         }
 
         private static void RemoveUnavailableTranslationItems() {
-            if (!EditorUtility.DisplayDialog("Remove all unavailable translation items?", "This will precompile all script files, and action cannot be reversed", "Continue", "Cancel")) return;
+            if (!EditorUtility.DisplayDialog("Remove all unavailable translation items?", "This will precompile all script files, and action cannot be reversed.", "Continue", "Cancel")) return;
             PrecompileAll(false);
             var totalCount = CompileOptions.Options.Count;
             var changedFiles = new List<string>();
             foreach (var ((key, option), i) in CompileOptions.Options.WithIndex()) {
                 EditorUtility.DisplayProgressBar("Removing", $"{i}/{totalCount}", (float) i / totalCount);
                 var script = CodeCompiler.CreatePathFromId(key);
-                try {
-                    var translation = new RuntimeFile(script.SourceResource).DefaultTranslation;
-                    foreach (var language in option.ExtraTranslationLanguages) {
-                        var languageFilePath = CodeCompiler.CreateLanguageAssetPathFromId(script.SourceResource, language);
-                        if (!File.Exists(languageFilePath)) continue;
-                        var existedTranslation = new ScriptTranslation(File.ReadAllText(languageFilePath));
-                        if (!existedTranslation.RemoveUnavailableTranslations(translation)) continue;
-                        File.WriteAllText(languageFilePath, existedTranslation.Pack(), Encoding.UTF8);
-                        changedFiles.Add(languageFilePath);
-                    }
-                } catch (Exception) {
-                    EditorUtility.DisplayDialog("Runtime file create failed", $"Script \"{key}\" cannot be loaded, skip removing", "Close");
+                var translation = new RuntimeFile(script.SourceResource).DefaultTranslation;
+                foreach (var language in option.ExtraTranslationLanguages) {
+                    var languageFilePath = CodeCompiler.CreateLanguageAssetPathFromId(script.SourceResource, language);
+                    if (!File.Exists(languageFilePath)) continue;
+                    var existedTranslation = new ScriptTranslation(File.ReadAllText(languageFilePath));
+                    if (!existedTranslation.RemoveUnavailableTranslations(translation)) continue;
+                    File.WriteAllText(languageFilePath, existedTranslation.Pack(), Encoding.UTF8);
+                    changedFiles.Add(languageFilePath);
                 }
             }
             EditorUtility.ClearProgressBar();
+            AssetDatabase.Refresh();
             EditorUtility.DisplayDialog(
                 "Remove finished",
                 changedFiles.Any()

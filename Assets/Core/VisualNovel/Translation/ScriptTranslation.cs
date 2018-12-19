@@ -98,12 +98,11 @@ namespace Core.VisualNovel.Translation {
         /// <param name="baseTranslation">目标翻译</param>
         /// <returns></returns>
         public bool RemoveUnavailableTranslations(ScriptTranslation baseTranslation) {
-            var changed = false;
-            foreach (var id in _translatableStrings.Keys.Where(e => !baseTranslation._translatableStrings.ContainsKey(e))) {
+            var needRemove = new List<uint>(_translatableStrings.Keys.Where(e => !baseTranslation._translatableStrings.ContainsKey(e)));
+            foreach (var id in needRemove) {
                 _translatableStrings.Remove(id);
-                changed = true;
             }
-            return changed;
+            return needRemove.Count > 0;
         }
 
         public byte[] ToByteArray() {

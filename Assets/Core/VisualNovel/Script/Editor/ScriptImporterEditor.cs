@@ -125,7 +125,8 @@ namespace Core.VisualNovel.Script.Editor {
                     try {
                         var runtimeFile = new RuntimeFile(script.SourceResource);
                         defaultTranslationContent = runtimeFile.DefaultTranslation;
-                    } catch (Exception) {
+                    } catch (Exception e) {
+                        Debug.LogError(e);
                         defaultTranslationContent = new ScriptTranslation("");
                     }
                     File.WriteAllText(CodeCompiler.CreateLanguageAssetPathFromId(script.SourceResource, languageName), defaultTranslationContent.Pack(), Encoding.UTF8);
