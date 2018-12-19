@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using Core.MessageSystem;
 using Core.VisualNovel.Script.Compiler;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ namespace Core.VisualNovel.Script {
     /// 此项目中所有VNS文件的编译选项
     /// </summary>
     public static class CompileOptions {
-        private static readonly string RecordFilePath = Application.streamingAssetsPath + "/VisualNovelScriptDefaultCompileOptions.bytes";
+        private static readonly string RecordFilePath = Application.streamingAssetsPath + "/VisualNovelScriptDefaultCompileOptions.bin";
         
         public static readonly Dictionary<string, ScriptCompileOption> Options = new Dictionary<string, ScriptCompileOption>();
 
@@ -102,6 +103,7 @@ namespace Core.VisualNovel.Script {
             var formatter = new BinaryFormatter();
             formatter.Serialize(file, Options);
             file.Close();
+            MessageService.Process(new Message {Mask = CoreConstant.Mask, Tag = CoreConstant.RepaintCompileOptionEditor});
         }
 
         public static void Clear() {

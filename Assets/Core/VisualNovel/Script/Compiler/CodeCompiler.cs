@@ -66,7 +66,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 var languageFilePath = CreateLanguageAssetPathFromId(paths.SourceResource, language);
                 if (File.Exists(languageFilePath)) {
                     var existedTranslation = new ScriptTranslation(File.ReadAllText(languageFilePath));
-                    if (!existedTranslation.MergeWith(file.DefaultTranslation, option.RemoveUselessTranslations)) continue;
+                    if (!existedTranslation.MergeWith(file.DefaultTranslation)) continue;
                     File.WriteAllText(languageFilePath, existedTranslation.Pack(), Encoding.UTF8);
                     changedFiles.Add(languageFilePath);
                 } else {
@@ -96,7 +96,7 @@ namespace Core.VisualNovel.Script.Compiler {
                 var content = Resources.Load<TextAsset>(languageFilePath)?.text;
                 if (string.IsNullOrEmpty(content)) continue;
                 var existedTranslation = new ScriptTranslation(content);
-                existedTranslation.MergeWith(file.DefaultTranslation, option.RemoveUselessTranslations);
+                existedTranslation.MergeWith(file.DefaultTranslation);
                 translations.Add(language, existedTranslation);
             }
             return (file.Content, translations);
@@ -129,9 +129,9 @@ namespace Core.VisualNovel.Script.Compiler {
         public static ScriptPaths CreatePathFromId(string id) {
             var directory = (Path.GetDirectoryName(id) ?? id).UnifySlash();
             return new ScriptPaths {
-                Source = id + ".vns",
+                Source = $"Assets/Resources/{id}.vns",
                 SourceResource = id,
-                Binary = id + ".bin.bytes",
+                Binary = $"Assets/Resources/{id}.bin.bytes",
                 BinaryResource = id + ".bin",
                 Directory = $"Assets/Resources/{directory}",
                 DirectoryResource = directory

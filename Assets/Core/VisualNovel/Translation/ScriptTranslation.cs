@@ -62,12 +62,11 @@ namespace Core.VisualNovel.Translation {
         ///     <item><description>目标与此翻译ID和哈希相同的条目会被忽略</description></item>
         ///     <item><description>目标ID不同但哈希于此翻译中存在的条目会使用此翻译中同哈希的第一个条目的内容</description></item>
         ///     <item><description>目标与此翻译哈希不同的条目会在此翻译中新建</description></item>
-        ///     <item><description>此翻译中存在但是目标中不存在的条目的处理方式取决于函数第二个参数</description></item>
+        ///     <item><description>此翻译中存在但是目标中不存在的条目不会处理</description></item>
         /// </list>
         /// </summary>
         /// <param name="source">目标翻译</param>
-        /// <param name="removeUnavailableTranslations">是否删除所有不在目标但是存在于此翻译中的条目</param>
-        public bool MergeWith(ScriptTranslation source, bool removeUnavailableTranslations = false) {
+        public bool MergeWith(ScriptTranslation source) {
             var proceedIds = new List<uint>();
             var changed = false;
             foreach (var newTranslation in source._translatableStrings) {
@@ -90,9 +89,17 @@ namespace Core.VisualNovel.Translation {
                 proceedIds.Add(newTranslation.Key);
                 changed = true;
             }
-            // 删除多余条目（可选）
-            if (!removeUnavailableTranslations) return changed;
-            foreach (var id in _translatableStrings.Keys.Where(e => !proceedIds.Contains(e))) {
+            return changed;
+        }
+
+        /// <summary>
+        /// 删除此翻译中存在但是目标中不存在的条目
+        /// </summary>
+        /// <param name="baseTranslation">目标翻译</param>
+        /// <returns></returns>
+        public bool RemoveUnavailableTranslations(ScriptTranslation baseTranslation) {
+            var changed = false;
+            foreach (var id in _translatableStrings.Keys.Where(e => !baseTranslation._translatableStrings.ContainsKey(e))) {
                 _translatableStrings.Remove(id);
                 changed = true;
             }

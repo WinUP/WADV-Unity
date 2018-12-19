@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Core.Extensions;
 using Core.MessageSystem;
 using Core.VisualNovel.Script.Compiler;
 using Core.VisualNovel.Translation;
@@ -27,7 +26,7 @@ namespace Core.VisualNovel.Script.Editor {
         }
         
         public async Task<Message> Receive(Message message) {
-            if (message.Tag == CoreConstant.ReloadAllCompileOptionsTag) {
+            if (message.Tag == CoreConstant.RepaintCompileOptionEditor) {
                 Repaint();
             }
             return message;
@@ -56,59 +55,20 @@ namespace Core.VisualNovel.Script.Editor {
             }
             var option = CompileOptions.Get(assetPaths.SourceResource);
             EditorGUILayout.LabelField("Resource ID", assetPaths.SourceResource);
-            // 检查编译状态
+            // 显示编译状态
             if (option.BinaryHash.HasValue) {
                 EditorGUILayout.LabelField("Precompiled", option.BinaryHash == option.SourceHash ? "Yes" : "Outdated");
             } else {
                 EditorGUILayout.LabelField("Precompiled", "No");
             }
-            // 编译选项配置
-            var removeUselessTranslations = EditorGUILayout.Toggle("Clear unused translation", option.RemoveUselessTranslations);
-            if (option.RemoveUselessTranslations != removeUselessTranslations) {
-                option.RemoveUselessTranslations = removeUselessTranslations;
-                CompileOptions.Save();
-            }
-            EditorGUILayout.LabelField("Available Translations", EditorStyles.boldLabel);
-            ++EditorGUI.indentLevel;
-            EditorGUILayout.LabelField("default", "build-in resource");
-            foreach (var language in option.ExtraTranslationLanguages.ToArray()) {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(language, "text file");
-                if (GUILayout.Button("-", EditorStyles.miniButton)) {
-                    if (EditorUtility.DisplayDialog($"Remove \"{language}\" translation for {assetPaths.SourceResource}?", "This action cannot be reversed", "Continue", "Cancel")) {
-                        AssetDatabase.DeleteAsset(CodeCompiler.CreateLanguageAssetPathFromId(assetPaths.SourceResource, language));
-                    }
-                }
-                EditorGUILayout.EndHorizontal();
-            }
-            EditorGUILayout.BeginHorizontal();
-            _newLanguage = EditorGUILayout.TextField(_newLanguage);
-            if (GUILayout.Button("+", EditorStyles.miniButton)) {
-                if (string.IsNullOrEmpty(_newLanguage)) {
-                    EditorUtility.DisplayDialog("Invalid language", "Language name cannot be empty", "Close");
-                } else if (option.ExtraTranslationLanguages.Contains(_newLanguage)) {
-                    EditorUtility.DisplayDialog("Language name conflict", $"Language {_newLanguage} is already existed", "Close");
-                } else {
-                    ScriptTranslation defaultTranslationContent;
-                    try {
-                        var runtimeFile = new RuntimeFile(assetPaths.SourceResource);
-                        defaultTranslationContent = runtimeFile.DefaultTranslation;
-                    } catch (Exception) {
-                        defaultTranslationContent = new ScriptTranslation("");
-                    }
-                    File.WriteAllText(CodeCompiler.CreateLanguageAssetPathFromId(assetPaths.SourceResource, _newLanguage), defaultTranslationContent.Pack(), Encoding.UTF8);
-                    AssetDatabase.Refresh();
-                    _newLanguage = "";
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-            --EditorGUI.indentLevel;
+            // 语言配置
+            _newLanguage = DrawLanguageGui(option, assetPaths, _newLanguage);
             GUILayout.Space(5);
+            // 工具按钮
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Global Options")) {
                 EditorWindow.GetWindow(typeof(CompileOptionsWindow));
             }
-            // 重编译按钮
             if (GUILayout.Button("Precompile")) {
                 try {
                     var changedFiles = CodeCompiler.CompileAsset(importer.assetPath, option).ToArray();
@@ -127,6 +87,56 @@ namespace Core.VisualNovel.Script.Editor {
                 AssetDatabase.Refresh();
             }
             EditorGUILayout.EndHorizontal();
+        }
+
+        public static string DrawLanguageGui(ScriptCompileOption option, CodeCompiler.ScriptPaths script, string languageName, bool showOpenButton = false) {
+            EditorGUILayout.BeginVertical();
+            if (showOpenButton) {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Available Translations", EditorStyles.boldLabel);
+                if (GUILayout.Button("Open", EditorStyles.miniButton)) {
+                    UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(script.Source, 0);
+                }
+                EditorGUILayout.EndHorizontal();
+            } else {
+                EditorGUILayout.LabelField("Available Translations", EditorStyles.boldLabel);
+            }
+            ++EditorGUI.indentLevel;
+            EditorGUILayout.LabelField("default", "build-in resource");
+            foreach (var language in option.ExtraTranslationLanguages.ToArray()) {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField(language, "text file");
+                if (GUILayout.Button("-", EditorStyles.miniButton)) {
+                    if (EditorUtility.DisplayDialog($"Remove \"{language}\" translation from {script.SourceResource}?", "This action cannot be reversed", "Continue", "Cancel")) {
+                        AssetDatabase.DeleteAsset(CodeCompiler.CreateLanguageAssetPathFromId(script.SourceResource, language));
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+            EditorGUILayout.BeginHorizontal();
+            languageName = EditorGUILayout.TextField(languageName);
+            if (GUILayout.Button("+", EditorStyles.miniButton)) {
+                if (string.IsNullOrEmpty(languageName)) {
+                    EditorUtility.DisplayDialog("Invalid language", "Language name cannot be empty", "Close");
+                } else if (option.ExtraTranslationLanguages.Contains(languageName)) {
+                    EditorUtility.DisplayDialog("Language name conflict", $"Language {languageName} is already existed", "Close");
+                } else {
+                    ScriptTranslation defaultTranslationContent;
+                    try {
+                        var runtimeFile = new RuntimeFile(script.SourceResource);
+                        defaultTranslationContent = runtimeFile.DefaultTranslation;
+                    } catch (Exception) {
+                        defaultTranslationContent = new ScriptTranslation("");
+                    }
+                    File.WriteAllText(CodeCompiler.CreateLanguageAssetPathFromId(script.SourceResource, languageName), defaultTranslationContent.Pack(), Encoding.UTF8);
+                    AssetDatabase.Refresh();
+                    languageName = "";
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+            --EditorGUI.indentLevel;
+            EditorGUILayout.EndVertical();
+            return languageName;
         }
     }
 }
