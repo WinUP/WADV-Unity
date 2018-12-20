@@ -163,6 +163,7 @@ namespace Core.VisualNovel.Compiler {
                         file.Current == '>' && file.Next == '=' ||
                         file.Current == '<' && file.Next == '=' ||
                         file.Current == '=' && file.Next == '=' ||
+                        file.Current == '!' && file.Next == '=' ||
                         file.Current == '/' && file.Next == '=') {
                         file.MoveToNext();
                         position = position.NextColumn();
@@ -327,7 +328,14 @@ namespace Core.VisualNovel.Compiler {
                     tokens.Add(new BasicToken(TokenType.PluginCallEnd, position));
                     break;
                 case '!':
-                    tokens.Add(new BasicToken(TokenType.LogicNot, position));
+                    switch (file.Next) {
+                        case '=':
+                            tokens.Add(new BasicToken(TokenType.LogicNotEqual, position));
+                            break;
+                        default:
+                            tokens.Add(new BasicToken(TokenType.LogicNot, position));
+                            break;
+                    }
                     break;
                 case '@':
                     switch (file.Next) {

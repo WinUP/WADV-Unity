@@ -2,24 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Core.VisualNovel.Script;
+using Core.Extensions;
 using Core.VisualNovel.Translation;
+using JetBrains.Annotations;
 
 namespace Core.VisualNovel.Compiler {
     /// <summary>
     /// 表示一个字节码文件
     /// </summary>
     public class ByteCodeWriter {
-        private readonly BinaryWriter _writer = new BinaryWriter(new MemoryStream(), Encoding.UTF8);
-        private readonly List<SourcePosition> _positions = new List<SourcePosition>();
+        private readonly Writer _writer = new Writer(new MemoryStream(), Encoding.UTF8);
+        private readonly Dictionary<long, SourcePosition> _positions = new Dictionary<long, SourcePosition>();
         private readonly Dictionary<int, long> _labels = new Dictionary<int, long>();
         private readonly Dictionary<uint, string> _translations = new Dictionary<uint, string>();
         private readonly List<string> _strings = new List<string>();
-
-        /// <summary>
-        /// 文件写入指针当前偏移量
-        /// </summary>
-        public long Position => _writer.BaseStream.Position;
+        private long _previousOffset;
 
         /// <summary>
         /// 编写指令
@@ -28,7 +25,7 @@ namespace Core.VisualNovel.Compiler {
         /// <param name="position">指令在源文件中的位置</param>
         public void OperationCode(OperationCode code, SourcePosition position) {
             _writer.Write((byte) code);
-            _positions.Add(position);
+            _positions.Add(_writer.BaseStream.Position, position);
         }
 
         /// <summary>
@@ -90,7 +87,7 @@ namespace Core.VisualNovel.Compiler {
                 currentIndex = _strings.Count - 1;
             }
             OperationCode(Compiler.OperationCode.LDSTR, position);
-            DirectWrite(currentIndex);
+            _writer.Write7BitEncodedInt(currentIndex);
         }
         
         /// <summary>
@@ -330,30 +327,46 @@ namespace Core.VisualNovel.Compiler {
         /// </summary>
         /// <returns></returns>
         public (byte[] Code, byte[] Labels, byte[] Strings, byte[] Positions, ScriptTranslation Translations) CreateSegments() {
-            var segmentWriter = new BinaryWriter(new MemoryStream());
+            var segmentWriter = new Writer(new MemoryStream());
             segmentWriter.Write(_labels.Count);
-            foreach (var label in _labels) {
-                segmentWriter.Write(label.Key);
-                segmentWriter.Write(label.Value);
+            foreach (var (id, position) in _labels) {
+                segmentWriter.Write(id);
+                segmentWriter.Write(position);
             }
             var labelSegment = (segmentWriter.BaseStream as MemoryStream)?.ToArray();
             segmentWriter.Close();
-            segmentWriter = new BinaryWriter(new MemoryStream());
+            segmentWriter = new Writer(new MemoryStream());
             segmentWriter.Write(_strings.Count);
             foreach (var stringConstant in _strings) {
                 segmentWriter.Write(stringConstant);
             }
             var stringSegment = (segmentWriter.BaseStream as MemoryStream)?.ToArray();
             segmentWriter.Close();
-            segmentWriter = new BinaryWriter(new MemoryStream());
+            segmentWriter = new Writer(new MemoryStream());
             segmentWriter.Write(_positions.Count);
-            foreach (var position in _positions) {
-                segmentWriter.Write(position.Line);
-                segmentWriter.Write(position.Column);
+            var previousPosition = (long) 0;
+            foreach (var (offset, position) in _positions) {
+                segmentWriter.Write((byte) (offset - previousPosition)); // 已知直接写入中语言字符串长度最长，为126+1=127，因此指令最大偏移间隔为127+8=135，可以使用上限为255的byte
+                previousPosition = offset;
+                segmentWriter.Write7BitEncodedInt(position.Line);
+                segmentWriter.Write7BitEncodedInt(position.Column);
             }
             var positionSegment = (segmentWriter.BaseStream as MemoryStream)?.ToArray();
             segmentWriter.Close();
             return (CreateMainSegment(), labelSegment, stringSegment, positionSegment, new ScriptTranslation(_translations));
+        }
+
+        /// <summary>
+        /// 用于访问BinaryWriter内部函数的特定结构
+        /// </summary>
+        private class Writer : BinaryWriter {
+            public Writer([NotNull] Stream input, [NotNull] Encoding encoding) : base(input, encoding) {}
+
+            public Writer([NotNull] Stream output) : base(output) {}
+
+            public new void Write7BitEncodedInt(int value) {
+                base.Write7BitEncodedInt(value);
+            }
         }
     }
 }

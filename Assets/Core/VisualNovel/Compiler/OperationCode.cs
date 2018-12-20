@@ -182,12 +182,12 @@ namespace Core.VisualNovel.Compiler {
         LDC_R4,
         /// <summary>
         /// 入栈字符串常量（常量表引用）
-        /// <para>格式：<code>23 &lt;int32&gt;</code></para>
+        /// <para>格式：<code>23 &lt;7 bit format int32&gt;</code></para>
         /// </summary>
         LDSTR,
         /// <summary>
         /// 入栈跳转标签ID
-        /// <para>格式：<code>24 &lt;int32&gt;</code></para>
+        /// <para>格式：<code>24 &lt;7 bit format int32&gt;</code></para>
         /// </summary>
         LDADDR,
         /// <summary>

@@ -371,6 +371,9 @@ namespace Core.VisualNovel.Compiler {
                     case TokenType.LogicEqual:
                         result.Operator = OperatorType.LogicEqualsTo;
                         break;
+                    case TokenType.LogicNotEqual:
+                        result.Operator = OperatorType.LogicNotEqualsTo;
+                        break;
                     default:
                         throw new CompileException(Identifier, Tokens.Current.Position, $"Unrecognized binary operator type {Tokens.Current.Type}");
                 }

@@ -8,12 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.Extensions;
 using Core.MessageSystem;
-using Core.VisualNovel.Compiler;
+using Core.VisualNovel.Runtime;
 using Core.VisualNovel.Translation;
 using UnityEditor;
 using UnityEngine;
 
-namespace Core.VisualNovel.Script.Editor {
+namespace Core.VisualNovel.Compiler.Editor {
     public class CompileOptionsWindow : EditorWindow, IMessenger {
         public int Mask { get; } = CoreConstant.Mask;
 
@@ -144,6 +144,12 @@ namespace Core.VisualNovel.Script.Editor {
             if (GUILayout.Button("Precompile All")) {
                 PrecompileAll();
             }
+            if (GUILayout.Button("Recompile All (force)")) {
+                if (EditorUtility.DisplayDialog("Force recompile all scripts?", "This action cannot be reversed.", "Continue", "Cancel")) {
+                    PrecompileAll(true, true);
+                    GUILayout.BeginHorizontal(); // ? 不知为何不加这一句Unity会找不到水平布局，似乎前面什么代码有副作用把布局清了
+                }
+            }
             if (GUILayout.Button("Remove unavailable translation items")) {
                 RemoveUnavailableTranslationItems();
                 EditorGUILayout.BeginHorizontal(); // ? 不知为何不加这一句Unity会找不到水平布局，似乎前面什么代码有副作用把布局清了
@@ -207,13 +213,13 @@ namespace Core.VisualNovel.Script.Editor {
             return "";
         }
 
-        private static void PrecompileAll(bool notice = true) {
+        private static void PrecompileAll(bool notice = true, bool force = false) {
             var totalCount = CompileOptions.Options.Count;
             var changedFiles = new List<string>();
             foreach (var ((key, option), i) in CompileOptions.Options.WithIndex()) {
                 EditorUtility.DisplayProgressBar("Compiling", $"{i}/{totalCount}", (float) i / totalCount);
                 var script = CodeCompiler.CreatePathFromId(key);
-                var compileResult = CodeCompiler.CompileAsset(script.Source, option).ToList();
+                var compileResult = CodeCompiler.CompileAsset(script.Source, option, force).ToList();
                 if (compileResult.Count > 0) {
                     changedFiles.AddRange(compileResult);
                     CompileOptions.CreateOrUpdateScript(script);

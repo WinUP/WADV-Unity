@@ -41,8 +41,8 @@ namespace Core.VisualNovel.Translation {
         /// </summary>
         /// <param name="content">来源集合</param>
         public ScriptTranslation(IReadOnlyDictionary<uint, string> content) {
-            foreach (var pair in content) {
-                _translatableStrings.Add(pair.Key, pair.Value);
+            foreach (var (id, value) in content) {
+                _translatableStrings.Add(id, value);
             }
         }
 
@@ -67,26 +67,21 @@ namespace Core.VisualNovel.Translation {
         /// </summary>
         /// <param name="source">目标翻译</param>
         public bool MergeWith(ScriptTranslation source) {
-            var proceedIds = new List<uint>();
             var changed = false;
-            foreach (var newTranslation in source._translatableStrings) {
+            foreach (var (key, content) in source._translatableStrings) {
                 // 情况1
-                if (_translatableStrings.ContainsKey(newTranslation.Key)) {
-                    proceedIds.Add(newTranslation.Key);
-                    changed = true;
+                if (_translatableStrings.ContainsKey(key)) {
                     continue;
                 }
                 // 情况2
-                var similarIds = _translatableStrings.Keys.Where(e => e << 16 == newTranslation.Key << 16).ToArray();
+                var similarIds = _translatableStrings.Keys.Where(e => e << 16 == key << 16).ToArray();
                 if (similarIds.Any()) {
-                    proceedIds.Add(newTranslation.Key);
-                    _translatableStrings.Add(newTranslation.Key, _translatableStrings[similarIds.First()]);
+                    _translatableStrings.Add(key, _translatableStrings[similarIds.First()]);
                     changed = true;
                     continue;
                 }
                 // 情况3
-                _translatableStrings.Add(newTranslation.Key, newTranslation.Value);
-                proceedIds.Add(newTranslation.Key);
+                _translatableStrings.Add(key, content);
                 changed = true;
             }
             return changed;

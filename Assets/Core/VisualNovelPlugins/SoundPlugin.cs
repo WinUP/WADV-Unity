@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Core.VisualNovel;
 using Core.VisualNovel.Attributes;
 using Core.VisualNovel.Plugin;
-using Core.VisualNovel.StackItems;
+using Core.VisualNovel.Runtime.StackItems;
 
 namespace Core.VisualNovelPlugins {
     [PluginTranslation("en", "Sound")]

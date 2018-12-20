@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 
-namespace Core.VisualNovel.Script.Editor {
+namespace Core.VisualNovel.Compiler.Editor {
     /// <inheritdoc />
     /// <summary>
     /// 适用于Unity 2017.2+的资源导入器

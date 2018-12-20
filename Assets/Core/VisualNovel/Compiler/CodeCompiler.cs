@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Core.Extensions;
-using Core.VisualNovel.Script;
 using Core.VisualNovel.Translation;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -42,8 +41,9 @@ namespace Core.VisualNovel.Compiler {
         /// </summary>
         /// <param name="path">文件路径</param>
         /// <param name="option">编译选项</param>
+        /// <param name="forceCompile">是否强制重新编译</param>
         /// <returns>发生变化的文件列表</returns>
-        public static IEnumerable<string> CompileAsset(string path, ScriptCompileOption option) {
+        public static IEnumerable<string> CompileAsset(string path, ScriptCompileOption option, bool forceCompile = false) {
             if (!path.EndsWith(".vns")) {
                 throw new NotSupportedException($"Cannot compile {path}: File name extension must be vns");
             }
@@ -52,27 +52,29 @@ namespace Core.VisualNovel.Compiler {
             if (paths == null) {
                 throw new NotSupportedException($"File {path}'s path cannot be recognized as visual novel script");
             }
-            // 编译文件
             var identifier = new CodeIdentifier {Id = path, Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source))};
-            var existedHash = ReadBinaryHash(paths.Binary);
-            if (existedHash.HasValue && existedHash.Value == identifier.Hash) {
-                return new string[] { }; // 如果源代码内容没有变化则直接跳过编译
+            // 编译文件
+            if (!forceCompile) {
+                var existedHash = ReadBinaryHash(paths.Binary);
+                if (existedHash.HasValue && existedHash.Value == identifier.Hash) {
+                    return new string[] { }; // 如果源代码内容没有变化则直接跳过编译
+                }
             }
             var changedFiles = new List<string>();
-            var file = CompileCode(source, identifier);
-            File.WriteAllBytes(paths.Binary, file.Content);
+            var (content, defaultTranslation) = CompileCode(source, identifier);
+            File.WriteAllBytes(paths.Binary, content);
             changedFiles.Add(paths.Binary);
             // 处理其他翻译
             foreach (var language in option.ExtraTranslationLanguages) {
                 var languageFilePath = CreateLanguageAssetPathFromId(paths.SourceResource, language);
                 if (File.Exists(languageFilePath)) {
                     var existedTranslation = new ScriptTranslation(File.ReadAllText(languageFilePath));
-                    if (!existedTranslation.MergeWith(file.DefaultTranslation)) continue;
+                    if (!existedTranslation.MergeWith(defaultTranslation)) continue;
                     File.WriteAllText(languageFilePath, existedTranslation.Pack(), Encoding.UTF8);
                     changedFiles.Add(languageFilePath);
                 } else {
                     // 如果翻译不存在，以默认翻译为蓝本新建翻译文件
-                    File.WriteAllText(languageFilePath, file.DefaultTranslation.Pack(), Encoding.UTF8);
+                    File.WriteAllText(languageFilePath, defaultTranslation.Pack(), Encoding.UTF8);
                     changedFiles.Add(languageFilePath);
                 }
             }
@@ -85,11 +87,11 @@ namespace Core.VisualNovel.Compiler {
         /// <param name="id">资源ID</param>
         /// <param name="option">编译选项</param>
         /// <returns></returns>
-        public static (byte[] Code, IReadOnlyDictionary<string, ScriptTranslation> Translations) CompileResource(string id, ScriptCompileOption option) {
+        public static (byte[] Code, Dictionary<string, ScriptTranslation> Translations) CompileResource(string id, ScriptCompileOption option) {
             var source = Resources.Load<TextAsset>(id)?.text ?? "";
             // 编译文件
             var identifier = new CodeIdentifier {Id = id, Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source))};
-            var file = CompileCode(source, identifier);
+            var (code, defaultTranslation) = CompileCode(source, identifier);
             // 生成翻译
             var translations = new Dictionary<string, ScriptTranslation>();
             foreach (var language in option.ExtraTranslationLanguages) {
@@ -97,10 +99,10 @@ namespace Core.VisualNovel.Compiler {
                 var content = Resources.Load<TextAsset>(languageFilePath)?.text;
                 if (string.IsNullOrEmpty(content)) continue;
                 var existedTranslation = new ScriptTranslation(content);
-                existedTranslation.MergeWith(file.DefaultTranslation);
+                existedTranslation.MergeWith(defaultTranslation);
                 translations.Add(language, existedTranslation);
             }
-            return (file.Content, translations);
+            return (code, translations);
         }
         
         /// <summary>

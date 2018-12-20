@@ -5,10 +5,9 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Core.MessageSystem;
-using Core.VisualNovel.Compiler;
 using UnityEngine;
 
-namespace Core.VisualNovel.Script {
+namespace Core.VisualNovel.Compiler {
     /// <summary>
     /// 此项目中所有VNS文件的编译选项
     /// </summary>

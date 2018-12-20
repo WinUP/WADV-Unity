@@ -57,11 +57,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Core\VisualNovel\Compiler\Editor\CompileOptionsWindow.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Compiler\Editor\ScriptAssetPostProcessor.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Compiler\Editor\ScriptImporter.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Compiler\Editor\ScriptImporterEditor.cs" />
     <Compile Include="Assets\Core\VisualNovel\Editor\VisualNetworkEditor.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Editor\CompileOptionsWindow.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Editor\ScriptAssetPostProcessor.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Editor\ScriptImporter.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Script\Editor\ScriptImporterEditor.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/bo/SCB_YUME_NO_MISAKI_SAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

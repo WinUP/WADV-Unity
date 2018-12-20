@@ -136,12 +136,13 @@ namespace Core.VisualNovel.Translation {
         /// </summary>
         /// <param name="language">目标语言</param>
         public static bool CheckLanguageName(string language) {
-            return language != null && language.All(e => e >= '0' && e <= '9' || e >= 'a' && e <= 'z' || e >= 'A' && e <= 'Z' || e =='_');
+            // 127: 7位int最大长度
+            return language != null && language.Length < 127 && language.All(e => e >= '0' && e <= '9' || e >= 'a' && e <= 'z' || e >= 'A' && e <= 'Z' || e =='_');
         }
 
         private static void EnsureLanguageName(string language) {
             if (!CheckLanguageName(language)) {
-                throw new ArgumentException("Language name can only has numbers, alphabets and underlines");
+                throw new ArgumentException("Language name must less than 127 characters and can only has numbers, alphabets, underlines");
             }
         }
     }

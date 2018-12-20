@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.MessageSystem;
-using Core.VisualNovel.Compiler;
+using Core.VisualNovel.Runtime;
 using Core.VisualNovel.Translation;
 using UnityEditor;
 using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 
-namespace Core.VisualNovel.Script.Editor {
+namespace Core.VisualNovel.Compiler.Editor {
     [CustomEditor(typeof(ScriptImporter))]
     public class ScriptImporterEditor : ScriptedImporterEditor, IMessenger {
         public int Mask { get; } = CoreConstant.Mask;

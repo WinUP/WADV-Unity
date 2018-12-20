@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Core.VisualNovel.Compiler;
 using UnityEditor;
 
-namespace Core.VisualNovel.Script.Editor {
+namespace Core.VisualNovel.Compiler.Editor {
     public class ScriptAssetPostProcessor : AssetPostprocessor {
         private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
             // 重命名，按照vns -> bin -> lang的顺序处理

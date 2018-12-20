@@ -62,6 +62,10 @@ namespace Core.VisualNovel.Compiler.Expressions {
         /// <summary>
         /// 真值比较
         /// </summary>
-        LogicEqualsTo
+        LogicEqualsTo,
+        /// <summary>
+        /// 真值不等
+        /// </summary>
+        LogicNotEqualsTo,
     }
 }

@@ -1,4 +1,4 @@
-namespace Core.VisualNovel.Script {
+namespace Core.VisualNovel {
 	/// <summary>
 	/// 哈希生成器
 	/// </summary>

@@ -100,6 +100,10 @@ namespace Core.VisualNovel.Compiler {
                             case OperatorType.LogicEqualsTo:
                                 context.File.OperationCode(OperationCode.EQL, binaryExpression.Position);
                                 break;
+                            case OperatorType.LogicNotEqualsTo:
+                                context.File.OperationCode(OperationCode.EQL, binaryExpression.Position);
+                                context.File.OperationCode(OperationCode.NOT, binaryExpression.Position);
+                                break;
                         }
                     }
                     break;

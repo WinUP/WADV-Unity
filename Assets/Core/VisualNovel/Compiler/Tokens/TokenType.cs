@@ -120,6 +120,10 @@
         /// </summary>
         LogicEqual,
         /// <summary>
+        /// 真值不等运算符
+        /// </summary>
+        LogicNotEqual,
+        /// <summary>
         /// 函数声明
         /// </summary>
         Function,
