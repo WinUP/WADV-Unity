@@ -101,3 +101,22 @@ VNS版本[@init]测试脚本。首先测试无角色对话。
     ;return @temp2
 ;call 测试场景3 temp=@temp
 #测试 这里应该是1: [@temp]
+
+;scene Closure1
+    @temp = 1
+    ;scene Closure2
+        [@temp->写入 值=(@temp + 1)]
+
+@runner = (;call Closure1)
+@temp = (;call runner)
+#测试 闭包测试，第一次为2: [@temp]
+@temp = (;call runner)
+#测试 闭包测试，第二次为3: [@temp]
+@runner = @temp = @null
+
+// function Closure1() {
+//     var temp = 1;
+//     return function Closure2() {
+//         return (temp += 1);
+//     }
+// }

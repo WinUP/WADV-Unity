@@ -191,6 +191,7 @@ namespace Core.VisualNovel.Compiler {
                     context.File.DirectWrite(functionEnd);
                     // 开始函数生成
                     context.File.CreateLabel(functionStart);
+                    context.File.OperationCode(OperationCode.SCOPE, functionExpression.Position);
                     // 默认值赋值
                     foreach (var parameter in functionExpression.Parameters) {
                         if (!(parameter.Value is EmptyExpression)) {
@@ -208,8 +209,9 @@ namespace Core.VisualNovel.Compiler {
                         }
                     }
                     // 生成函数体
-                    Generate(context, functionExpression.Body);
+                    Generate(context, functionExpression.Body, CompilerFlag.NotCreateScope);
                     // 结束函数生成
+                    context.File.OperationCode(OperationCode.LEAVE, SourcePosition.UnavailablePosition);
                     context.File.OperationCode(OperationCode.RET, SourcePosition.UnavailablePosition);
                     context.File.CreateLabel(functionEnd);
                     break;
@@ -249,7 +251,9 @@ namespace Core.VisualNovel.Compiler {
                     context.File.OperationCode(OperationCode.RET, returnExpression.Position);
                     break;
                 case ScopeExpression scopeExpression:
-                    context.File.OperationCode(OperationCode.SCOPE, scopeExpression.Position);
+                    if (!flags.Contains(CompilerFlag.NotCreateScope)) {
+                        context.File.OperationCode(OperationCode.SCOPE, scopeExpression.Position);
+                    }
                     ++context.Scope;
                     foreach (var (item, i) in scopeExpression.Content.WithIndex()) {
                         Generate(context, item);
@@ -258,7 +262,9 @@ namespace Core.VisualNovel.Compiler {
                         }
                     }
                     --context.Scope;
-                    context.File.OperationCode(OperationCode.LEAVE, scopeExpression.Position);
+                    if (!flags.Contains(CompilerFlag.NotCreateScope)) {
+                        context.File.OperationCode(OperationCode.LEAVE, scopeExpression.Position);
+                    }
                     break;
                 case StringExpression stringExpression:
                     if (stringExpression.Translatable) {

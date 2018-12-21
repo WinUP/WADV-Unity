@@ -7,13 +7,7 @@ namespace Core {
     /// <summary>
     /// 表示一个链接树节点
     /// </summary>
-    /// <typeparam name="T">节点内容类型</typeparam>
-    public class LinkedTreeNode<T> : IEnumerable<T> {
-        /// <summary>
-        /// 获取或设置节点内容
-        /// </summary>
-        public T Content { get; set; }
-
+    public class LinkedTreeNode : IEnumerable<LinkedTreeNode> {
         /// <summary>
         /// 获取或设置节点可用性
         /// </summary>
@@ -23,7 +17,7 @@ namespace Core {
         /// 获取或设置节点的父节点
         /// </summary>
         [CanBeNull]
-        public LinkedTreeNode<T> Parent {
+        public LinkedTreeNode Parent {
             get => _parent;
             set => SetParent(value);
         }
@@ -47,49 +41,26 @@ namespace Core {
         /// <summary>
         /// 获取最近的遍历优先级大于此节点的同级同父节点子节点
         /// </summary>
-        [CanBeNull] public LinkedTreeNode<T> Left { get; private set; }
+        [CanBeNull] public LinkedTreeNode Left { get; private set; }
         /// <summary>
         /// 获取最近的遍历优先级小于此节点的同级同父节点子节点
         /// </summary>
-        [CanBeNull] public LinkedTreeNode<T> Right { get; private set; }
+        [CanBeNull] public LinkedTreeNode Right { get; private set; }
         /// <summary>
         /// 获取隶属此节点的优先级最大的子节点（或之一）
         /// </summary>
-        [CanBeNull] public LinkedTreeNode<T> FirstChild { get; private set; }
+        [CanBeNull] public LinkedTreeNode FirstChild { get; private set; }
 
-        private LinkedTreeNode<T> _parent;
+        private LinkedTreeNode _parent;
         private int _priority;
         
         /// <summary>
-        /// 创建一个链接树节点
-        /// </summary>
-        public LinkedTreeNode() {}
-
-        /// <summary>
-        /// 创建一个链接树节点
-        /// </summary>
-        /// <param name="content">节点内容</param>
-        public LinkedTreeNode(T content) {
-            Content = content;
-        }
-
-        /// <summary>
         /// 创建一个一级子节点
         /// </summary>
-        /// <param name="content">子节点内容</param>
         /// <param name="priority">子节点遍历优先级</param>
         /// <returns></returns>
-        public LinkedTreeNode<T> CreateChild(T content, int priority = 0) {
-            return new LinkedTreeNode<T>(content) {Priority = priority, Parent = this};
-        }
-        
-        /// <summary>
-        /// 查找第一个符合条件的子节点
-        /// </summary>
-        /// <param name="content">子节点内容</param>
-        /// <returns></returns>
-        public LinkedTreeNode<T> FindNode(T content) {
-            return FindNode(e => e.Content.Equals(content));
+        public LinkedTreeNode CreateChild(int priority = 0) {
+            return new LinkedTreeNode() {Priority = priority, Parent = this};
         }
         
         /// <summary>
@@ -97,7 +68,8 @@ namespace Core {
         /// </summary>
         /// <param name="prediction">用于确定目标子节点的函数</param>
         /// <returns></returns>
-        public LinkedTreeNode<T> FindNode(Func<LinkedTreeNode<T>, bool> prediction) {
+        [CanBeNull]
+        public LinkedTreeNode FindChild(Func<LinkedTreeNode, bool> prediction) {
             var processingChild = FirstChild;
             while (processingChild != null) {
                 if (prediction.Invoke(processingChild)) {
@@ -109,96 +81,11 @@ namespace Core {
         }
         
         /// <summary>
-        /// 递归查找第一个符合条件的子节点
-        /// </summary>
-        /// <param name="content">子节点内容</param>
-        /// <returns></returns>
-        public LinkedTreeNode<T> FindNodeRecursion(T content) {
-            return FindNodeRecursion(e => e.Content.Equals(content));
-        }
-        
-        /// <summary>
-        /// 递归查找第一个符合条件的子节点
-        /// </summary>
-        /// <param name="prediction">用于确定目标子节点的函数</param>
-        /// <returns></returns>
-        public LinkedTreeNode<T> FindNodeRecursion(Func<LinkedTreeNode<T>, bool> prediction) {
-            var result = FindNode(prediction);
-            if (result != null) return result;
-            var processingChild = FirstChild;
-            while (processingChild != null) {
-                result = processingChild.FindNodeRecursion(prediction);
-                if (result != null) return result;
-                processingChild = processingChild.Right;
-            }
-            return null;
-        }
-        
-        /// <summary>
-        /// 查找所有符合条件的子节点
-        /// </summary>
-        /// <param name="content">子节点内容</param>
-        /// <returns></returns>
-        public IEnumerable<LinkedTreeNode<T>> FindAllNodes(T content) {
-            return FindAllNodes(e => e.Content.Equals(content));
-        }
-        
-        /// <summary>
-        /// 查找所有符合条件的子节点
-        /// </summary>
-        /// <param name="prediction">用于确定目标子节点的函数</param>
-        /// <returns></returns>
-        public IEnumerable<LinkedTreeNode<T>> FindAllNodes(Func<LinkedTreeNode<T>, bool> prediction) {
-            var processingChild = FirstChild;
-            var result = new List<LinkedTreeNode<T>>();
-            while (processingChild != null) {
-                if (prediction.Invoke(processingChild)) {
-                    result.Add(processingChild);
-                }
-                processingChild = processingChild.Right;
-            }
-            return result;
-        }
-        
-        /// <summary>
-        /// 递归查找所有符合条件的子节点
-        /// </summary>
-        /// <param name="content">子节点内容</param>
-        /// <returns></returns>
-        public IEnumerable<LinkedTreeNode<T>> FindAllNodesRecursion(T content) {
-            return FindAllNodesRecursion(e => e.Content.Equals(content));
-        }
-        
-        /// <summary>
-        /// 递归查找所有符合条件的子节点
-        /// </summary>
-        /// <param name="prediction">用于确定目标子节点的函数</param>
-        /// <returns></returns>
-        public IEnumerable<LinkedTreeNode<T>> FindAllNodesRecursion(Func<LinkedTreeNode<T>, bool> prediction) {
-            var result = new List<LinkedTreeNode<T>> {FindNode(prediction)};
-            var processingChild = FirstChild;
-            while (processingChild != null) {
-                result.AddRange(processingChild.FindAllNodesRecursion(prediction));
-                processingChild = processingChild.Right;
-            }
-            return result;
-        }
-        
-        /// <summary>
-        /// 删除子节点
-        /// </summary>
-        /// <param name="item">子节点内容</param>
-        /// <returns></returns>
-        public bool RemoveChild(T item) {
-            return RemoveChild(e => e.Content.Equals(item));
-        }
-
-        /// <summary>
         /// 删除子节点
         /// </summary>
         /// <param name="node">目标子节点</param>
         /// <returns></returns>
-        public bool RemoveChild(LinkedTreeNode<T> node) {
+        public bool RemoveChild(LinkedTreeNode node) {
             return RemoveChild(e => e == node);
         }
 
@@ -207,46 +94,13 @@ namespace Core {
         /// </summary>
         /// <param name="prediction">用于确定目标子节点的函数</param>
         /// <returns></returns>
-        public bool RemoveChild(Func<LinkedTreeNode<T>, bool> prediction) {
+        public bool RemoveChild(Func<LinkedTreeNode, bool> prediction) {
             var processingChild = FirstChild;
             while (processingChild != null) {
                 if (prediction.Invoke(processingChild)) {
                     processingChild.Destroy();
                     return true;
                 }
-                processingChild = processingChild.Right;
-            }
-            return false;
-        }
-        
-        /// <summary>
-        /// 递归删除子节点
-        /// </summary>
-        /// <param name="node">子节点内容</param>
-        /// <returns></returns>
-        public bool RemoveChildRecursion(T node) {
-            return RemoveChildRecursion(e => e.Content.Equals(node));
-        }
-
-        /// <summary>
-        /// 递归删除子节点
-        /// </summary>
-        /// <param name="node">目标子节点</param>
-        /// <returns></returns>
-        public bool RemoveChildRecursion(LinkedTreeNode<T> node) {
-            return RemoveChildRecursion(e => e == node);
-        }
-
-        /// <summary>
-        /// 递归删除子节点
-        /// </summary>
-        /// <param name="prediction">用于确定目标子节点的函数</param>
-        /// <returns></returns>
-        public bool RemoveChildRecursion(Func<LinkedTreeNode<T>, bool> prediction) {
-            if (RemoveChild(prediction)) return true;
-            var processingChild = FirstChild;
-            while (processingChild != null) {
-                if (processingChild.RemoveChildRecursion(prediction)) return true;
                 processingChild = processingChild.Right;
             }
             return false;
@@ -270,20 +124,8 @@ namespace Core {
                 Right.Left = Left;
             }
         }
-
-        /// <summary>
-        /// 获取迭代器
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<T> GetEnumerator() {
-            return new LinkedTreeNodeEmulator(this);
-        }
         
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
-        }
-        
-        private void SetParent(LinkedTreeNode<T> parent) {
+        private void SetParent(LinkedTreeNode parent) {
             if (_parent != null) {
                 Destroy();
             }
@@ -312,78 +154,210 @@ namespace Core {
             Left = leftNode;
             leftNode.Right = this;
         }
-
+        
+        /// <summary>
+        /// 获取迭代器
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<LinkedTreeNode> GetEnumerator() {
+            return new LinkedTreeNodeEmulator(this);
+        }
+        
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
+        
         /// <summary>
         /// 用于深度优先遍历链接树的遍历器
         /// </summary>
-        private class LinkedTreeNodeEmulator : IEnumerator<T> {
-            private LinkedTreeNode<T> _root;
-            private LinkedTreeNode<T> _currentNode;
-            private Stack<LinkedTreeNode<T>> _mapStack = new Stack<LinkedTreeNode<T>>();
+        private class LinkedTreeNodeEmulator : IEnumerator<LinkedTreeNode> {
+            private readonly LinkedTreeNode _root;
+            private Stack<LinkedTreeNode> _mapStack = new Stack<LinkedTreeNode>();
+
+            public LinkedTreeNodeEmulator(LinkedTreeNode root) {
+                _root = root;
+            }
+
+            private void MoveToNextEnabledNode() {
+                if (Current == null) return;
+                do {
+                    if (Current.Right != null) {
+                        Current = Current.Right;
+                        continue;
+                    }
+                    while (_mapStack.Count > 0) {
+                        Current = _mapStack.Pop();
+                        if (Current == null) return;
+                        if (Current.Right == null) continue;
+                        Current = Current.Right;
+                        break;
+                    }
+                } while (Current != null && !Current.Enabled);
+                if (Current == _root) {
+                    Current = null;
+                }
+            }
+            
+            public bool MoveNext() {
+                if (Current == null) {
+                    if (!_root.Enabled) return false;
+                    Current = _root;
+                    return true;
+                }
+                if (Current.FirstChild != null) {
+                    _mapStack.Push(Current);
+                    Current = Current.FirstChild;
+                    if (Current.Enabled) {
+                        return true;
+                    }
+                    MoveToNextEnabledNode();
+                } else {
+                    MoveToNextEnabledNode();
+                }
+                return Current != null;
+            }
+
+            public void Reset() {
+                Current = null;
+                _mapStack = new Stack<LinkedTreeNode>();
+            }
+
+            public LinkedTreeNode Current { get; private set; }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() {
+                GC.SuppressFinalize(this);
+            }
+        }
+    }
+
+    /// <inheritdoc cref="LinkedTreeNode" />
+    /// <summary>
+    /// 表示一个异构链接树节点
+    /// </summary>
+    /// <typeparam name="T">节点内容类型</typeparam>
+    public class LinkedTreeNode<T> : LinkedTreeNode, IEnumerable<(LinkedTreeNode Node, T Value)> {
+        /// <summary>
+        /// 获取或设置节点内容
+        /// </summary>
+        public T Content { get; set; }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// 创建一个链接树节点
+        /// </summary>
+        /// <param name="content">节点内容</param>
+        public LinkedTreeNode(T content) {
+            Content = content;
+        }
+
+        /// <summary>
+        /// 创建一个一级子节点
+        /// </summary>
+        /// <param name="content">子节点内容</param>
+        /// <param name="priority">子节点遍历优先级</param>
+        /// <returns></returns>
+        public LinkedTreeNode<T> CreateChild(T content, int priority = 0) {
+            return new LinkedTreeNode<T>(content) {Priority = priority, Parent = this};
+        }
+        
+        /// <summary>
+        /// 查找第一个符合条件的子节点
+        /// </summary>
+        /// <param name="content">子节点内容</param>
+        /// <returns></returns>
+        [CanBeNull]
+        public LinkedTreeNode<T> FindChild(T content) {
+            return FindChild(e => e is LinkedTreeNode<T> node && node.Content.Equals(content)) as LinkedTreeNode<T>;
+        }
+        
+        /// <summary>
+        /// 删除子节点
+        /// </summary>
+        /// <param name="item">子节点内容</param>
+        /// <returns></returns>
+        public bool RemoveChild(T item) {
+            return RemoveChild(e => e is LinkedTreeNode<T> node && node.Content.Equals(item));
+        }
+
+        /// <summary>
+        /// 获取迭代器
+        /// </summary>
+        /// <returns></returns>
+        public new IEnumerator<(LinkedTreeNode Node, T Value)> GetEnumerator() {
+            return new LinkedTreeNodeEmulator(this);
+        }
+        
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
+        
+        /// <summary>
+        /// 用于深度优先遍历链接树的遍历器
+        /// </summary>
+        private class LinkedTreeNodeEmulator : IEnumerator<(LinkedTreeNode Node, T Value)> {
+            private readonly LinkedTreeNode<T> _root;
+            private Stack<LinkedTreeNode> _mapStack = new Stack<LinkedTreeNode>();
 
             public LinkedTreeNodeEmulator(LinkedTreeNode<T> root) {
                 _root = root;
             }
 
             private void MoveToNextEnabledNode() {
-                if (_currentNode == null) return;
+                if (Current.Node == null) return;
                 do {
-                    if (_currentNode.Right != null) {
-                        _currentNode = _currentNode.Right;
+                    if (Current.Node.Right != null && Current.Node.Right is LinkedTreeNode<T> node) {
+                        UpdateValue(node);
                         continue;
                     }
                     while (_mapStack.Count > 0) {
-                        _currentNode = _mapStack.Pop();
-                        if (_currentNode.Right == null) continue;
-                        _currentNode = _currentNode.Right;
+                        var parent = _mapStack.Pop();
+                        if (parent == null) return;
+                        if (parent.Right == null || !(parent.Right is LinkedTreeNode<T> parentNode)) continue;
+                        UpdateValue(parentNode);
                         break;
                     }
-                } while (_currentNode != null && !_currentNode.Enabled);
-                if (_currentNode == _root) {
-                    _currentNode = null;
+                } while (Current.Node != null && !Current.Node.Enabled);
+                if (Current.Node == _root) {
+                    Current = (Node: null, Value: default(T));
                 }
             }
             
             public bool MoveNext() {
-                if (_currentNode == null) {
+                if (Current.Node == null) {
                     if (!_root.Enabled) return false;
-                    _currentNode = _root;
-                    UpdateValue();
+                    Current = (Node: _root, Value: _root.Content);
                     return true;
                 }
-                if (_currentNode.FirstChild != null) {
-                    _mapStack.Push(_currentNode);
-                    _currentNode = _currentNode.FirstChild;
-                    if (_currentNode.Enabled) {
-                        UpdateValue();
+                if (Current.Node.FirstChild != null) {
+                    _mapStack.Push(Current.Node);
+                    if (Current.Node.Enabled && Current.Node is LinkedTreeNode<T> node) {
+                        UpdateValue(node);
                         return true;
                     }
                     MoveToNextEnabledNode();
-                    UpdateValue();
                 } else {
                     MoveToNextEnabledNode();
-                    UpdateValue();
                 }
-                return _currentNode != null;
+                return Current.Node != null;
             }
 
             public void Reset() {
-                _currentNode = null;
-                _mapStack = new Stack<LinkedTreeNode<T>>();
-                UpdateValue();
+                Current = (Node: null, Value: default(T));
+                _mapStack = new Stack<LinkedTreeNode>();
             }
 
-            public T Current { get; private set; }
+            public (LinkedTreeNode Node, T Value) Current { get; private set; }
 
             object IEnumerator.Current => Current;
 
             public void Dispose() {
-                _root = null;
-                _mapStack = null;
+                GC.SuppressFinalize(this);
             }
 
-            private void UpdateValue() {
-                Current = _currentNode == null ? default(T) : _currentNode.Content;
+            private void UpdateValue(LinkedTreeNode<T> node) {
+                Current = (Node: node, Value: node.Content);
             }
         }
     }

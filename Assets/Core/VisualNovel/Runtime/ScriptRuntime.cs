@@ -7,7 +7,7 @@ namespace Core.VisualNovel.Runtime {
     /// <summary>
     /// 脚本运行环境
     /// </summary>
-    public class ScriptRuntime {
+    public partial class ScriptRuntime {
         /// <summary>
         /// 获取所有已经加载的脚本
         /// </summary>
@@ -37,13 +37,13 @@ namespace Core.VisualNovel.Runtime {
         /// <summary>
         /// 加载脚本
         /// </summary>
-        /// <param name="id">脚本ID</param>
+        /// <param name="id">脚本ID</param>e
         public void LoadScript(string id) {
             RuntimeFile script;
             if (LoadedScripts.ContainsKey(id)) {
                 script = LoadedScripts[id];
             } else {
-                script = new RuntimeFile(id);
+                script = new RuntimeFile(id, this);
                 LoadedScripts.Add(id, script);
             }
             Script = script;

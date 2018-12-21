@@ -1,5 +1,6 @@
 namespace Core.VisualNovel.Compiler {
     public enum CompilerFlag {
-        UseSetLocalVariable
+        UseSetLocalVariable,
+        NotCreateScope
     }
 }

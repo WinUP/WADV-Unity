@@ -13,7 +13,7 @@ namespace Core.MessageSystem {
         public static readonly LinkedTreeNode<IMessenger> Receivers = new LinkedTreeNode<IMessenger>(Application.isEditor ? (IMessenger) new DebugLogMessenger() : new EmptyMessenger());
 
         public static async Task<Message> ProcessAsync(Message message) {
-            foreach (var receiver in Receivers) {
+            foreach (var (_, receiver) in Receivers) {
                 if ((receiver.Mask & message.Mask) == 0) {
                     continue;
                 }
@@ -23,7 +23,7 @@ namespace Core.MessageSystem {
         }
 
         public static Message Process(Message message) {
-            foreach (var receiver in Receivers) {
+            foreach (var (_, receiver) in Receivers) {
                 if ((receiver.Mask & message.Mask) == 0) {
                     continue;
                 }

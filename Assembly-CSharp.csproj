@@ -132,10 +132,12 @@
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginDescription.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginIdentifier.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginManager.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Runtime\Closure.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\RuntimeException.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\RuntimeFile.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\ScriptRuntime.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\StackItems\IStackItem.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Runtime\Variable.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\PlaySoundMessageContent.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundChannel.cs" />
     <Compile Include="Assets\Core\VisualNovel\Sound\SoundManager.cs" />
