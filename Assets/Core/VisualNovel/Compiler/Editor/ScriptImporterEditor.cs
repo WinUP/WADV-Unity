@@ -123,7 +123,7 @@ namespace Core.VisualNovel.Compiler.Editor {
                 } else {
                     ScriptTranslation defaultTranslationContent;
                     try {
-                        var runtimeFile = new RuntimeFile(script.SourceResource);
+                        var runtimeFile = new ScriptRuntime.RuntimeFile(script.SourceResource, new ScriptRuntime());
                         defaultTranslationContent = runtimeFile.DefaultTranslation;
                     } catch (Exception e) {
                         Debug.LogError(e);

@@ -58,6 +58,7 @@ namespace Core.VisualNovel.Runtime {
             /// 创建一个运行时脚本文件
             /// </summary>
             /// <param name="id">脚本ID</param>
+            /// <param name="runtime">脚本运行环境</param>
             public RuntimeFile(string id, ScriptRuntime runtime) {
                 Id = id;
                 _runtime = runtime;
@@ -72,8 +73,8 @@ namespace Core.VisualNovel.Runtime {
             /// 设置使用的翻译
             /// </summary>
             /// <param name="name">语言名称，默认为default</param>
-            public void UseTranslation(string name = "default") {
-                if (name == "default") {
+            public void UseTranslation(string name = TranslationManager.DefaultLanguage) {
+                if (name == TranslationManager.DefaultLanguage) {
                     ActiveTranslation = DefaultTranslation;
                 }
                 else {

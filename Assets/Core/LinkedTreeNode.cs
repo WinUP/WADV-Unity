@@ -307,13 +307,21 @@ namespace Core {
             private void MoveToNextEnabledNode() {
                 if (Current.Node == null) return;
                 do {
-                    if (Current.Node.Right != null && Current.Node.Right is LinkedTreeNode<T> node) {
-                        UpdateValue(node);
+                    var right = Current.Node.Right;
+                    while (right != null && !(right.Enabled && right is LinkedTreeNode<T>)) {
+                        right = right.Right;
+                    }
+                    if (right != null) {
+                        UpdateValue(right as LinkedTreeNode<T>);
                         continue;
                     }
                     while (_mapStack.Count > 0) {
                         var parent = _mapStack.Pop();
                         if (parent == null) return;
+                        if (parent == _root) {
+                            UpdateValue(_root);
+                            continue;
+                        }
                         if (parent.Right == null || !(parent.Right is LinkedTreeNode<T> parentNode)) continue;
                         UpdateValue(parentNode);
                         break;
@@ -331,9 +339,13 @@ namespace Core {
                     return true;
                 }
                 if (Current.Node.FirstChild != null) {
-                    _mapStack.Push(Current.Node);
-                    if (Current.Node.Enabled && Current.Node is LinkedTreeNode<T> node) {
-                        UpdateValue(node);
+                    var child = Current.Node.FirstChild;
+                    while (child != null && !(child.Enabled && child is LinkedTreeNode<T>)) {
+                        child = child.Right;
+                    }
+                    if (child != null) {
+                        _mapStack.Push(Current.Node);
+                        UpdateValue(child as LinkedTreeNode<T>);
                         return true;
                     }
                     MoveToNextEnabledNode();

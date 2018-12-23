@@ -193,7 +193,7 @@ namespace Core.VisualNovel.Compiler.Editor {
                 if (File.Exists(targetFile)) continue;
                 ScriptTranslation defaultTranslationContent;
                 try {
-                    var runtimeFile = new RuntimeFile(script.SourceResource);
+                    var runtimeFile = new ScriptRuntime.RuntimeFile(script.SourceResource, new ScriptRuntime());
                     defaultTranslationContent = runtimeFile.DefaultTranslation;
                 }
                 catch (Exception) {
@@ -244,7 +244,7 @@ namespace Core.VisualNovel.Compiler.Editor {
             foreach (var ((key, option), i) in CompileOptions.Options.WithIndex()) {
                 EditorUtility.DisplayProgressBar("Removing", $"{i}/{totalCount}", (float) i / totalCount);
                 var script = CodeCompiler.CreatePathFromId(key);
-                var translation = new RuntimeFile(script.SourceResource).DefaultTranslation;
+                var translation = new ScriptRuntime.RuntimeFile(script.SourceResource, new ScriptRuntime()).DefaultTranslation;
                 foreach (var language in option.ExtraTranslationLanguages) {
                     var languageFilePath = CodeCompiler.CreateLanguageAssetPathFromId(script.SourceResource, language);
                     if (!File.Exists(languageFilePath)) continue;
