@@ -1,5 +1,3 @@
-#pragma warning disable 1998
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,7 +26,7 @@ namespace Core.VisualNovel.Compiler.Editor {
         
         [MenuItem("Window/Visual Novel/Compile Options Viewer")]
         public static void ShowWindow() {
-            GetWindow<CompileOptionsWindow>();
+            GetWindowWithRect<CompileOptionsWindow>(new Rect(150, 50, 800, 450));
         }
         
         [MenuItem("Window/Visual Novel/Reload All Compile Options")]
@@ -49,11 +47,11 @@ namespace Core.VisualNovel.Compiler.Editor {
             }
         }
 
-        public async Task<Message> Receive(Message message) {
+        public Task<Message> Receive(Message message) {
             if (message.Tag == CoreConstant.RepaintCompileOptionEditor) {
                 Repaint();
             }
-            return message;
+            return Task.FromResult(message);
         }
 
         private void OnEnable() {

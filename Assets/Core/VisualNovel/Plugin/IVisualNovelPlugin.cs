@@ -1,5 +1,7 @@
 using System.Collections.Generic;
-using Core.VisualNovel.Runtime.StackItems;
+using Core.VisualNovel.Runtime;
+using Core.VisualNovel.Runtime.Variable;
+using Core.VisualNovel.Runtime.Variables;
 
 namespace Core.VisualNovel.Plugin {
     /// <summary>
@@ -17,7 +19,7 @@ namespace Core.VisualNovel.Plugin {
         /// <param name="context">执行上下文</param>
         /// <param name="parameters">参数列表</param>
         /// <returns></returns>
-        IEnumerable<IStackItem> ExecuteAsync(ExecutionContext context, IReadOnlyDictionary<string, IStackItem> parameters);
+        IEnumerable<IVariable> ExecuteAsync(ExecutionContext context, IDictionary<string, IVariable> parameters);
         /// <summary>
         /// 从当前插件中获取指定名称的子插件
         /// </summary>

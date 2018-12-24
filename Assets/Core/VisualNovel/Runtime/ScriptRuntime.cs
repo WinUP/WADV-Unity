@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Core.VisualNovel.Compiler;
-using Core.VisualNovel.Runtime.StackItems;
 
 namespace Core.VisualNovel.Runtime {
     /// <summary>
@@ -12,10 +11,6 @@ namespace Core.VisualNovel.Runtime {
         /// 获取所有已经加载的脚本
         /// </summary>
         public static Dictionary<string, RuntimeFile> LoadedScripts { get; } = new Dictionary<string, RuntimeFile>();
-        /// <summary>
-        /// 获取内存堆栈
-        /// </summary>
-        public Stack<IStackItem> MemoryStack { get; } = new Stack<IStackItem>();
         /// <summary>
         /// 获取正在执行的脚本文件
         /// </summary>
@@ -30,8 +25,12 @@ namespace Core.VisualNovel.Runtime {
                 Script?.UseTranslation(_activeLanguage);
             }
         }
+        /// <summary>
+        /// 获取当前激活的顶层作用域
+        /// </summary>
+        public CallStack ActiveCallStack => _callStack.Peek();
 
-        private readonly Stack<(RuntimeFile Script, long Position)> _callStack = new Stack<(RuntimeFile Script, long Position)>();
+        private readonly Stack<CallStack> _callStack = new Stack<CallStack>();
         private string _activeLanguage = "default";
 
         /// <summary>
@@ -54,7 +53,7 @@ namespace Core.VisualNovel.Runtime {
         /// </summary>
         public void SaveStack() {
             if (Script != null) {
-                _callStack.Push((Script: Script, Position: Script.CurrentPosition));
+                _callStack.Push(new CallStack {Script = Script, Offset = Script.CurrentPosition});
             }
         }
 

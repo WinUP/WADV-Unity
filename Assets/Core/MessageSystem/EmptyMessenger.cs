@@ -1,5 +1,3 @@
-#pragma warning disable 1998
-
 using System.Threading.Tasks;
 
 namespace Core.MessageSystem {
@@ -14,8 +12,8 @@ namespace Core.MessageSystem {
             Mask = mask;
         }
         
-        public async Task<Message> Receive(Message message) {
-            return message;
+        public Task<Message> Receive(Message message) {
+            return Task.FromResult(message);
         }
     }
 }

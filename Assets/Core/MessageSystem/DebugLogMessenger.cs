@@ -1,5 +1,3 @@
-#pragma warning disable 1998
-
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -12,11 +10,11 @@ namespace Core.MessageSystem {
             Mask = mask;
         }
             
-        public async Task<Message> Receive(Message message) {
+        public Task<Message> Receive(Message message) {
             if (Application.isEditor) {
                 Debug.Log($"{DateTime.Now:HH:mm:ss,fff}: {message.Tag}[{Convert.ToString(message.Mask, 2)}]");
             }
-            return message;
+            return Task.FromResult(message);
         }
     }
 }

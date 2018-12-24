@@ -1,5 +1,3 @@
-#pragma warning disable 1998
-
 using System;
 using System.IO;
 using System.Linq;
@@ -25,11 +23,11 @@ namespace Core.VisualNovel.Compiler.Editor {
             ImporterEditorRoot = MessageService.Receivers.CreateChild(new EmptyMessenger());
         }
         
-        public async Task<Message> Receive(Message message) {
+        public Task<Message> Receive(Message message) {
             if (message.Tag == CoreConstant.RepaintCompileOptionEditor) {
                 Repaint();
             }
-            return message;
+            return Task.FromResult(message);
         }
 
         public override void OnEnable() {

@@ -69,7 +69,6 @@ VNS版本[@init]测试脚本。首先测试无角色对话。
 
 @temp = 3
 @temp2 = 1
-
 ;while @temp > 0
     @temp2 *= 2
     @temp -= 1
@@ -113,10 +112,3 @@ VNS版本[@init]测试脚本。首先测试无角色对话。
 @temp = (;call runner)
 #测试 闭包测试，第二次为3: [@temp]
 @runner = @temp = @null
-
-// function Closure1() {
-//     var temp = 1;
-//     return function Closure2() {
-//         return (temp += 1);
-//     }
-// }

@@ -21,7 +21,7 @@ namespace Core.VisualNovel.Compiler {
             Generate(context, root);
             context.File.OperationCode(OperationCode.RET, new SourcePosition());
             // 生成各种段
-            var segments = context.File.CreateSegments();
+            var (code, labels, strings, positions, translations) = context.File.CreateSegments();
             context.File.Close();
             // 准备目标文件
             var targetFile = new ByteCodeWriter();
@@ -30,12 +30,12 @@ namespace Core.VisualNovel.Compiler {
             // 写入源文件哈希用于跳过重复编译
             targetFile.DirectWrite(identifier.Hash);
             // 写入各种段
-            targetFile.DirectWrite(segments.Translations.ToByteArray());
-            targetFile.DirectWrite(segments.Strings);
-            targetFile.DirectWrite(segments.Labels);
-            targetFile.DirectWrite(segments.Positions);
-            targetFile.DirectWrite(segments.Code);
-            return (targetFile.CreateMainSegment(), segments.Translations);
+            targetFile.DirectWrite(translations.ToByteArray());
+            targetFile.DirectWrite(strings);
+            targetFile.DirectWrite(labels);
+            targetFile.DirectWrite(positions);
+            targetFile.DirectWrite(code);
+            return (targetFile.CreateMainSegment(), translations);
         }
 
         private static void Generate(ByteCodeGeneratorContext context, Expression expression, params CompilerFlag[] flags) {
@@ -247,6 +247,7 @@ namespace Core.VisualNovel.Compiler {
                     Generate(context, parameterExpression.Name);
                     break;
                 case ReturnExpression returnExpression:
+                    // RET是用于结束作用域执行的，不是用来返回结果的，返回结果实际上是先入栈要返回的结果后插入RET实现的
                     Generate(context, returnExpression.Value);
                     context.File.OperationCode(OperationCode.RET, returnExpression.Position);
                     break;
@@ -258,6 +259,7 @@ namespace Core.VisualNovel.Compiler {
                     foreach (var (item, i) in scopeExpression.Content.WithIndex()) {
                         Generate(context, item);
                         if (i < scopeExpression.Content.Count - 1) {
+                            // 只要不是域内最后一行就出栈执行结果，最后一行保留，这样作用上等同于返回了最后一行执行结果
                             context.File.Pop(item.Position);
                         }
                     }

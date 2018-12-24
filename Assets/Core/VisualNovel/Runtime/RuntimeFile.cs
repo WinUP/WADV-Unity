@@ -169,8 +169,7 @@ namespace Core.VisualNovel.Runtime {
                 if (value <= 0x45) {
                     return (OperationCode) value;
                 }
-                throw new RuntimeException(_runtime._callStack, "");
-                throw new FormatException($"Unexpected operation {Convert.ToString(value, 16)}");
+                throw new RuntimeException(_runtime._callStack, $"Unknown operation code {Convert.ToString(value, 16)}");
             }
 
             /// <summary>
