@@ -345,24 +345,24 @@ namespace Core.VisualNovel.Compiler {
         FUNC,
         /// <summary>
         /// 如果栈顶元素真值不为true则跳转到指定标签处
-        /// <para>格式：<code>40 &lt;int32&gt;</code></para>
+        /// <para>格式：<code>40 &lt;7 bit format int32&gt;</code></para>
         /// <para>栈结构要求：栈不能为空</para>
         /// </summary>
         BF_S,
         /// <summary>
         /// 无条件跳转到指定标签处
-        /// <para>格式：<code>41 &lt;int32&gt;</code></para>
+        /// <para>格式：<code>41 &lt;7 bit format int32&gt;</code></para>
         /// </summary>
         BR_S,
         /// <summary>
         /// 如果栈顶元素真值不为true则跳转到指定标签处，同时记录当前偏移地址
-        /// <para>格式：<code>42 &lt;int32&gt;</code></para>
+        /// <para>格式：<code>42 &lt;7 bit format int32&gt;</code></para>
         /// <para>栈结构要求：栈不能为空</para>
         /// </summary>
         BF,
         /// <summary>
         /// 无条件跳转到指定标签处，同时记录当前偏移地址
-        /// <para>格式：<code>43 &lt;int32&gt;</code></para>
+        /// <para>格式：<code>43 &lt;7 bit format int32&gt;</code></para>
         /// </summary>
         BR,
         /// <summary>

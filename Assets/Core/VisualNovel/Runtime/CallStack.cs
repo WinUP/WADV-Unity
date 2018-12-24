@@ -11,6 +11,10 @@ namespace Core.VisualNovel.Runtime {
         /// </summary>
         public Dictionary<string, IVariable> Variables { get; } = new Dictionary<string, IVariable>();
         /// <summary>
+        /// 该作用域内的局部常量
+        /// </summary>
+        public Dictionary<string, IVariable> Constants { get; } = new Dictionary<string, IVariable>();
+        /// <summary>
         /// 该作用域使用的脚本文件
         /// </summary>
         public ScriptRuntime.RuntimeFile Script { get; set; }

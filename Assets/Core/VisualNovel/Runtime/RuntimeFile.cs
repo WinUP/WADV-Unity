@@ -131,7 +131,7 @@ namespace Core.VisualNovel.Runtime {
                 Labels.Clear();
                 var labelCount = _reader.ReadInt32();
                 for (var i = -1; ++i < labelCount;) {
-                    Labels.Add(_reader.ReadInt32(), _reader.ReadInt64());
+                    Labels.Add(_reader.Read7BitEncodedInt(), _reader.ReadInt64());
                 }
                 DebugPositions.Clear();
                 var positionCount = _reader.ReadInt32();
@@ -172,12 +172,33 @@ namespace Core.VisualNovel.Runtime {
                 throw new RuntimeException(_runtime._callStack, $"Unknown operation code {Convert.ToString(value, 16)}");
             }
 
+            public int ReadInteger() {
+                return _reader.ReadInt32();
+            }
+
+            public float ReadFloat() {
+                return _reader.ReadSingle();
+            }
+
+            public string ReadString() {
+                var stringId = _reader.Read7BitEncodedInt();
+                return stringId < Strings.Count ? Strings[stringId] : throw new RuntimeException(_runtime._callStack, $"Unable to find string constant #{stringId}");
+            }
+
+            public long ReadLabelOffset() {
+                var labelId = _reader.Read7BitEncodedInt();
+                return labelId < Labels.Count ? Labels[labelId] : throw new RuntimeException(_runtime._callStack, $"Unable to find label #{labelId}");
+            }
+
+            public uint ReadUInt32() {
+                return _reader.ReadUInt32();
+            }
+
             /// <summary>
             /// 用于访问BinaryReader内部函数的特定结构
             /// </summary>
             private class Reader : BinaryReader {
-                public Reader([NotNull] Stream input) : base(input) {
-                }
+                public Reader([NotNull] Stream input) : base(input) {}
 
                 public new int Read7BitEncodedInt() {
                     return base.Read7BitEncodedInt();

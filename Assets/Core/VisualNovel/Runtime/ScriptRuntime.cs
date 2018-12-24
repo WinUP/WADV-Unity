@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Core.VisualNovel.Compiler;
+using Core.VisualNovel.Runtime.MemoryValues;
+using Core.VisualNovel.Runtime.Variables;
+using Core.VisualNovel.Runtime.Variables.Values;
 
 namespace Core.VisualNovel.Runtime {
     /// <summary>
@@ -29,6 +33,10 @@ namespace Core.VisualNovel.Runtime {
         /// 获取当前激活的顶层作用域
         /// </summary>
         public CallStack ActiveCallStack => _callStack.Peek();
+        /// <summary>
+        /// 获取当前内存堆栈
+        /// </summary>
+        public Stack<IMemoryValue> MemoryStack => new Stack<IMemoryValue>();
 
         private readonly Stack<CallStack> _callStack = new Stack<CallStack>();
         private string _activeLanguage = "default";
@@ -75,97 +83,158 @@ namespace Core.VisualNovel.Runtime {
             JumpTo(offset);
         }
 
-        public bool ExecuteSingleLine() {
+        public (IVariable Target, CallStack Stack, bool IsConstant) FindVariable(string name, bool onlyConstant) {
+            foreach (var callStack in _callStack) {
+                if (!onlyConstant && callStack.Variables.ContainsKey(name)) {
+                    return (callStack.Variables[name], callStack, false);
+                }
+                if (callStack.Constants.ContainsKey(name)) {
+                    return (callStack.Constants[name], callStack, true);
+                }
+            }
+            return (null, null, false);
+        }
+
+        private string LoadVariableName() {
+            if (MemoryStack.Count < 1) {
+                throw new RuntimeException(_callStack, "Unable to load variable: variable name must be in top of memory stack");
+            }
+            string name;
+            if (MemoryStack.Pop() is StaticMemoryValue<string> varName) {
+                name = varName.Value;
+            } else if (MemoryStack.Pop() is TranslatableMemoryValue varTName) {
+                name = varTName.Value;
+            } else {
+                throw new RuntimeException(_callStack, "Unable to load variable: variable name must be in top of memory stack");
+            }
+            return name;
+        }
+
+        private void LoadVariable(IVariable variable) {
+            switch (variable) {
+                case FunctionVariable functionVariable:
+                    MemoryStack.Push(new OffsetMemoryValue {Script = functionVariable.Script, Offset = functionVariable.Offset, RunningStack = functionVariable.TargetStack});
+                    break;
+                case ValueVariable valueVariable:
+                    switch (valueVariable.Value) {
+                        case BooleanVariableValue booleanVariableValue:
+                            MemoryStack.Push(new StaticMemoryValue<bool> {Value = booleanVariableValue.Value});
+                            break;
+                        case FloatVariableValue floatVariableValue:
+                            MemoryStack.Push(new StaticMemoryValue<float> {Value = floatVariableValue.Value});
+                            break;
+                        case IntegerVariableValue integerVariableValue:
+                            MemoryStack.Push(new StaticMemoryValue<int> {Value = integerVariableValue.Value});
+                            break;
+                        case NullVariableValue _:
+                            MemoryStack.Push(new NullMemoryValue());
+                            break;
+                        case StringVariableValue stringVariableValue:
+                            MemoryStack.Push(new StaticMemoryValue<string> {Value = stringVariableValue.Value});
+                            break;
+                    }
+                    break;
+            }
+        }
+
+        private async Task ApplyPluginCall() {
+            if (MemoryStack.Count < 2) {
+                throw new RuntimeException(_callStack, "Unable to initialize plugin call: memory stack information not enough");
+            }
+            
+        }
+
+        public async Task ExecuteScript() {
+            while (await ExecuteSingleLine()) {}
+        }
+
+        private async Task<bool> ExecuteSingleLine() {
+            if (Script == null) {
+                throw new NotSupportedException("No active script detected, must load at least one script before execute");
+            }
             var code = Script.ReadOperationCode();
             if (code == null) return false;
             switch (code) {
                 case OperationCode.LDC_I4_0:
-                    break;
                 case OperationCode.LDC_I4_1:
-                    break;
                 case OperationCode.LDC_I4_2:
-                    break;
                 case OperationCode.LDC_I4_3:
-                    break;
                 case OperationCode.LDC_I4_4:
-                    break;
                 case OperationCode.LDC_I4_5:
-                    break;
                 case OperationCode.LDC_I4_6:
-                    break;
                 case OperationCode.LDC_I4_7:
-                    break;
                 case OperationCode.LDC_I4_8:
+                    MemoryStack.Push(new StaticMemoryValue<int> {Value = (byte) code - (byte) OperationCode.LDC_I4_0});
                     break;
                 case OperationCode.LDC_I4:
+                    MemoryStack.Push(new StaticMemoryValue<int> {Value = Script.ReadInteger()});
                     break;
                 case OperationCode.LDC_R4_0:
-                    break;
                 case OperationCode.LDC_R4_025:
-                    break;
                 case OperationCode.LDC_R4_05:
-                    break;
                 case OperationCode.LDC_R4_075:
-                    break;
                 case OperationCode.LDC_R4_1:
-                    break;
                 case OperationCode.LDC_R4_125:
-                    break;
                 case OperationCode.LDC_R4_15:
-                    break;
                 case OperationCode.LDC_R4_175:
-                    break;
                 case OperationCode.LDC_R4_2:
-                    break;
                 case OperationCode.LDC_R4_225:
-                    break;
                 case OperationCode.LDC_R4_25:
-                    break;
                 case OperationCode.LDC_R4_275:
-                    break;
                 case OperationCode.LDC_R4_3:
-                    break;
                 case OperationCode.LDC_R4_325:
-                    break;
                 case OperationCode.LDC_R4_35:
-                    break;
                 case OperationCode.LDC_R4_375:
-                    break;
                 case OperationCode.LDC_R4_4:
-                    break;
                 case OperationCode.LDC_R4_425:
-                    break;
                 case OperationCode.LDC_R4_45:
-                    break;
                 case OperationCode.LDC_R4_475:
-                    break;
                 case OperationCode.LDC_R4_5:
-                    break;
                 case OperationCode.LDC_R4_525:
-                    break;
                 case OperationCode.LDC_R4_55:
-                    break;
                 case OperationCode.LDC_R4_575:
+                    MemoryStack.Push(new StaticMemoryValue<float> {Value = ((byte) code - (byte) OperationCode.LDC_R4_0) * (float) 0.25});
                     break;
                 case OperationCode.LDC_R4:
+                    MemoryStack.Push(new StaticMemoryValue<float> {Value = Script.ReadFloat()});
                     break;
                 case OperationCode.LDSTR:
+                    MemoryStack.Push(new StaticMemoryValue<string> {Value = Script.ReadString()});
                     break;
                 case OperationCode.LDADDR:
+                    MemoryStack.Push(new OffsetMemoryValue {Offset = Script.ReadLabelOffset()});
                     break;
                 case OperationCode.LDSTT:
+                    var translatableId = Script.ReadUInt32();
+                    MemoryStack.Push(new TranslatableMemoryValue {Id = translatableId, Value = Script.ActiveTranslation.GetTranslation(translatableId)});
                     break;
                 case OperationCode.LDNUL:
+                    MemoryStack.Push(new NullMemoryValue());
                     break;
                 case OperationCode.LDLOC:
+                    var variableName = LoadVariableName();
+                    var (loadedVariable, _, _) = FindVariable(variableName, false);
+                    if (loadedVariable == null) {
+                        throw new RuntimeException(_callStack, $"Unable to load variable: name ${variableName} not existed");
+                    }
+                    LoadVariable(loadedVariable);
                     break;
                 case OperationCode.LDCON:
+                    var constantName = LoadVariableName();
+                    var (loadedConstant, _, _) = FindVariable(constantName, true);
+                    if (loadedConstant == null) {
+                        throw new RuntimeException(_callStack, $"Unable to load constant: name ${constantName} not existed");
+                    }
+                    LoadVariable(loadedConstant);
                     break;
                 case OperationCode.LDT:
+                    MemoryStack.Push(new StaticMemoryValue<bool> {Value = true});
                     break;
                 case OperationCode.LDF:
+                    MemoryStack.Push(new StaticMemoryValue<bool> {Value = false});
                     break;
                 case OperationCode.CALL:
+                    await ApplyPluginCall();
                     break;
                 case OperationCode.POP:
                     break;

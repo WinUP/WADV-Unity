@@ -124,10 +124,10 @@ namespace Core.VisualNovel.Compiler {
                         Generate(context, branch.Condition);
                         context.File.OperationCode(OperationCode.BVAL, branch.Position);
                         context.File.OperationCode(OperationCode.BF_S, branch.Position);
-                        context.File.DirectWrite(conditionNextLabel);
+                        context.File.Write7BitEncodedInteger(conditionNextLabel);
                         Generate(context, branch.Body);
                         context.File.OperationCode(OperationCode.BR_S, branch.Body.Position);
-                        context.File.DirectWrite(conditionEndLabel);
+                        context.File.Write7BitEncodedInteger(conditionEndLabel);
                     }
                     context.File.CreateLabel(conditionEndLabel);
                     break;
@@ -182,13 +182,13 @@ namespace Core.VisualNovel.Compiler {
                     var functionEnd = context.NextLabelId;
                     // 场景表现为一个声明在当前作用域内的变量
                     context.File.OperationCode(OperationCode.LDADDR, functionExpression.Position);
-                    context.File.DirectWrite(functionStart);
+                    context.File.Write7BitEncodedInteger(functionStart);
                     context.File.LoadString(functionExpression.Name, functionExpression.Position);
                     context.File.OperationCode(OperationCode.STLOC, functionExpression.Position);
                     context.File.OperationCode(OperationCode.POP, functionExpression.Position);
                     // 令外部代码执行时跳过函数部分
                     context.File.OperationCode(OperationCode.BR_S, SourcePosition.UnavailablePosition);
-                    context.File.DirectWrite(functionEnd);
+                    context.File.Write7BitEncodedInteger(functionEnd);
                     // 开始函数生成
                     context.File.CreateLabel(functionStart);
                     context.File.OperationCode(OperationCode.SCOPE, functionExpression.Position);
@@ -200,7 +200,7 @@ namespace Core.VisualNovel.Compiler {
                             Generate(context, parameter.Name);
                             context.File.OperationCode(OperationCode.EQL, parameter.Position);
                             context.File.OperationCode(OperationCode.BF_S, parameter.Position);
-                            context.File.DirectWrite(nextParameterCheck);
+                            context.File.Write7BitEncodedInteger(nextParameterCheck);
                             Generate(context, parameter.Value);
                             Generate(context, parameter.Name);
                             context.File.OperationCode(OperationCode.STLOC, parameter.Position);
@@ -236,10 +236,10 @@ namespace Core.VisualNovel.Compiler {
                     Generate(context, loopExpression.Condition);
                     context.File.OperationCode(OperationCode.BVAL, loopExpression.Position);
                     context.File.OperationCode(OperationCode.BF_S, loopExpression.Condition.Position);
-                    context.File.DirectWrite(loopEndLabel);
+                    context.File.Write7BitEncodedInteger(loopEndLabel);
                     Generate(context, loopExpression.Body);
                     context.File.OperationCode(OperationCode.BR_S, loopExpression.Body.Position);
-                    context.File.DirectWrite(loopStartLabel);
+                    context.File.Write7BitEncodedInteger(loopStartLabel);
                     context.File.CreateLabel(loopEndLabel);
                     break;
                 case ParameterExpression parameterExpression:

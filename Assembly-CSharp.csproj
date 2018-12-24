@@ -134,12 +134,16 @@
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginIdentifier.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\CallStack.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Runtime\MemoryValues\IMemoryValue.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Runtime\MemoryValues\NullMemoryValue.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Runtime\MemoryValues\OffsetMemoryValue.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Runtime\MemoryValues\StaticMemoryValue.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Runtime\MemoryValues\TranslatableMemoryValue.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\RuntimeException.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\RuntimeFile.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\ScriptRuntime.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\Variables\FunctionVariable.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\Variables\IVariable.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Runtime\Variables\PointerVariable.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\Variables\Values\BooleanVariableValue.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\Variables\Values\FloatVariableValue.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\Variables\Values\IntegerVariableValue.cs" />

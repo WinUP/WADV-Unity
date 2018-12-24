@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using Core.VisualNovel.Runtime;
-using Core.VisualNovel.Runtime.Variable;
-using Core.VisualNovel.Runtime.Variables;
+using Core.VisualNovel.Runtime.MemoryValues;
 
 namespace Core.VisualNovel.Plugin {
     /// <summary>
@@ -19,7 +17,7 @@ namespace Core.VisualNovel.Plugin {
         /// <param name="context">执行上下文</param>
         /// <param name="parameters">参数列表</param>
         /// <returns></returns>
-        IEnumerable<IVariable> ExecuteAsync(ExecutionContext context, IDictionary<string, IVariable> parameters);
+        IEnumerable<IMemoryValue> ExecuteAsync(ExecutionContext context, IDictionary<string, IMemoryValue> parameters);
         /// <summary>
         /// 从当前插件中获取指定名称的子插件
         /// </summary>

@@ -29,6 +29,14 @@ namespace Core.VisualNovel.Compiler {
         }
 
         /// <summary>
+        /// 写入7位压缩32位整数
+        /// </summary>
+        /// <param name="value"></param>
+        public void Write7BitEncodedInteger(int value) {
+            _writer.Write7BitEncodedInt(value);
+        }
+
+        /// <summary>
         /// 编写字符串
         /// </summary>
         /// <param name="value">目标字符串</param>
@@ -330,7 +338,7 @@ namespace Core.VisualNovel.Compiler {
             var segmentWriter = new Writer(new MemoryStream());
             segmentWriter.Write(_labels.Count);
             foreach (var (id, position) in _labels) {
-                segmentWriter.Write(id);
+                segmentWriter.Write7BitEncodedInt(id);
                 segmentWriter.Write(position);
             }
             var labelSegment = (segmentWriter.BaseStream as MemoryStream)?.ToArray();
