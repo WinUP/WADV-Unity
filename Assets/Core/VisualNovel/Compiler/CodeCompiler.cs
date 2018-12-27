@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Core.Extensions;
+using Core.VisualNovel.Runtime;
 using Core.VisualNovel.Translation;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -120,7 +121,7 @@ namespace Core.VisualNovel.Compiler {
         /// <param name="resource">资源路径</param>
         /// <returns></returns>
         public static uint? ReadBinaryResourceHash(string resource) {
-            var binaryContent = Resources.Load<TextAsset>(resource)?.bytes;
+            var binaryContent = Resources.Load<ScriptAsset>(resource)?.content;
             return binaryContent == null ? null : ReadBinaryHash(new MemoryStream(binaryContent));
         }
         
@@ -134,7 +135,7 @@ namespace Core.VisualNovel.Compiler {
             return new ScriptPaths {
                 Source = $"Assets/Resources/{id}.vns",
                 SourceResource = id,
-                Binary = $"Assets/Resources/{id}.bin.bytes",
+                Binary = $"Assets/Resources/{id}.bin.vnb",
                 BinaryResource = id + ".bin",
                 Directory = $"Assets/Resources/{directory}",
                 DirectoryResource = directory
@@ -157,14 +158,14 @@ namespace Core.VisualNovel.Compiler {
                 return new ScriptPaths {
                     Source = asset,
                     SourceResource = id,
-                    Binary = assetWithoutExtension + ".bin.bytes",
+                    Binary = assetWithoutExtension + ".bin.vnb",
                     BinaryResource = id + ".bin",
                     Directory = assetDirectory,
                     DirectoryResource = idDirectory
                 };
             }
-            if (asset.EndsWith(".bin.bytes")) {
-                var assetWithoutExtension = asset.RemoveLast(".bin.bytes");
+            if (asset.EndsWith(".bin.vnb")) {
+                var assetWithoutExtension = asset.RemoveLast(".bin.vnb");
                 var id = assetWithoutExtension.Remove("Assets/Resources/");
                 return new ScriptPaths {
                     Source = assetWithoutExtension + ".vns",
@@ -185,7 +186,7 @@ namespace Core.VisualNovel.Compiler {
                 return new ScriptPaths {
                     Source = assetWithoutExtension + ".vns",
                     SourceResource = id,
-                    Binary = assetWithoutExtension + ".bin.bytes",
+                    Binary = assetWithoutExtension + ".bin.vnb",
                     BinaryResource = id + ".bin",
                     Directory = assetDirectory,
                     DirectoryResource = idDirectory,

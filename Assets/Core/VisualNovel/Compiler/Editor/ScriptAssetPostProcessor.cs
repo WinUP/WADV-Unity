@@ -10,11 +10,11 @@ namespace Core.VisualNovel.Compiler.Editor {
             var movingFiles = new List<(string From, string To)>();
             for (var i = -1; ++i < movedFromAssetPaths.Length;) {
                 var from = movedFromAssetPaths[i];
-                if (from.EndsWith(".vns") || from.EndsWith(".txt") || from.EndsWith(".bin.bytes")) {
+                if (from.EndsWith(".vns") || from.EndsWith(".txt") || from.EndsWith(".bin.vnb")) {
                     movingFiles.Add((from, movedAssets[i]));
                 }
             }
-            foreach (var file in movingFiles.OrderBy(e => e.From.EndsWith(".vns") ? 0 : e.From.EndsWith(".bin.bytes") ? 1 : 2)) {
+            foreach (var file in movingFiles.OrderBy(e => e.From.EndsWith(".vns") ? 0 : e.From.EndsWith(".bin.vnb") ? 1 : 2)) {
                 var origin = CodeCompiler.CreatePathFromAsset(file.From);
                 if (origin == null) continue;
                 var target = CodeCompiler.CreatePathFromAsset(file.To);
@@ -35,20 +35,20 @@ namespace Core.VisualNovel.Compiler.Editor {
                         }
                         // 应用重命名
                         CompileOptions.Rename(origin, target);
-                    } else if (file.To.EndsWith(".bin.bytes")) { // vns -> bin
+                    } else if (file.To.EndsWith(".bin.vnb")) { // vns -> bin
                         CompileOptions.Remove(origin);
                         CompileOptions.UpdateBinaryHash(target);
                     } else { // vns -> lang
                         CompileOptions.Remove(origin);
                         CompileOptions.ApplyLanguage(target);
                     }
-                } else if (file.From.EndsWith(".bin.bytes")) {
+                } else if (file.From.EndsWith(".bin.vnb")) {
                     if (target == null) { // bin -> ?
                         CompileOptions.UpdateBinaryHash(origin);
                     } else if (file.To.EndsWith(".vns")) { // bin -> vns
                         CompileOptions.UpdateBinaryHash(origin);
                         CompileOptions.CreateOrUpdateScript(target);
-                    } else if (file.To.EndsWith(".bin.bytes")) { // bin -> bin
+                    } else if (file.To.EndsWith(".bin.vnb")) { // bin -> bin
                         CompileOptions.Get(target.SourceResource).BinaryHash = CompileOptions.Get(origin.SourceResource).BinaryHash;
                         CompileOptions.UpdateBinaryHash(origin);
                     } else { // bin -> lang
@@ -61,7 +61,7 @@ namespace Core.VisualNovel.Compiler.Editor {
                     } else if (file.To.EndsWith(".vns")) { // lang -> vns
                         CompileOptions.RemoveLanguage(origin);
                         CompileOptions.CreateOrUpdateScript(target);
-                    } else if (file.To.EndsWith(".bin.bytes")) { // lang -> bin
+                    } else if (file.To.EndsWith(".bin.vnb")) { // lang -> bin
                         CompileOptions.RemoveLanguage(origin);
                         CompileOptions.UpdateBinaryHash(target);
                     } else { // lang -> lang
@@ -71,24 +71,24 @@ namespace Core.VisualNovel.Compiler.Editor {
                 }
             }
             // 处理新建和重新导入
-            foreach (var file in importedAssets.Where(e => e.EndsWith(".vns") || e.EndsWith(".txt") || e.EndsWith(".bin.bytes"))) {
+            foreach (var file in importedAssets.Where(e => e.EndsWith(".vns") || e.EndsWith(".txt") || e.EndsWith(".bin.vnb"))) {
                 var target = CodeCompiler.CreatePathFromAsset(file);
                 if (target == null) continue;
                 if (file.EndsWith(".vns")) {
                     CompileOptions.CreateOrUpdateScript(target);
-                } else if (file.EndsWith(".bin.bytes")) {
+                } else if (file.EndsWith(".bin.vnb")) {
                     CompileOptions.UpdateBinaryHash(target);
                 } else {
                     CompileOptions.ApplyLanguage(target);
                 }
             }
             // 处理删除
-            foreach (var file in deletedAssets.Where(e => e.EndsWith(".vns") || e.EndsWith(".txt") || e.EndsWith(".bin.bytes"))) {
+            foreach (var file in deletedAssets.Where(e => e.EndsWith(".vns") || e.EndsWith(".txt") || e.EndsWith(".bin.vnb"))) {
                 var target = CodeCompiler.CreatePathFromAsset(file);
                 if (target == null) continue;
                 if (file.EndsWith(".vns")) {
                     CompileOptions.Remove(target);
-                } else if (file.EndsWith(".bin.bytes")) {
+                } else if (file.EndsWith(".bin.vnb")) {
                     CompileOptions.UpdateBinaryHash(target);
                 } else {
                     CompileOptions.RemoveLanguage(target);

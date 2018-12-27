@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 065a156d8216e4b99a29ef438c714f6e
+ScriptedImporter:
+  fileIDToRecycleName:
+    11400000: VNBinary:Assets/Resources/Logic/!Entrance.bin.vnb
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 68ff66daf20d4aa3a565af206164ba39, type: 3}

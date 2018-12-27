@@ -137,11 +137,11 @@ namespace Core.VisualNovel.Runtime {
             }
         }
 
-        private async Task ApplyPluginCall() {
+        private Task ApplyPluginCall() {
             if (MemoryStack.Count < 2) {
                 throw new RuntimeException(_callStack, "Unable to initialize plugin call: memory stack information not enough");
             }
-            
+            return Task.CompletedTask;
         }
 
         public async Task ExecuteScript() {
@@ -199,7 +199,7 @@ namespace Core.VisualNovel.Runtime {
                     MemoryStack.Push(new StaticMemoryValue<float> {Value = Script.ReadFloat()});
                     break;
                 case OperationCode.LDSTR:
-                    MemoryStack.Push(new StaticMemoryValue<string> {Value = Script.ReadString()});
+                    MemoryStack.Push(new StaticMemoryValue<string> {Value = Script.ReadStringConstant()});
                     break;
                 case OperationCode.LDADDR:
                     MemoryStack.Push(new OffsetMemoryValue {Offset = Script.ReadLabelOffset()});

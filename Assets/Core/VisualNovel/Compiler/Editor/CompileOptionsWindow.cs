@@ -63,6 +63,7 @@ namespace Core.VisualNovel.Compiler.Editor {
             MessageService.Receivers.RemoveChild(_node);
         }
 
+
         private void OnGUI() {
             GUILayout.BeginHorizontal();
             // 左栏

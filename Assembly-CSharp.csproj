@@ -127,8 +127,6 @@
     <Compile Include="Assets\Core\VisualNovel\ExecutionContext.cs" />
     <Compile Include="Assets\Core\VisualNovel\GlobalStack.cs" />
     <Compile Include="Assets\Core\VisualNovel\Hasher.cs" />
-    <Compile Include="Assets\Core\VisualNovel\MessageMask.cs" />
-    <Compile Include="Assets\Core\VisualNovel\MessageTag.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\IVisualNovelPlugin.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginDescription.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginIdentifier.cs" />
@@ -141,6 +139,7 @@
     <Compile Include="Assets\Core\VisualNovel\Runtime\MemoryValues\TranslatableMemoryValue.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\RuntimeException.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\RuntimeFile.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Runtime\ScriptAsset.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\ScriptRuntime.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\Variables\FunctionVariable.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\Variables\IVariable.cs" />
@@ -157,7 +156,6 @@
     <Compile Include="Assets\Core\VisualNovel\Translation\ScriptTranslation.cs" />
     <Compile Include="Assets\Core\VisualNovel\Translation\Translation.cs" />
     <Compile Include="Assets\Core\VisualNovel\Translation\TranslationManager.cs" />
-    <Compile Include="Assets\Core\VisualNovel\VisualNetwork.cs" />
     <Compile Include="Assets\Core\VisualNovelPlugins\SoundPlugin.cs" />
     <None Include="Assets\Resources\Logic\Utilities.tr.jp.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">

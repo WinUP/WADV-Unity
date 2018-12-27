@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Core.VisualNovel.Translation {
     /// <summary>
     /// 表示一个可翻译字符串列表
     /// </summary>
-    public class ScriptTranslation {
+    public class ScriptTranslation : IEnumerable<KeyValuePair<uint, string>> {
         /// <summary>
         /// 翻译不存在时的替代字符串
         /// </summary>
@@ -124,6 +125,14 @@ namespace Core.VisualNovel.Translation {
                 content.AppendLine();
             }
             return content.ToString();
+        }
+
+        public IEnumerator<KeyValuePair<uint, string>> GetEnumerator() {
+            return _translatableStrings.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Core.Extensions;
 using Core.VisualNovel.Compiler;
@@ -48,64 +49,32 @@ namespace Core.VisualNovel.Runtime {
             /// 获取脚本文件的默认翻译
             /// </summary>
             public ScriptTranslation DefaultTranslation { get; private set; }
-
+            
             private readonly Dictionary<string, ScriptTranslation> _translations = new Dictionary<string, ScriptTranslation>();
             private readonly ScriptRuntime _runtime;
-            private long _codeSegmentPosition;
-            private Reader _reader;
+            private readonly long _codeSegmentPosition;
+            private readonly Reader _reader;
 
             /// <summary>
             /// 创建一个运行时脚本文件
             /// </summary>
             /// <param name="id">脚本ID</param>
             /// <param name="runtime">脚本运行环境</param>
-            public RuntimeFile(string id, ScriptRuntime runtime) {
+            /// <param name="source">当其存在时不会尝试从资源中读取文件或重编译脚本而是使用此项提供的二进制内容</param>
+            public RuntimeFile(string id, ScriptRuntime runtime, byte[] source = null) {
                 Id = id;
                 _runtime = runtime;
-                Reload();
-            }
-
-            ~RuntimeFile() {
-                _reader.Close();
-            }
-
-            /// <summary>
-            /// 设置使用的翻译
-            /// </summary>
-            /// <param name="name">语言名称，默认为default</param>
-            public void UseTranslation(string name = TranslationManager.DefaultLanguage) {
-                if (name == TranslationManager.DefaultLanguage) {
-                    ActiveTranslation = DefaultTranslation;
-                }
-                else {
-                    if (_translations.ContainsKey(name)) {
-                        ActiveTranslation = _translations[name];
-                    }
-                    else {
-                        var languageFilePath = CodeCompiler.CreateLanguageResourcePathFromId(Id, name);
-                        var content = Resources.Load<TextAsset>(languageFilePath)?.text;
-                        ActiveTranslation = string.IsNullOrEmpty(content) ? DefaultTranslation : new ScriptTranslation(content);
-                    }
-                }
-            }
-
-            /// <summary>
-            /// 重新读取脚本内容并重置翻译为默认翻译
-            /// </summary>
-            public void Reload() {
                 if (!CompileOptions.Has(Id)) {
                     throw new FileNotFoundException($"Cannot find script resource {Id}'s compile option");
                 }
                 var option = CompileOptions.Get(Id);
-                byte[] source;
-                if (option.BinaryHash.HasValue && option.BinaryHash.Value == option.SourceHash) {
-                    var binaryFile = CodeCompiler.CreatePathFromId(Id).BinaryResource;
-                    source = Resources.Load<TextAsset>(binaryFile)?.bytes;
+                if (source != null) {
+                } else if (option.BinaryHash.HasValue && option.BinaryHash.Value == option.SourceHash) {
+                    source = Resources.FindObjectsOfTypeAll<ScriptAsset>().FirstOrDefault(e => e.id == Id)?.content;
                     if (source == null) {
                         throw new FileNotFoundException($"Cannot find binary file for compiled script {Id}");
                     }
-                }
-                else {
+                } else {
                     var (code, translations) = CodeCompiler.CompileResource(Id, option);
                     source = code;
                     foreach (var (name, content) in translations) {
@@ -145,6 +114,30 @@ namespace Core.VisualNovel.Runtime {
                 UseTranslation();
             }
 
+            ~RuntimeFile() {
+                _reader.Close();
+            }
+
+            /// <summary>
+            /// 设置使用的翻译
+            /// </summary>
+            /// <param name="name">语言名称，默认为default</param>
+            public void UseTranslation(string name = TranslationManager.DefaultLanguage) {
+                if (name == TranslationManager.DefaultLanguage) {
+                    ActiveTranslation = DefaultTranslation;
+                }
+                else {
+                    if (_translations.ContainsKey(name)) {
+                        ActiveTranslation = _translations[name];
+                    }
+                    else {
+                        var languageFilePath = CodeCompiler.CreateLanguageResourcePathFromId(Id, name);
+                        var content = Resources.Load<TextAsset>(languageFilePath)?.text;
+                        ActiveTranslation = string.IsNullOrEmpty(content) ? DefaultTranslation : new ScriptTranslation(content);
+                    }
+                }
+            }
+
             /// <summary>
             /// 移动到代码段指定偏移处
             /// </summary>
@@ -162,27 +155,35 @@ namespace Core.VisualNovel.Runtime {
             }
 
             public OperationCode? ReadOperationCode() {
-                if (_reader.BaseStream.Position > _reader.BaseStream.Length - 8) {
+                if (_reader.BaseStream.Position >= _reader.BaseStream.Length) {
                     return null;
                 }
                 var value = _reader.ReadByte();
                 if (value <= 0x45) {
                     return (OperationCode) value;
                 }
-                throw new RuntimeException(_runtime._callStack, $"Unknown operation code {Convert.ToString(value, 16)}");
+                throw new RuntimeException(_runtime._callStack, $"Unknown operation code {Convert.ToString(value, 16)} at 0x{Convert.ToString(_reader.BaseStream.Position, 16)}");
             }
 
             public int ReadInteger() {
                 return _reader.ReadInt32();
             }
 
+            public int Read7BitEncodedInt() {
+                return _reader.Read7BitEncodedInt();
+            }
+
             public float ReadFloat() {
                 return _reader.ReadSingle();
             }
 
-            public string ReadString() {
+            public string ReadStringConstant() {
                 var stringId = _reader.Read7BitEncodedInt();
                 return stringId < Strings.Count ? Strings[stringId] : throw new RuntimeException(_runtime._callStack, $"Unable to find string constant #{stringId}");
+            }
+
+            public string ReadString() {
+                return _reader.ReadString();
             }
 
             public long ReadLabelOffset() {
