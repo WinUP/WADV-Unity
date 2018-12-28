@@ -14,14 +14,14 @@ namespace Core.VisualNovel.Compiler.Editor {
                     movingFiles.Add((from, movedAssets[i]));
                 }
             }
-            foreach (var (movedFromAsset, movedAsset) in movingFiles.OrderBy(e => e.From.EndsWith(".vns") ? 0 : e.From.EndsWith(".bin.vnb") ? 1 : 2)) {
+            foreach (var (movedFromAsset, moveToAsset) in movingFiles.OrderBy(e => e.From.EndsWith(".vns") ? 0 : e.From.EndsWith(".bin.vnb") ? 1 : 2)) {
                 var origin = CodeCompiler.CreatePathFromAsset(movedFromAsset);
                 if (origin == null) continue;
-                var target = CodeCompiler.CreatePathFromAsset(movedAsset);
+                var target = CodeCompiler.CreatePathFromAsset(moveToAsset);
                 if (movedFromAsset.EndsWith(".vns")) {
                     if (target == null) { // vns -> ?
                         CompileOptions.Remove(origin);
-                    } else if (movedAsset.EndsWith(".vns")) { // vns -> vns
+                    } else if (moveToAsset.EndsWith(".vns")) { // vns -> vns
                         // 移动翻译文件
                         foreach (var language in CodeCompiler.FilterAssetFromId(Directory.GetFiles(origin.Directory), origin.SourceResource).Where(e => !string.IsNullOrEmpty(e.Language))) {
                             var from = CodeCompiler.CreateLanguageAssetPathFromId(origin.SourceResource, language.Language);
@@ -35,7 +35,7 @@ namespace Core.VisualNovel.Compiler.Editor {
                         }
                         // 应用重命名
                         CompileOptions.Rename(origin, target);
-                    } else if (movedAsset.EndsWith(".bin.vnb")) { // vns -> bin
+                    } else if (moveToAsset.EndsWith(".bin.vnb")) { // vns -> bin
                         CompileOptions.Remove(origin);
                         CompileOptions.UpdateBinaryHash(target);
                     } else { // vns -> lang
@@ -45,10 +45,10 @@ namespace Core.VisualNovel.Compiler.Editor {
                 } else if (movedFromAsset.EndsWith(".bin.vnb")) {
                     if (target == null) { // bin -> ?
                         CompileOptions.UpdateBinaryHash(origin);
-                    } else if (movedAsset.EndsWith(".vns")) { // bin -> vns
+                    } else if (moveToAsset.EndsWith(".vns")) { // bin -> vns
                         CompileOptions.UpdateBinaryHash(origin);
                         CompileOptions.CreateOrUpdateScript(target);
-                    } else if (movedAsset.EndsWith(".bin.vnb")) { // bin -> bin
+                    } else if (moveToAsset.EndsWith(".bin.vnb")) { // bin -> bin
                         CompileOptions.Get(target.SourceResource).BinaryHash = CompileOptions.Get(origin.SourceResource).BinaryHash;
                         CompileOptions.UpdateBinaryHash(origin);
                     } else { // bin -> lang
@@ -58,10 +58,10 @@ namespace Core.VisualNovel.Compiler.Editor {
                 } else if (!string.IsNullOrEmpty(origin.Language)) {
                     if (target == null) { // lang -> ?
                         CompileOptions.RemoveLanguage(origin);
-                    } else if (movedAsset.EndsWith(".vns")) { // lang -> vns
+                    } else if (moveToAsset.EndsWith(".vns")) { // lang -> vns
                         CompileOptions.RemoveLanguage(origin);
                         CompileOptions.CreateOrUpdateScript(target);
-                    } else if (movedAsset.EndsWith(".bin.vnb")) { // lang -> bin
+                    } else if (moveToAsset.EndsWith(".bin.vnb")) { // lang -> bin
                         CompileOptions.RemoveLanguage(origin);
                         CompileOptions.UpdateBinaryHash(target);
                     } else { // lang -> lang
