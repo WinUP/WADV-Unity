@@ -10,7 +10,7 @@ namespace Core.VisualNovel.Runtime {
     /// <summary>
     /// 脚本运行环境
     /// </summary>
-    public partial class ScriptRuntime {
+    public class ScriptRuntime {
 //        /// <summary>
 //        /// 获取所有已经加载的脚本
 //        /// </summary>

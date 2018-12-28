@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Core.VisualNovel.Attributes;
-using Core.VisualNovel.Translation;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -35,7 +33,6 @@ namespace Core.VisualNovel.Plugin {
         /// <returns></returns>
         [CanBeNull]
         public static IVisualNovelPlugin Find(string name, string language) {
-            name = TranslationManager.GetPluginName(name, language);
             return Plugins.ContainsKey(name) ? Plugins[name] : null;
         }
 
@@ -49,9 +46,6 @@ namespace Core.VisualNovel.Plugin {
                 Unregister(plugin);
             }
             Plugins.Add(plugin.Name, plugin);
-            foreach (var translation in plugin.GetType().GetCustomAttributes<PluginTranslationAttribute>()) {
-                TranslationManager.SetPluginName(plugin.Name, translation.Name, translation.Language);
-            }
         }
 
         /// <summary>
@@ -63,7 +57,6 @@ namespace Core.VisualNovel.Plugin {
                 return;
             }
             Plugins.Remove(plugin.Name);
-            TranslationManager.RemovePluginName(plugin.Name);
         }
 
         /// <summary>

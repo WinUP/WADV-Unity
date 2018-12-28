@@ -81,8 +81,6 @@
     <Compile Include="Assets\Core\Thread\Dispatcher.cs" />
     <Compile Include="Assets\Core\Thread\WaitForBackgroundThread.cs" />
     <Compile Include="Assets\Core\Thread\WaitForUpdate.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Attributes\PluginTranslationAttribute.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Attributes\StaticTranslationAttribute.cs" />
     <Compile Include="Assets\Core\VisualNovel\Compiler\ByteCodeGenerator.cs" />
     <Compile Include="Assets\Core\VisualNovel\Compiler\ByteCodeGeneratorContext.cs" />
     <Compile Include="Assets\Core\VisualNovel\Compiler\ByteCodeWriter.cs" />

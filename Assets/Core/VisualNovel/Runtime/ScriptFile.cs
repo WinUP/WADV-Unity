@@ -85,12 +85,6 @@ namespace Core.VisualNovel.Runtime {
             return _reader.ReadSingle();
         }
 
-        [CanBeNull]
-        public string ReadStringConstant() {
-            var stringId = _reader.Read7BitEncodedInt();
-            return stringId < Header.Strings.Count ? Header.Strings[stringId] : null;
-        }
-
         public string ReadString() {
             return _reader.ReadString();
         }
