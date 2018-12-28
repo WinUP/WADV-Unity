@@ -261,6 +261,16 @@ namespace Core.VisualNovel.Compiler {
         public static string CreateLanguageResourcePathFromId(string id, string language) {
             return $"{id}.tr.{language}";
         }
+
+        /// <summary>
+        /// 读取二进制脚本文件
+        /// </summary>
+        /// <param name="id">脚本ID</param>
+        /// <returns></returns>
+        public static ScriptAsset LoadBinaryResourceFromId(string id) {
+            return Resources.FindObjectsOfTypeAll<ScriptAsset>().FirstOrDefault(e => e.id == id)
+                   ?? Resources.Load<ScriptAsset>(CreateBinaryResourcePathFromId(id));
+        }
         
         private static uint? ReadBinaryHash(Stream data) {
             if (data.Length == 0) {

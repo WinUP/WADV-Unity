@@ -70,7 +70,7 @@ namespace Core.VisualNovel.Runtime {
                 var option = CompileOptions.Get(Id);
                 if (source != null) {
                 } else if (option.BinaryHash.HasValue && option.BinaryHash.Value == option.SourceHash) {
-                    source = Resources.FindObjectsOfTypeAll<ScriptAsset>().FirstOrDefault(e => e.id == Id)?.content;
+                    source = CodeCompiler.LoadBinaryResourceFromId(id)?.content;
                     if (source == null) {
                         throw new FileNotFoundException($"Cannot find binary file for compiled script {Id}");
                     }
