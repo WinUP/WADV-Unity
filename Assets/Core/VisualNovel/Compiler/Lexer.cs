@@ -21,7 +21,6 @@ namespace Core.VisualNovel.Compiler {
             var position = new SourcePosition();
             var tokens = new List<BasicToken>();
             var indent = new SourceIndent();
-            var language = "default";
             while (file.HasNext) {
                 if (file.Current == '/' && file.Next == '/') { // 跳过所有注释
                     file.MoveToNextLineBreak();
@@ -112,45 +111,30 @@ namespace Core.VisualNovel.Compiler {
                 if (file.Current == ';' && file.Previous != '\\') { // 指令
                     file.MoveToNext();
                     position = position.NextColumn();
-                    if (file.StartsWith(Keywords.SyntaxLanguage)) {
-                        tokens.Add(new BasicToken(TokenType.Language, position));
-                        file.Move(5);
-                        position = position.MoveColumn(5);
-                        var index = file.IndexOf(Keywords.Separators);
-                        if (index <= 0) {
-                            throw new CompileException(identifier, position, "Need language name for language command");
-                        }
-                        var optionContent = file.CopyContent(index);
-                        language = optionContent;
-                        tokens.Add(new StringToken(TokenType.String, position, language, false));
-                        file.Move(index);
-                        position = position.MoveColumn(index);
+                    var index = file.IndexOf(' ', '\n');
+                    if (file.StartsWith(Keywords.SyntaxFunction)) {
+                        tokens.Add(new BasicToken(TokenType.Function, position));
+                    } else if (file.StartsWith(Keywords.SyntaxIf)) {
+                        tokens.Add(new BasicToken(TokenType.If, position));
+                    } else if (file.StartsWith(Keywords.SyntaxElseIf)) {
+                        tokens.Add(new BasicToken(TokenType.ElseIf, position));
+                    } else if (file.StartsWith(Keywords.SyntaxElse)) {
+                        tokens.Add(new BasicToken(TokenType.Else, position));
+                    } else if (file.StartsWith(Keywords.SyntaxWhileLoop + ' ')) {
+                        tokens.Add(new BasicToken(TokenType.Loop, position));
+                    } else if (file.StartsWith(Keywords.SyntaxReturn)) {
+                        tokens.Add(new BasicToken(TokenType.Return, position));
+                    } else if (file.StartsWith(Keywords.SyntaxCall)) {
+                        tokens.Add(new BasicToken(TokenType.FunctionCall, position));
+                    } else if (file.StartsWith(Keywords.SyntaxImport)) {
+                        tokens.Add(new BasicToken(TokenType.Import, position));
+                    } else if (file.StartsWith(Keywords.SyntaxExport)) {
+                        tokens.Add(new BasicToken(TokenType.Export, position));
                     } else {
-                        var index = file.IndexOf(' ', '\n');
-                        if (file.StartsWith(Keywords.SyntaxFunction)) {
-                            tokens.Add(new BasicToken(TokenType.Function, position));
-                        } else if (file.StartsWith(Keywords.SyntaxIf)) {
-                            tokens.Add(new BasicToken(TokenType.If, position));
-                        } else if (file.StartsWith(Keywords.SyntaxElseIf)) {
-                            tokens.Add(new BasicToken(TokenType.ElseIf, position));
-                        } else if (file.StartsWith(Keywords.SyntaxElse)) {
-                            tokens.Add(new BasicToken(TokenType.Else, position));
-                        } else if (file.StartsWith(Keywords.SyntaxWhileLoop + ' ')) {
-                            tokens.Add(new BasicToken(TokenType.Loop, position));
-                        } else if (file.StartsWith(Keywords.SyntaxReturn)) {
-                            tokens.Add(new BasicToken(TokenType.Return, position));
-                        } else if (file.StartsWith(Keywords.SyntaxCall)) {
-                            tokens.Add(new BasicToken(TokenType.FunctionCall, position));
-                        } else if (file.StartsWith(Keywords.SyntaxImport)) {
-                            tokens.Add(new BasicToken(TokenType.Import, position));
-                        } else if (file.StartsWith(Keywords.SyntaxExport)) {
-                            tokens.Add(new BasicToken(TokenType.Export, position));
-                        } else {
-                            throw new CompileException(identifier, position, $"Unknown command {file.CopyContent(index)} in language {language}, may cause by command format error or typo mistake");
-                        }
-                        file.Move(index);
-                        position = position.MoveColumn(index);
+                        throw new CompileException(identifier, position, $"Unknown keyword {file.CopyContent(index)}");
                     }
+                    file.Move(index);
+                    position = position.MoveColumn(index);
                     continue;
                 }
 

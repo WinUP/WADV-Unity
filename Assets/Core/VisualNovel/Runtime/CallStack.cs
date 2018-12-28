@@ -17,7 +17,7 @@ namespace Core.VisualNovel.Runtime {
         /// <summary>
         /// 该作用域使用的脚本文件
         /// </summary>
-        public ScriptRuntime.RuntimeFile Script { get; set; }
+        public string ScriptId { get; set; }
         /// <summary>
         /// 该作用域入口在脚本代码段中的偏移值
         /// </summary>

@@ -3,7 +3,6 @@ using System.Linq;
 using Core.Extensions;
 using Core.VisualNovel.Compiler;
 using UnityEditor;
-using UnityEngine;
 
 namespace Core.VisualNovel.Runtime.Editor {
     [CustomEditor(typeof(ScriptAsset))]
@@ -12,26 +11,26 @@ namespace Core.VisualNovel.Runtime.Editor {
         private bool _isCodeSegmentOpened;
         
         public override void OnInspectorGUI() {
-            var script = target as ScriptAsset;
-            if (script == null) {
+            var scriptAsset = target as ScriptAsset;
+            if (scriptAsset == null) {
                 throw new TypeLoadException("Inspected type is not VisualNovelScriptImporter");
             }
-            if (script.content?.Length == 0) {
+            if (scriptAsset.content?.Length == 0) {
                 EditorGUILayout.LabelField("This is an empty file");
                 return;
             }
-            var runtimeFile = new ScriptRuntime.RuntimeFile(script.id, new ScriptRuntime(), script.content);
+            var script = ScriptHeader.Reload(scriptAsset.id, scriptAsset.content).Header.CreateRuntimeFile();
             EditorGUILayout.BeginVertical();
             EditorGUILayout.LabelField("VisualNovelScript Version 1, assembly format", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("Source", script.id);
+            EditorGUILayout.LabelField("Source", scriptAsset.id);
             EditorGUILayout.Space();
             _isDataSegmentOpened = EditorGUILayout.Foldout(_isDataSegmentOpened, "Data Segment");
             if (_isDataSegmentOpened) {
                 ++EditorGUI.indentLevel;
-                foreach (var (stringConstant, i) in runtimeFile.Strings.WithIndex()) {
+                foreach (var (stringConstant, i) in script.Header.Strings.WithIndex()) {
                     EditorGUILayout.LabelField($".string {i} {stringConstant}");
                 }
-                foreach (var (id, content) in runtimeFile.DefaultTranslation) {
+                foreach (var (id, content) in script.ActiveTranslation) {
                     EditorGUILayout.LabelField($".translate {Convert.ToString(id, 16).PadLeft(8, '0')} {content}");
                 }
                 --EditorGUI.indentLevel;
@@ -39,28 +38,28 @@ namespace Core.VisualNovel.Runtime.Editor {
             _isCodeSegmentOpened = EditorGUILayout.Foldout(_isCodeSegmentOpened, "Code Segment");
             if (_isCodeSegmentOpened) {
                 ++EditorGUI.indentLevel;
-                var label = runtimeFile.Labels.Where(e => e.Value == 0).ToList();
-                if (label.Any()) {
-                    EditorGUILayout.LabelField($".label {label[0].Value}");
-                }
-                var code = runtimeFile.ReadOperationCode();
-                while (code != null) {
-                    label = runtimeFile.Labels.Where(e => e.Value == runtimeFile.CurrentPosition).ToList();
+                OperationCode? code;
+                do {
+                    var label = script.Header.Labels.Where(e => e.Value == script.CurrentPosition).ToList();
                     if (label.Any()) {
                         var initialIndent = EditorGUI.indentLevel;
                         EditorGUI.indentLevel = 0;
-                        EditorGUILayout.LabelField($".label {label[0].Key}");
+                        foreach (var pointer in label) {
+                            EditorGUILayout.LabelField($".label {pointer.Key}");
+                        }
                         EditorGUI.indentLevel = initialIndent;
                     }
-                    DrawOperationCode(code.Value, runtimeFile);
-                    code = runtimeFile.ReadOperationCode();
-                }
+                    code = script.ReadOperationCode();
+                    if (code != null) {
+                        DrawOperationCode(code.Value, script);
+                    }
+                } while (code != null);
                 --EditorGUI.indentLevel;
             }
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawOperationCode(OperationCode code, ScriptRuntime.RuntimeFile file) {
+        private void DrawOperationCode(OperationCode code, ScriptFile file) {
             switch (code) {
                 case OperationCode.LDC_I4_0:
                     EditorGUILayout.LabelField("ldc.i4.0");
@@ -169,15 +168,15 @@ namespace Core.VisualNovel.Runtime.Editor {
                     break;
                 case OperationCode.LDSTR:
                     var stringIndex = file.Read7BitEncodedInt();
-                    EditorGUILayout.LabelField($"ldstr {stringIndex} ({file.Strings[stringIndex]})");
+                    EditorGUILayout.LabelField($"ldstr {stringIndex} ({file.Header.Strings[stringIndex]})");
                     break;
-                case OperationCode.LDADDR:
+                case OperationCode.LDENTRY:
                     var addressLabelIndex = file.Read7BitEncodedInt();
-                    EditorGUILayout.LabelField($"ldaddr {addressLabelIndex}");
+                    EditorGUILayout.LabelField($"ldentry {addressLabelIndex}");
                     break;
                 case OperationCode.LDSTT:
                     var translatedStringId = file.ReadUInt32();
-                    EditorGUILayout.LabelField($"ldstt {Convert.ToString(translatedStringId, 16).PadLeft(8, '0')} ({file.DefaultTranslation.GetTranslation(translatedStringId)})");
+                    EditorGUILayout.LabelField($"ldstt {Convert.ToString(translatedStringId, 16).PadLeft(8, '0')} ({file.ActiveTranslation.GetTranslation(translatedStringId)})");
                     break;
                 case OperationCode.LDNUL:
                     EditorGUILayout.LabelField("ldnul");

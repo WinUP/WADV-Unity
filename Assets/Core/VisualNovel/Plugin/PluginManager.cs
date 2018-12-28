@@ -28,6 +28,18 @@ namespace Core.VisualNovel.Plugin {
         }
 
         /// <summary>
+        /// 根据名称寻找插件
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="language"></param>
+        /// <returns></returns>
+        [CanBeNull]
+        public static IVisualNovelPlugin Find(string name, string language) {
+            name = TranslationManager.GetPluginName(name, language);
+            return Plugins.ContainsKey(name) ? Plugins[name] : null;
+        }
+
+        /// <summary>
         /// 注册一个插件
         /// <para>相同名称的插件会覆盖之前注册的插件并将在Unity控制台中显示警告，旧有插件的翻译也会被销毁</para>
         /// </summary>

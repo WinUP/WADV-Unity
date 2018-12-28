@@ -24,8 +24,8 @@ namespace Core.VisualNovel.Runtime {
                 var stack = (new StackTrace().GetFrames() ?? new StackFrame[] { }).ToList();
                 // 写入脚本调用堆栈
                 foreach (var callStack in _callStack) {
-                    var position = callStack.Script.DebugPositions[callStack.Offset];
-                    stack.Insert(0, new StackFrame(callStack.Script.Id, position.Line, position.Column));
+                    var position = ScriptHeader.Load(callStack.ScriptId).Header.Positions[callStack.Offset];
+                    stack.Insert(0, new StackFrame(callStack.ScriptId, position.Line, position.Column));
                 }
                 return base.StackTrace;
             }

@@ -83,7 +83,7 @@ namespace Core.VisualNovel.Compiler {
         }
         
         /// <summary>
-        /// 编译资源
+        /// 编译资源并返回包含默认翻译在内的所有可用翻译
         /// </summary>
         /// <param name="id">资源ID</param>
         /// <param name="option">编译选项</param>
@@ -94,7 +94,7 @@ namespace Core.VisualNovel.Compiler {
             var identifier = new CodeIdentifier {Id = id, Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source))};
             var (code, defaultTranslation) = CompileCode(source, identifier);
             // 生成翻译
-            var translations = new Dictionary<string, ScriptTranslation>();
+            var translations = new Dictionary<string, ScriptTranslation> {{TranslationManager.DefaultLanguage, defaultTranslation}};
             foreach (var language in option.ExtraTranslationLanguages) {
                 var languageFilePath = CreateLanguageResourcePathFromId(id, language);
                 var content = Resources.Load<TextAsset>(languageFilePath)?.text;
@@ -267,6 +267,7 @@ namespace Core.VisualNovel.Compiler {
         /// </summary>
         /// <param name="id">脚本ID</param>
         /// <returns></returns>
+        [CanBeNull]
         public static ScriptAsset LoadBinaryResourceFromId(string id) {
             return Resources.FindObjectsOfTypeAll<ScriptAsset>().FirstOrDefault(e => e.id == id)
                    ?? Resources.Load<ScriptAsset>(CreateBinaryResourcePathFromId(id));

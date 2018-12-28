@@ -189,10 +189,10 @@ namespace Core.VisualNovel.Compiler {
         /// 入栈跳转标签ID
         /// <para>格式：<code>24 &lt;7 bit format int32&gt;</code></para>
         /// </summary>
-        LDADDR,
+        LDENTRY,
         /// <summary>
         /// 入栈可翻译字符串（翻译表引用）
-        /// <para>格式：<code>25 &lt;int32&gt;</code></para>
+        /// <para>格式：<code>25 &lt;uint32&gt;</code></para>
         /// </summary>
         LDSTT,
         /// <summary>

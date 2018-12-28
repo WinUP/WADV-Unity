@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Core.VisualNovel.Runtime;
 using Core.VisualNovel.Runtime.MemoryValues;
 
 namespace Core.VisualNovel.Plugin {

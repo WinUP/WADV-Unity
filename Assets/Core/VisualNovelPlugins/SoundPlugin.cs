@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Core.VisualNovel;
 using Core.VisualNovel.Attributes;
 using Core.VisualNovel.Plugin;
+using Core.VisualNovel.Runtime;
 using Core.VisualNovel.Runtime.MemoryValues;
 
 namespace Core.VisualNovelPlugins {

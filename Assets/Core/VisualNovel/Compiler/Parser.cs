@@ -85,9 +85,6 @@ namespace Core.VisualNovel.Compiler {
                     case TokenType.FunctionCall:
                         result.Content.Add(ParseBinaryOperator(ParseFunctionCall()));
                         break;
-                    case TokenType.Language:
-                        result.Content.Add(ParseBinaryOperator(ParseLanguage()));
-                        break;
                     case TokenType.LeaveScope:
                         Tokens.MoveToNext();
                         // 解析文件域时LeaveScope一定不会出现，如果出现则证明这是脚本中一个子域，那么这一定是在ParseScope的递归中，可以直接返回
@@ -213,20 +210,6 @@ namespace Core.VisualNovel.Compiler {
                 default:
                     throw new CompileException(Identifier, Tokens.Current.Position, "Expected String");
             }
-            Tokens.MoveToNext();
-            return expression;
-        }
-
-        /// <summary>
-        /// 处理语言变更
-        /// </summary>
-        /// <returns></returns>
-        private LanguageExpression ParseLanguage() {
-            Tokens.MoveToNext();
-            if (!(Tokens.Current is StringToken stringToken)) {
-                throw new CompileException(Identifier, Tokens.Current.Position, "Unexpected token type when parsing language info (should be StringToken)");
-            }
-            var expression = new LanguageExpression(Tokens.Current.Position){Language = stringToken.Content};
             Tokens.MoveToNext();
             return expression;
         }
@@ -670,11 +653,6 @@ namespace Core.VisualNovel.Compiler {
                 case TokenType.Loop:
                     if (acceptableTokenTypes.Contains(TokenType.Loop)) {
                         result = ParseLoop();
-                    }
-                    break;
-                case TokenType.Language:
-                    if (acceptableTokenTypes.Contains(TokenType.Language)) {
-                        result = ParseLanguage();
                     }
                     break;
                 case TokenType.Return:

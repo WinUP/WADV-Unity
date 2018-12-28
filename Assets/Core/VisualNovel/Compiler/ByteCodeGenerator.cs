@@ -181,7 +181,7 @@ namespace Core.VisualNovel.Compiler {
                     var functionStart = context.NextLabelId;
                     var functionEnd = context.NextLabelId;
                     // 场景表现为一个声明在当前作用域内的变量
-                    context.File.OperationCode(OperationCode.LDADDR, functionExpression.Position);
+                    context.File.OperationCode(OperationCode.LDENTRY, functionExpression.Position);
                     context.File.Write7BitEncodedInteger(functionStart);
                     context.File.LoadString(functionExpression.Name, functionExpression.Position);
                     context.File.OperationCode(OperationCode.STLOC, functionExpression.Position);
@@ -221,9 +221,6 @@ namespace Core.VisualNovel.Compiler {
                     break;
                 case IntegerExpression integerExpression:
                     context.File.LoadInteger(integerExpression.Value, integerExpression.Position);
-                    break;
-                case LanguageExpression languageExpression:
-                    context.File.Language(languageExpression.Language, languageExpression.Position);
                     break;
                 case LogicNotExpression logicNotExpression:
                     Generate(context, logicNotExpression.Content);
