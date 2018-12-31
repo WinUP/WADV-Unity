@@ -6,7 +6,7 @@ using Core.VisualNovel.Translation;
 
 namespace Core.VisualNovel.Compiler {
     /// <summary>
-    /// WADV VNS 字节码生成器
+    /// VNB脚本生成器
     /// </summary>
     public static class ByteCodeGenerator {
         /// <summary>
@@ -185,7 +185,6 @@ namespace Core.VisualNovel.Compiler {
                     context.File.Write7BitEncodedInteger(functionStart);
                     context.File.LoadString(functionExpression.Name, functionExpression.Position);
                     context.File.OperationCode(OperationCode.STLOC, functionExpression.Position);
-                    context.File.OperationCode(OperationCode.POP, functionExpression.Position);
                     // 令外部代码执行时跳过函数部分
                     context.File.OperationCode(OperationCode.BR_S, SourcePosition.UnavailablePosition);
                     context.File.Write7BitEncodedInteger(functionEnd);

@@ -134,7 +134,6 @@
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginIdentifier.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginManager.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\CallStack.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Runtime\ExecutionContext.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\ExtendedBinaryReader.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\MemoryValues\IMemoryValue.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\MemoryValues\NullMemoryValue.cs" />

@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 
 namespace Core.VisualNovel.Compiler {
     /// <summary>
-    /// 表示一个字节码文件
+    /// 表示一个VNB脚本文件
     /// </summary>
     public class ByteCodeWriter {
         private readonly Writer _writer = new Writer(new MemoryStream(), Encoding.UTF8);
@@ -274,16 +274,6 @@ namespace Core.VisualNovel.Compiler {
         }
 
         /// <summary>
-        /// 编写切换脚本语言指令
-        /// </summary>
-        /// <param name="language">目标语言</param>
-        /// <param name="position">指令在源文件中的位置</param>
-        public void Language(string language, SourcePosition position) {
-            OperationCode(Compiler.OperationCode.LANG, position);
-            DirectWrite(language);
-        }
-
-        /// <summary>
         /// 编写出栈指令
         /// </summary>
         /// <param name="position">指令在源文件中的位置</param>
@@ -354,7 +344,7 @@ namespace Core.VisualNovel.Compiler {
             segmentWriter.Write(_positions.Count);
             var previousPosition = (long) 0;
             foreach (var (offset, position) in _positions) {
-                segmentWriter.Write((byte) (offset - previousPosition)); // 已知直接写入中语言字符串长度最长，为126+1=127，因此指令最大偏移间隔为127+8=135，可以使用上限为255的byte
+                segmentWriter.Write((byte) (offset - previousPosition)); // 已知直接写入中最长为32位，因此指令最大偏移间隔为32+8=40位，可以使用上限为255的byte
                 previousPosition = offset;
                 segmentWriter.Write7BitEncodedInt(position.Line);
                 segmentWriter.Write7BitEncodedInt(position.Column);

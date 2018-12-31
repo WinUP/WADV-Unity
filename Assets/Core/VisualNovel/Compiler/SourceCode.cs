@@ -3,8 +3,8 @@ using System.Linq;
 
 namespace Core.VisualNovel.Compiler {
     /// <summary>
-    /// 表示源代码内容
-    /// <para>源代码内容提供大多数与字符串类相似的操作，不过均以当前偏移值为0索引处理</para>
+    /// 表示一个VNS脚本文件
+    /// <para>VNS脚本辅助类提供大多数与字符串类相似的操作，不过均以当前偏移值为0索引处理</para>
     /// </summary>
     public class SourceCode {
         /// <summary>

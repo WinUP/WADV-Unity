@@ -32,7 +32,7 @@ namespace Core.VisualNovel.Plugin {
         /// <param name="language"></param>
         /// <returns></returns>
         [CanBeNull]
-        public static IVisualNovelPlugin Find(string name, string language) {
+        public static IVisualNovelPlugin Find(string name) {
             return Plugins.ContainsKey(name) ? Plugins[name] : null;
         }
 

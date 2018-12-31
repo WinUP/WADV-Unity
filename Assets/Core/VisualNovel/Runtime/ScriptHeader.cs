@@ -115,7 +115,7 @@ namespace Core.VisualNovel.Runtime {
                     header = LoadScriptVersion1(id, source, reader);
                     break;
                 default:
-                    throw new FormatException($"Resource {id} is not any acceptable type of Visual Novel Script");
+                    throw new FormatException($"Resource {id} is not any acceptable type of Visual Novel Binary");
             }
             foreach (var (language, translation) in initialTranslations) {
                 header.Translations.Add(language, translation);

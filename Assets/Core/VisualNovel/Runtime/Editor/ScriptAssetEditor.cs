@@ -9,6 +9,8 @@ using UnityEngine;
 namespace Core.VisualNovel.Runtime.Editor {
     [CustomEditor(typeof(ScriptAsset))]
     public class ScriptAssetEditor : UnityEditor.Editor {
+        private GUIStyle _scriptStyle;
+        private string _assemblyCode;
 
         private class AssemblyContent {
             public StringBuilder Content { get; } = new StringBuilder();
@@ -17,9 +19,16 @@ namespace Core.VisualNovel.Runtime.Editor {
             public void AppendLine(string content) {
                 Content.AppendLine($"{"".PadLeft(Indent, ' ')} {content}");
             }
+
+            public override string ToString() {
+                return Content.ToString();
+            }
         }
         
         public override void OnInspectorGUI() {
+            if (_scriptStyle == null) {
+                _scriptStyle = new GUIStyle("ScriptText");
+            }
             var scriptAsset = target as ScriptAsset;
             if (scriptAsset == null) {
                 throw new TypeLoadException("Inspected type is not VisualNovelScriptImporter");
@@ -28,27 +37,32 @@ namespace Core.VisualNovel.Runtime.Editor {
                 EditorGUILayout.LabelField("This is an empty file");
                 return;
             }
-            var script = ScriptHeader.Reload(scriptAsset.id, scriptAsset.content).Header.CreateRuntimeFile();
-            EditorGUILayout.BeginVertical();
-            EditorGUILayout.LabelField("VisualNovelScript Version 1, assembly format", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("Source", scriptAsset.id);
-            EditorGUILayout.Space();
-            var assemblyContent = new AssemblyContent();
-            OperationCode? code;
-            do {
-                var label = script.Header.Labels.Where(e => e.Value == script.CurrentPosition).ToList();
-                if (label.Any()) {
-                    foreach (var pointer in label) {
-                        assemblyContent.Content.AppendLine($".label {pointer.Key}");
+            if (string.IsNullOrEmpty(_assemblyCode)) {
+                var assemblyContent = new AssemblyContent();
+                assemblyContent.AppendLine("; VisualNovelScript Version 1, assembly format");
+                assemblyContent.AppendLine($"; ID {scriptAsset.id}");
+                assemblyContent.AppendLine("");
+                var script = ScriptHeader.Reload(scriptAsset.id, scriptAsset.content).Header.CreateRuntimeFile();
+                OperationCode? code;
+                do {
+                    var label = script.Header.Labels.Where(e => e.Value == script.CurrentPosition).ToList();
+                    if (label.Any()) {
+                        foreach (var pointer in label) {
+                            assemblyContent.Content.AppendLine($".label {pointer.Key}");
+                        }
                     }
-                }
-                code = script.ReadOperationCode();
-                if (code != null) {
-                    DrawOperationCode(code.Value, script, assemblyContent);
-                }
-            } while (code != null);
-            GUILayout.TextArea(assemblyContent.Content.ToString());
-            EditorGUILayout.EndVertical();
+                    code = script.ReadOperationCode();
+                    if (code != null) {
+                        DrawOperationCode(code.Value, script, assemblyContent);
+                    }
+                } while (code != null);
+                _assemblyCode = assemblyContent.ToString();
+            }
+            var rect = GUILayoutUtility.GetRect(new GUIContent(_assemblyCode), _scriptStyle);
+            rect.x = 0f;
+            rect.y -= 3f;
+            rect.width = EditorGUIUtility.currentViewWidth + 1f;
+            GUI.Box(rect, _assemblyCode, _scriptStyle);
         }
 
         private void DrawOperationCode(OperationCode code, ScriptFile file, AssemblyContent assemblyContent) {
@@ -240,9 +254,6 @@ namespace Core.VisualNovel.Runtime.Editor {
                 case OperationCode.LEAVE:
                     assemblyContent.AppendLine("leave");
                     assemblyContent.Indent -= 4;
-                    break;
-                case OperationCode.LANG:
-                    assemblyContent.AppendLine($"lang {file.ReadString()}");
                     break;
                 case OperationCode.RET:
                     assemblyContent.AppendLine("ret");

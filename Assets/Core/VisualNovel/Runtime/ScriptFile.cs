@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace Core.VisualNovel.Runtime {
     /// <summary>
-    /// 表示一个可执行VNB脚本
+    /// 表示一个VNB脚本
     /// </summary>
     public class ScriptFile {
         /// <summary>
@@ -41,6 +41,15 @@ namespace Core.VisualNovel.Runtime {
         }
 
         /// <summary>
+        /// 根据脚本ID创建运行时脚本
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static ScriptFile Load(string id) {
+            return ScriptHeader.Load(id).Header.CreateRuntimeFile();
+        }
+
+        /// <summary>
         /// 设置激活的翻译
         /// <para>如果目标翻译不存在会自动使用默认翻译</para>
         /// </summary>
@@ -65,35 +74,64 @@ namespace Core.VisualNovel.Runtime {
             MoveTo(Header.Labels[labelId]);
         }
 
+        /// <summary>
+        /// 读取字节码
+        /// </summary>
+        /// <returns></returns>
         public OperationCode? ReadOperationCode() {
             if (_reader.BaseStream.Position >= _reader.BaseStream.Length) {
                 return null;
             }
             var value = _reader.ReadByte();
-            return value <= 0x45 ? (OperationCode) value : (OperationCode?) null;
+            return (OperationCode) value;
         }
 
+        /// <summary>
+        /// 读取32位整数
+        /// </summary>
+        /// <returns></returns>
         public int ReadInteger() {
             return _reader.ReadInt32();
         }
 
+        /// <summary>
+        /// 读取7位压缩的32位整数
+        /// </summary>
+        /// <returns></returns>
         public int Read7BitEncodedInt() {
             return _reader.Read7BitEncodedInt();
         }
 
+        /// <summary>
+        /// 读取32位浮点数
+        /// </summary>
+        /// <returns></returns>
         public float ReadFloat() {
             return _reader.ReadSingle();
         }
-
-        public string ReadString() {
-            return _reader.ReadString();
-        }
-
-        public long? ReadLabelOffset() {
+        
+        /// <summary>
+        /// 读取字符串常量编号并返回其内容
+        /// </summary>
+        /// <returns></returns>
+        public string ReadStringConstant() {
             var labelId = _reader.Read7BitEncodedInt();
-            return labelId < Header.Labels.Count ? Header.Labels[labelId] : (long?) null;
+            return Header.Strings[labelId];
         }
 
+        /// <summary>
+        /// 读取标签编号并返回其对应的偏移地址
+        /// </summary>
+        /// <returns></returns>
+        public long ReadLabelOffset() {
+            var labelId = _reader.Read7BitEncodedInt();
+            return Header.Labels[labelId];
+        }
+
+        /// <summary>
+        /// 读取32位无符号整数
+        /// </summary>
+        /// <returns></returns>
         public uint ReadUInt32() {
             return _reader.ReadUInt32();
         }

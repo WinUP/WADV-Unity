@@ -1,6 +1,11 @@
 namespace Core.VisualNovel.Runtime.MemoryValues {
     public class TranslatableMemoryValue : IMemoryValue {
-        public string Value { get; set; }
-        public uint Id { get; set; }
+        public string ScriptId { get; set; }
+        public uint TranslationId { get; set; }
+
+
+        public IMemoryValue Duplicate() {
+            return new TranslatableMemoryValue {ScriptId = ScriptId, TranslationId = TranslationId};
+        }
     }
 }
