@@ -51,10 +51,19 @@ namespace Core.VisualNovel.Translation {
         /// 获取翻译
         /// <para>找不到合适的翻译时会返回<code>ScriptTranslation.MissingTranslation</code>替代字符串</para>
         /// </summary>
-        /// <param name="id">翻译字符串ID</param>
+        /// <param name="id">翻译ID</param>
         /// <returns></returns>
         public string GetTranslation(uint id) {
-            return _translatableStrings.ContainsKey(id) ? _translatableStrings[id] : MissingTranslation;
+            return HasTranslation(id) ? _translatableStrings[id] : MissingTranslation;
+        }
+
+        /// <summary>
+        /// 判断翻译是否存在
+        /// </summary>
+        /// <param name="id">翻译ID</param>
+        /// <returns></returns>
+        public bool HasTranslation(uint id) {
+            return _translatableStrings.ContainsKey(id);
         }
 
         /// <summary>

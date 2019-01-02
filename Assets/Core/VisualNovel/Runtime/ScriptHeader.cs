@@ -68,14 +68,14 @@ namespace Core.VisualNovel.Runtime {
         /// <param name="id">脚本ID</param>
         /// <param name="source">用于覆盖原有脚本的可执行内容（该参数仅覆盖内存实现，不会修改本地文件）</param>
         /// <returns></returns>
-        public static (ScriptHeader Header, byte[] CodeSegment) Load([NotNull] string id, byte[] source = null) {
+        public static (ScriptHeader Header, byte[] CodeSegment) LoadAsset([NotNull] string id, byte[] source = null) {
             ScriptHeader header;
             if (LoadedScripts.ContainsKey(id)) {
                 var (scriptHeader, codeSegment) = LoadedScripts[id];
                 header = scriptHeader;
                 source = codeSegment;
             } else {
-                (header, source) = Reload(id, source);
+                (header, source) = ReloadAsset(id, source);
             }
             return (header, source);
         }
@@ -92,7 +92,7 @@ namespace Core.VisualNovel.Runtime {
         /// <param name="id">脚本ID</param>
         /// <param name="source">用于覆盖原有脚本的可执行内容（该参数仅覆盖内存实现，不会修改本地文件）</param>
         /// <returns></returns>
-        public static (ScriptHeader Header, byte[] CodeSegment) Reload([NotNull] string id, byte[] source = null) {
+        public static (ScriptHeader Header, byte[] CodeSegment) ReloadAsset([NotNull] string id, byte[] source = null) {
             var initialTranslations = new Dictionary<string, ScriptTranslation>();
             if (source == null) {
                 source = CodeCompiler.LoadBinaryResourceFromId(id)?.content;
@@ -112,7 +112,7 @@ namespace Core.VisualNovel.Runtime {
             var reader = new ExtendedBinaryReader(new MemoryStream(source));
             switch (reader.ReadUInt32()) {
                 case 0x963EFE4A:
-                    header = LoadScriptVersion1(id, source, reader);
+                    header = LoadScriptVersion1(id, reader);
                     break;
                 default:
                     throw new FormatException($"Resource {id} is not any acceptable type of Visual Novel Binary");
@@ -155,7 +155,30 @@ namespace Core.VisualNovel.Runtime {
             return new ScriptFile(this, LoadedScripts[Id].CodeSegment);
         }
 
-        private static ScriptHeader LoadScriptVersion1([NotNull] string id, [NotNull] byte[] source, [NotNull] ExtendedBinaryReader reader) {
+        /// <summary>
+        /// 获取翻译（如果目标语言不存在则使用默认翻译）
+        /// </summary>
+        /// <param name="language">目标语言</param>
+        /// <param name="id">翻译ID</param>
+        /// <returns></returns>
+        public string GetTranslation(string language, uint id) {
+            if (!Translations.ContainsKey(language)) {
+                language = TranslationManager.DefaultLanguage;
+            }
+            return Translations[language].GetTranslation(id);
+        }
+        
+        /// <summary>
+        /// 判断目标语言和翻译是否都存在
+        /// </summary>
+        /// <param name="language">目标语言</param>
+        /// <param name="id">翻译ID</param>
+        /// <returns></returns>
+        public bool HasTranslation(string language, uint id) {
+            return Translations.ContainsKey(language) && Translations[language].HasTranslation(id);
+        }
+
+        private static ScriptHeader LoadScriptVersion1([NotNull] string id, [NotNull] ExtendedBinaryReader reader) {
             reader.ReadUInt32(); // 跳过哈希值
             // 默认翻译段
             var translationItems = new Dictionary<uint, string>();

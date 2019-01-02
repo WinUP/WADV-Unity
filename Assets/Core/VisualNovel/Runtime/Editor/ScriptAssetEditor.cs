@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Text;
-using Core.Extensions;
 using Core.VisualNovel.Compiler;
 using UnityEditor;
 using UnityEngine;
@@ -11,19 +10,6 @@ namespace Core.VisualNovel.Runtime.Editor {
     public class ScriptAssetEditor : UnityEditor.Editor {
         private GUIStyle _scriptStyle;
         private string _assemblyCode;
-
-        private class AssemblyContent {
-            public StringBuilder Content { get; } = new StringBuilder();
-            public int Indent { get; set; }
-
-            public void AppendLine(string content) {
-                Content.AppendLine($"{"".PadLeft(Indent, ' ')} {content}");
-            }
-
-            public override string ToString() {
-                return Content.ToString();
-            }
-        }
         
         public override void OnInspectorGUI() {
             if (_scriptStyle == null) {
@@ -42,7 +28,7 @@ namespace Core.VisualNovel.Runtime.Editor {
                 assemblyContent.AppendLine("; VisualNovelScript Version 1, assembly format");
                 assemblyContent.AppendLine($"; ID {scriptAsset.id}");
                 assemblyContent.AppendLine("");
-                var script = ScriptHeader.Reload(scriptAsset.id, scriptAsset.content).Header.CreateRuntimeFile();
+                var script = ScriptHeader.ReloadAsset(scriptAsset.id, scriptAsset.content).Header.CreateRuntimeFile();
                 OperationCode? code;
                 do {
                     var label = script.Header.Labels.Where(e => e.Value == script.CurrentPosition).ToList();
@@ -285,6 +271,19 @@ namespace Core.VisualNovel.Runtime.Editor {
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(code), code, null);
+            }
+        }
+        
+        private class AssemblyContent {
+            public StringBuilder Content { get; } = new StringBuilder();
+            public int Indent { get; set; }
+
+            public void AppendLine(string content) {
+                Content.AppendLine($"{"".PadLeft(Indent, ' ')} {content}");
+            }
+
+            public override string ToString() {
+                return Content.ToString();
             }
         }
     }

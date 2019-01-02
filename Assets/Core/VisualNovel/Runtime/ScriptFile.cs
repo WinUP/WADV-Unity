@@ -46,7 +46,7 @@ namespace Core.VisualNovel.Runtime {
         /// <param name="id"></param>
         /// <returns></returns>
         public static ScriptFile Load(string id) {
-            return ScriptHeader.Load(id).Header.CreateRuntimeFile();
+            return ScriptHeader.LoadAsset(id).Header.CreateRuntimeFile();
         }
 
         /// <summary>

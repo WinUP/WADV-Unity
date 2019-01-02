@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Core.MessageSystem;
 using Core.VisualNovel.Compiler;
 using Core.VisualNovel.Plugin;
 using Core.VisualNovel.Runtime.MemoryValues;
 using Core.VisualNovel.Runtime.Variables;
 using Core.VisualNovel.Runtime.Variables.Values;
-using Core.VisualNovel.Translation;
-using UnityEngine;
 
 // ! 为求效率，VNB运行环境在文件头正确的情况下假设文件格式绝对正确，只会做运行时数据检查，不会进行任何格式检查
 
@@ -33,11 +31,31 @@ namespace Core.VisualNovel.Runtime {
         public Stack<IMemoryValue> MemoryStack => new Stack<IMemoryValue>();
         
         /// <summary>
-        /// 获取当前激活的语言名称
+        /// 获取或修改脚本导出的数据
+        /// <para>在脚本尚未执行结束的情况下，导出数据可能不完整</para>
         /// </summary>
-        public string ActiveLanguage { get; private set; }
+        public Dictionary<string, IMemoryValue> Export => new Dictionary<string, IMemoryValue>();
+
+        /// <summary>
+        /// 获取或设置当前激活的语言
+        /// </summary>
+        public string ActiveLanguage {
+            get => _activeLanguage;
+            set {
+                if (_activeLanguage == value) return;
+                var message = MessageService.Process(new Message<string>(value));
+                switch (message) {
+                    case Message<string> stringMessage:
+                        _activeLanguage = stringMessage.Content;
+                        break;
+                    default:
+                        throw new RuntimeException(_callStack, $"Unable to change language: Message was modified to non-string type during broadcast");
+                }
+            }
+        }
 
         private readonly Stack<CallStack> _callStack = new Stack<CallStack>();
+        private string _activeLanguage;
 
         /// <summary>
         /// 加载脚本
@@ -71,7 +89,7 @@ namespace Core.VisualNovel.Runtime {
         /// <param name="name">变量名</param>
         /// <param name="onlyConstant">是否只查找常量表</param>
         /// <returns></returns>
-        public (IVariable Target, CallStack Stack, bool IsConstant) FindVariable(string name, bool onlyConstant) {
+        public (Variable Target, CallStack Stack, bool IsConstant) FindVariable(string name, bool onlyConstant) {
             if (string.IsNullOrEmpty(name)) {
                 throw new RuntimeException(_callStack, "Unable to find variable: expected name is empty or null");
             }
@@ -256,29 +274,25 @@ namespace Core.VisualNovel.Runtime {
             MemoryStack.Push(new NullMemoryValue());
         }
 
-        private void LoadVariable(IVariable variable) {
-            switch (variable) {
-                case OffsetVariable functionVariable:
-                    MemoryStack.Push(new OffsetMemoryValue {ScriptId = functionVariable.ScriptId, Offset = functionVariable.Offset, RunningStack = functionVariable.TargetStack});
+        private void LoadVariable(Variable variable) {
+            switch (variable.Value) {
+                case BooleanVariableValue booleanVariableValue:
+                    LoadStaticValue(booleanVariableValue.Value);
                     break;
-                case ValueVariable valueVariable:
-                    switch (valueVariable.Value) {
-                        case BooleanVariableValue booleanVariableValue:
-                            LoadStaticValue(booleanVariableValue.Value);
-                            break;
-                        case FloatVariableValue floatVariableValue:
-                            LoadStaticValue(floatVariableValue.Value);
-                            break;
-                        case IntegerVariableValue integerVariableValue:
-                            LoadStaticValue(integerVariableValue.Value);
-                            break;
-                        case NullVariableValue _:
-                            LoadNull();
-                            break;
-                        case StringVariableValue stringVariableValue:
-                            LoadStaticValue(stringVariableValue.Value);
-                            break;
-                    }
+                case FloatVariableValue floatVariableValue:
+                    LoadStaticValue(floatVariableValue.Value);
+                    break;
+                case IntegerVariableValue integerVariableValue:
+                    LoadStaticValue(integerVariableValue.Value);
+                    break;
+                case NullVariableValue _:
+                    LoadNull();
+                    break;
+                case OffsetVariableValue offsetVariableValue:
+                    MemoryStack.Push(new OffsetMemoryValue {ScriptId = offsetVariableValue.ScriptId, Offset = offsetVariableValue.Offset, RunningStack = offsetVariableValue.RunningStack});
+                    break;
+                case StringVariableValue stringVariableValue:
+                    LoadStaticValue(stringVariableValue.Value);
                     break;
             }
         }
@@ -288,7 +302,7 @@ namespace Core.VisualNovel.Runtime {
             if (MemoryStack.Pop() is StaticMemoryValue<string> stringMemoryValue) {
                 name = stringMemoryValue.Value;
             } else if (MemoryStack.Pop() is TranslatableMemoryValue translatableMemoryValue) {
-                name = ScriptFile.Load(translatableMemoryValue.ScriptId).ActiveTranslation.GetTranslation(translatableMemoryValue.TranslationId);
+                name = ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.GetTranslation(ActiveLanguage, translatableMemoryValue.TranslationId);
             } else {
                 return null;
             }
@@ -334,7 +348,7 @@ namespace Core.VisualNovel.Runtime {
                     break;
                 case TranslatableMemoryValue translatableMemoryValue:
                     MemoryStack.Push(new StaticMemoryValue<bool> {
-                        Value = ScriptFile.Load(translatableMemoryValue.ScriptId).ActiveTranslation.GetTranslation(translatableMemoryValue.TranslationId) != ScriptTranslation.MissingTranslation
+                        Value = ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.HasTranslation(ActiveLanguage, translatableMemoryValue.TranslationId)
                     });
                     break;
                 case StaticMemoryValue staticMemoryValue:

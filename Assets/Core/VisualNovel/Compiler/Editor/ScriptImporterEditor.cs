@@ -121,7 +121,7 @@ namespace Core.VisualNovel.Compiler.Editor {
                 } else {
                     ScriptTranslation defaultTranslationContent;
                     try {
-                        var (header, _) = ScriptHeader.Load(script.SourceResource);
+                        var (header, _) = ScriptHeader.LoadAsset(script.SourceResource);
                         defaultTranslationContent = header.Translations[TranslationManager.DefaultLanguage];
                     } catch (Exception e) {
                         Debug.LogError(e);

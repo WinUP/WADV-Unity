@@ -1,7 +1,15 @@
 using System.Globalization;
 
 namespace Core.VisualNovel.Runtime.MemoryValues {
+    /// <inheritdoc />
+    /// <summary>
+    /// 表示一个静态内存堆栈值
+    /// </summary>
     public abstract class StaticMemoryValue : IMemoryValue {
+        /// <summary>
+        /// 获取此静态值对应的布尔值
+        /// </summary>
+        /// <returns></returns>
         public bool ToBoolean() {
             switch (this) {
                 case StaticMemoryValue<string> stringMemoryValue:
@@ -9,7 +17,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
                     return !string.IsNullOrEmpty(stringValue) && stringValue != "false" && stringValue != "f" && stringValue != "0" && stringValue != "0.0";
                 case StaticMemoryValue<char> charMemoryValue:
                     var charValue = charMemoryValue.Value;
-                    return charValue != 'f' && charValue != 'F' && charValue != '0' && charValue != '';
+                    return charValue != 'f' && charValue != 'F' && charValue != '0' && charValue != '\0' && charValue != ' ';
                 case StaticMemoryValue<bool> boolMemoryValue:
                     return boolMemoryValue.Value;
                 case StaticMemoryValue<int> intMemoryValue:
@@ -39,6 +47,10 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             }
         }
 
+        /// <summary>
+        /// 获取此静态值对应的32位浮点数
+        /// </summary>
+        /// <returns></returns>
         public float ToFloat() {
             switch (this) {
                 case StaticMemoryValue<string> stringMemoryValue:
@@ -95,6 +107,10 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             }
         }
 
+        /// <summary>
+        /// 获取此静态值对应的32位整数
+        /// </summary>
+        /// <returns></returns>
         public int ToInteger() {
             switch (this) {
                 case StaticMemoryValue<string> stringMemoryValue:
@@ -151,6 +167,10 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             }
         }
 
+        /// <summary>
+        /// 获取此静态值对应的字符串
+        /// </summary>
+        /// <returns></returns>
         public override string ToString() {
             switch (this) {
                 case StaticMemoryValue<string> stringMemoryValue:
@@ -186,12 +206,21 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             }
         }
 
+        /// <inheritdoc />
         public abstract IMemoryValue Duplicate();
     }
 
+    /// <inheritdoc />
+    /// <summary>
+    /// 表示一个静态内存堆栈值
+    /// </summary>
     public class StaticMemoryValue<T> : StaticMemoryValue {
+        /// <summary>
+        /// 获取说设置值内容
+        /// </summary>
         public T Value { get; set; }
 
+        /// <inheritdoc />
         public override IMemoryValue Duplicate() {
             return new StaticMemoryValue<T> {Value = Value};
         }
