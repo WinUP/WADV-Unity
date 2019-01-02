@@ -57,6 +57,8 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
                     return float.TryParse(stringMemoryValue.Value, out var floatValue) ? floatValue : 0.0F;
                 case StaticMemoryValue<char> charMemoryValue:
                     switch (charMemoryValue.Value) {
+                        case 'e':
+                        case 'E':
                         case '1':
                             return 1.0F;
                         case '2':

@@ -7,13 +7,9 @@ namespace Core.VisualNovel.Runtime {
     /// </summary>
     public class CallStack {
         /// <summary>
-        /// 该作用域内的局部变量
+        /// 该作用域内的局部常量/变量
         /// </summary>
         public Dictionary<string, Variable> Variables { get; } = new Dictionary<string, Variable>();
-        /// <summary>
-        /// 该作用域内的局部常量
-        /// </summary>
-        public Dictionary<string, Variable> Constants { get; } = new Dictionary<string, Variable>();
         /// <summary>
         /// 该作用域使用的脚本文件
         /// </summary>

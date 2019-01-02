@@ -132,9 +132,6 @@ namespace Core.VisualNovel.Compiler {
                     context.File.CreateLabel(conditionEndLabel);
                     break;
                 case ConstantExpression constantExpression:
-                    if (flags.Any(e => e == CompilerFlag.UseSetLocalVariable)) {
-                        throw new NotSupportedException("Cannot assign value to constant variable");
-                    }
                     if (constantExpression.Name is StringExpression constantNameExpression) {
                         switch (constantNameExpression.Value.ToUpper()) {
                             case "TRUE":
@@ -153,6 +150,7 @@ namespace Core.VisualNovel.Compiler {
                     } else {
                         Generate(context, constantExpression.Name);
                     }
+                    context.File.OperationCode(flags.Any(e => e == CompilerFlag.UseSetLocalVariable) ? OperationCode.STCON : OperationCode.LDLOC, constantExpression.Position);
                     context.File.OperationCode(OperationCode.LDCON, constantExpression.Position);
                     break;
                 case DialogueExpression dialogueExpression:

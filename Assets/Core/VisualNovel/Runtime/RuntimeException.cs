@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Core.VisualNovel.Runtime {
     /// <summary>
@@ -21,13 +22,13 @@ namespace Core.VisualNovel.Runtime {
 
         public override string StackTrace {
             get {
-                var stack = (new StackTrace().GetFrames() ?? new StackFrame[] { }).ToList();
+                var result = new StringBuilder();
                 // 写入脚本调用堆栈
                 foreach (var callStack in _callStack) {
                     var position = ScriptHeader.LoadAsset(callStack.ScriptId).Header.Positions[callStack.Offset];
-                    stack.Insert(0, new StackFrame(callStack.ScriptId, position.Line, position.Column));
+                    result.AppendLine($"   at {callStack.ScriptId}.vns:{position.Line}, {position.Column}");
                 }
-                return base.StackTrace;
+                return result.ToString();
             }
         }
     }

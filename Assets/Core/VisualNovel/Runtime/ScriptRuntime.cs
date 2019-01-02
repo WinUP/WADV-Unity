@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.MessageSystem;
 using Core.VisualNovel.Compiler;
@@ -89,19 +90,15 @@ namespace Core.VisualNovel.Runtime {
         /// <param name="name">变量名</param>
         /// <param name="onlyConstant">是否只查找常量表</param>
         /// <returns></returns>
-        public (Variable Target, CallStack Stack, bool IsConstant) FindVariable(string name, bool onlyConstant) {
+        public Variable FindVariable(string name, bool onlyConstant) {
             if (string.IsNullOrEmpty(name)) {
                 throw new RuntimeException(_callStack, "Unable to find variable: expected name is empty or null");
             }
             foreach (var stack in _callStack) {
-                if (!onlyConstant && stack.Variables.ContainsKey(name)) {
-                    return (stack.Variables[name], stack, false);
-                }
-                if (stack.Constants.ContainsKey(name)) {
-                    return (stack.Constants[name], stack, true);
-                }
+                var item = (onlyConstant ? stack.Variables.Where(e => e.Value.IsConstant) : stack.Variables).Where(e => e.Key == name).ToList();
+                if (item.Any()) return item.First().Value;
             }
-            return (null, null, false);
+            return null;
         }
 
         /// <summary>
@@ -176,17 +173,17 @@ namespace Core.VisualNovel.Runtime {
                     break;
                 case OperationCode.LDLOC:
                     var variableName = PopString();
-                    var (loadedVariable, _, _) = FindVariable(variableName, false);
+                    var loadedVariable = FindVariable(variableName, false);
                     if (loadedVariable == null) {
-                        throw new RuntimeException(_callStack, $"Unable to load variable: expected variable ${variableName} not existed");
+                        throw new RuntimeException(_callStack, $"Unable to load variable: expected variable/constant ${variableName} not existed");
                     }
                     LoadVariable(loadedVariable);
                     break;
                 case OperationCode.LDCON:
                     var constantName = PopString();
-                    var (loadedConstant, _, _) = FindVariable(constantName, true);
+                    var loadedConstant = FindVariable(constantName, true);
                     if (loadedConstant == null) {
-                        throw new RuntimeException(_callStack, $"Unable to load constant: expected variable ${constantName} not existed");
+                        throw new RuntimeException(_callStack, $"Unable to load constant: expected constant ${constantName} not existed");
                     }
                     LoadVariable(loadedConstant);
                     break;
@@ -197,18 +194,19 @@ namespace Core.VisualNovel.Runtime {
                     MemoryStack.Push(new StaticMemoryValue<bool> {Value = false});
                     break;
                 case OperationCode.CALL:
-                    await ApplyPluginCall();
+                    await CreatePluginCall();
                     break;
                 case OperationCode.POP:
                     MemoryStack.Pop();
                     break;
                 case OperationCode.DIALOGUE:
-                    await ApplyDialogue();
+                    await CreateDialogue();
                     break;
                 case OperationCode.BVAL:
-                    ApplyToBoolean();
+                    CreateToBoolean();
                     break;
                 case OperationCode.ADD:
+                    CreateAdd();
                     break;
                 case OperationCode.SUB:
                     break;
@@ -229,6 +227,8 @@ namespace Core.VisualNovel.Runtime {
                 case OperationCode.CLT:
                     break;
                 case OperationCode.STLOC:
+                    break;
+                case OperationCode.STCON:
                     break;
                 case OperationCode.PICK:
                     break;
@@ -279,6 +279,9 @@ namespace Core.VisualNovel.Runtime {
                 case BooleanVariableValue booleanVariableValue:
                     LoadStaticValue(booleanVariableValue.Value);
                     break;
+                case ExternVariableValue externVariableValue:
+                    LoadStaticValue(externVariableValue.Value);
+                    break;
                 case FloatVariableValue floatVariableValue:
                     LoadStaticValue(floatVariableValue.Value);
                     break;
@@ -309,7 +312,7 @@ namespace Core.VisualNovel.Runtime {
             return name;
         }
         
-        private async Task ApplyPluginCall() {
+        private async Task CreatePluginCall() {
             var pluginNameValue = PopString();
             if (string.IsNullOrEmpty(pluginNameValue)) {
                 throw new RuntimeException(_callStack, "Unable to find plugin: expected plugin name is empty or null");
@@ -323,21 +326,21 @@ namespace Core.VisualNovel.Runtime {
             if (plugin == null) {
                 throw new RuntimeException(_callStack, $"Unable to find plugin: expected plugin {pluginNameValue} not existed");
             }
-            MemoryStack.Push(await plugin.ExecuteAsync(this, parameters) ?? new NullMemoryValue());
+            MemoryStack.Push(await plugin.Execute(this, parameters) ?? new NullMemoryValue());
         }
 
-        private async Task ApplyDialogue() {
+        private async Task CreateDialogue() {
             var plugin = PluginManager.Find("Dialogue");
             if (plugin == null) {
                 throw new RuntimeException(_callStack, $"Unable to create dialogue: no dialogue plugin registered");
             }
-            MemoryStack.Push(await plugin.ExecuteAsync(this, new Dictionary<IMemoryValue, IMemoryValue> {
+            MemoryStack.Push(await plugin.Execute(this, new Dictionary<IMemoryValue, IMemoryValue> {
                 {new StaticMemoryValue<string> {Value = "Character"}, MemoryStack.Pop()},
                 {new StaticMemoryValue<string> {Value = "Content"}, MemoryStack.Pop()}
             }));
         }
 
-        private void ApplyToBoolean() {
+        private void CreateToBoolean() {
             var rawValue = MemoryStack.Pop();
             switch (rawValue) {
                 case NullMemoryValue _:
@@ -357,5 +360,40 @@ namespace Core.VisualNovel.Runtime {
             }
         }
 
+        private T TryCast<T>(IMemoryValue source) where T: class, IMemoryValue, new() {
+            var targetType = typeof(T);
+            if (targetType == typeof(NullMemoryValue)) {
+                return new T();
+            }
+            if (targetType == typeof(OffsetMemoryValue)) {
+                switch (source) {
+                    case NullMemoryValue nullMemoryValue:
+                        return new OffsetMemoryValue() as T;
+                    case OffsetMemoryValue offsetMemoryValue:
+                        break;
+                    case StaticMemoryValue staticMemoryValue:
+                        break;
+                    case TranslatableMemoryValue translatableMemoryValue:
+                        break;
+                }
+            }
+        }
+
+        private void CreateAdd() {
+            var valueRight = MemoryStack.Pop();
+            var valueLeft = MemoryStack.Pop();
+            switch (valueLeft) {
+                case NullMemoryValue nullMemoryValue:
+                    break;
+                case OffsetMemoryValue offsetMemoryValue:
+                    break;
+                case StaticMemoryValue staticMemoryValue:
+                    break;
+                case TranslatableMemoryValue translatableMemoryValue:
+                    break;
+            }
+            var valueLeft = TryCast<typeof(targetType)>(MemoryStack.Pop());
+            
+        }
     }
 }
