@@ -102,9 +102,19 @@ namespace Core.VisualNovel.Compiler {
                 if (file.Current >= '0' && file.Current <= '9') { // 数字常量
                     var numberEnd = file.IndexOfUntilNot('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F', 'x', 'X', '.');
                     var number = file.CopyContent(numberEnd);
-                    CreateNumberToken(identifier, tokens, position, number);
+                    CreateNumberToken(identifier, tokens, position, number, false);
                     file.Move(numberEnd);
                     position = position.MoveColumn(numberEnd - file.Offset);
+                    continue;
+                }
+
+                if (file.Current == '-' && file.Next >= '0' && file.Next <= '9') { // 负数字常量
+                    file.MoveToNext();
+                    var numberEnd = file.IndexOfUntilNot('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F', 'x', 'X', '.');
+                    var number = file.CopyContent(numberEnd);
+                    CreateNumberToken(identifier, tokens, position, number, true);
+                    file.Move(numberEnd);
+                    position = position.MoveColumn(numberEnd - file.Offset + 1);
                     continue;
                 }
                 
@@ -158,10 +168,18 @@ namespace Core.VisualNovel.Compiler {
                     if (nextSeparator < 0) {
                         break;
                     }
+                    if (file[nextSeparator] == '-' && file[nextSeparator + 1] >= '0' && file[nextSeparator + 1] <= '9') { // 负数
+                        var initialEndPosition = nextSeparator;
+                        file.Move(initialEndPosition + 1);
+                        nextSeparator = file.IndexOfWithEscapeRecognize(Keywords.Separators);
+                        file.Move(-initialEndPosition - 1);
+                    }
                     var content = file.CopyContent(nextSeparator).Trim();
-                    if (content.Length > 0) {
+                    if (content.Length > 1 && content[0] == '-' && content[1] >= '0' && content[1] <= '9') {
+                        CreateNumberToken(identifier, tokens, position, content.Substring(1), true);
+                    } else if (content.Length > 0) {
                         if (content[0] >= '0' && content[0] <= '9') {
-                            CreateNumberToken(identifier, tokens, position, content);
+                            CreateNumberToken(identifier, tokens, position, content, false);
                         } else {
                             tokens.Add(new StringToken(TokenType.String, position, content, false));
                         }
@@ -212,20 +230,21 @@ namespace Core.VisualNovel.Compiler {
             return tokens;
         }
 
-        private static void CreateNumberToken(CodeIdentifier identifier, ICollection<BasicToken> tokens, SourcePosition position, string number) {
+        private static void CreateNumberToken(CodeIdentifier identifier, ICollection<BasicToken> tokens, SourcePosition position, string number, bool negative) {
             number = number.ExecuteEscapeCharacters().ToUpper();
+            var addon = negative ? -1 : 1;
             if (number.StartsWith("0X")) { // 二进制整数转十进制
                 number = number.Substring(2);
                 if (number.Any(e => e != '0' && e != '1')) {
                     throw new CompileException(identifier, position, "Unable to create number: Binary number must be integer and only allows 0/1");
                 }
-                tokens.Add(new IntegerToken(TokenType.Number, position, Convert.ToInt32(number, 2)));
+                tokens.Add(new IntegerToken(TokenType.Number, position, Convert.ToInt32(number, 2) * addon));
             } else if (number.StartsWith("0B")) { // 十六进制整数转十进制
                 number = number.Substring(2);
                 if (number.Any(e => e == '.')) {
                     throw new CompileException(identifier, position, "Unable to create number: Hex number must be integer");
                 }
-                tokens.Add(new IntegerToken(TokenType.Number, position, Convert.ToInt32(number, 16)));
+                tokens.Add(new IntegerToken(TokenType.Number, position, Convert.ToInt32(number, 16) * addon));
             } else if (number.Any(e => e != '.' && e != '-' && e != 'E' && (e < '0' || e > '9'))) { // 错误格式
                 throw new CompileException(identifier, position, $"Unable to create number: Unknown format {number}");
             } else { // 十进制整数和浮点数转换
@@ -233,9 +252,9 @@ namespace Core.VisualNovel.Compiler {
                 if (dotCount > 1) { // 浮点数格式错误
                     throw new CompileException(identifier, position, "Unable to create number: Float number format error");
                 } else if (dotCount == 1 || number.Contains('E')) { // 浮点数
-                    tokens.Add(new FloatToken(TokenType.Number, position, float.Parse(number)));
+                    tokens.Add(new FloatToken(TokenType.Number, position, float.Parse(number) * addon));
                 } else { // 整数
-                    tokens.Add(new IntegerToken(TokenType.Number, position, Convert.ToInt32(number)));
+                    tokens.Add(new IntegerToken(TokenType.Number, position, Convert.ToInt32(number) * addon));
                 }
             }
         }

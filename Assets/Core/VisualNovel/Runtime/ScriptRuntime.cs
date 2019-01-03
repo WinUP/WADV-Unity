@@ -24,7 +24,7 @@ namespace Core.VisualNovel.Runtime {
         /// <summary>
         /// 获取当前激活的顶层作用域
         /// </summary>
-        public CallStack ActiveCallStack => _callStack.Peek();
+        public FunctionScope ActiveFunctionScope => _callStack.Peek();
         
         /// <summary>
         /// 获取当前内存堆栈
@@ -55,7 +55,7 @@ namespace Core.VisualNovel.Runtime {
             }
         }
 
-        private readonly Stack<CallStack> _callStack = new Stack<CallStack>();
+        private readonly Stack<FunctionScope> _callStack = new Stack<FunctionScope>();
         private string _activeLanguage;
 
         /// <summary>
@@ -188,10 +188,10 @@ namespace Core.VisualNovel.Runtime {
                     LoadVariable(loadedConstant);
                     break;
                 case OperationCode.LDT:
-                    MemoryStack.Push(new StaticMemoryValue<bool> {Value = true});
+                    MemoryStack.Push(new SerializableMemoryValue<bool> {Value = true});
                     break;
                 case OperationCode.LDF:
-                    MemoryStack.Push(new StaticMemoryValue<bool> {Value = false});
+                    MemoryStack.Push(new SerializableMemoryValue<bool> {Value = false});
                     break;
                 case OperationCode.CALL:
                     await CreatePluginCall();
@@ -259,11 +259,11 @@ namespace Core.VisualNovel.Runtime {
         }
 
         private void LoadStaticValue<T>(T value) {
-            MemoryStack.Push(new StaticMemoryValue<T> {Value = value});
+            MemoryStack.Push(new SerializableMemoryValue<T> {Value = value});
         }
         
-        private void LoadOffsetValue(long value, ScriptFile script = null, Stack<CallStack> stack = null) {
-            MemoryStack.Push(new OffsetMemoryValue {ScriptId = (script ?? Script).Header.Id, Offset = value, RunningStack = stack});
+        private void LoadOffsetValue(long value, ScriptFile script = null, Stack<FunctionScope> stack = null) {
+            MemoryStack.Push(new ScopeMemoryValue {ScriptId = (script ?? Script).Header.Id, Entrance = value, RunningStack = stack});
         }
 
         private void LoadTranslatableValue(uint id) {
@@ -292,7 +292,7 @@ namespace Core.VisualNovel.Runtime {
                     LoadNull();
                     break;
                 case OffsetVariableValue offsetVariableValue:
-                    MemoryStack.Push(new OffsetMemoryValue {ScriptId = offsetVariableValue.ScriptId, Offset = offsetVariableValue.Offset, RunningStack = offsetVariableValue.RunningStack});
+                    MemoryStack.Push(new ScopeMemoryValue {ScriptId = offsetVariableValue.ScriptId, Entrance = offsetVariableValue.Offset, RunningStack = offsetVariableValue.RunningStack});
                     break;
                 case StringVariableValue stringVariableValue:
                     LoadStaticValue(stringVariableValue.Value);
@@ -302,7 +302,7 @@ namespace Core.VisualNovel.Runtime {
         
         private string PopString() {
             string name;
-            if (MemoryStack.Pop() is StaticMemoryValue<string> stringMemoryValue) {
+            if (MemoryStack.Pop() is SerializableMemoryValue<string> stringMemoryValue) {
                 name = stringMemoryValue.Value;
             } else if (MemoryStack.Pop() is TranslatableMemoryValue translatableMemoryValue) {
                 name = ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.GetTranslation(ActiveLanguage, translatableMemoryValue.TranslationId);
@@ -335,8 +335,8 @@ namespace Core.VisualNovel.Runtime {
                 throw new RuntimeException(_callStack, $"Unable to create dialogue: no dialogue plugin registered");
             }
             MemoryStack.Push(await plugin.Execute(this, new Dictionary<IMemoryValue, IMemoryValue> {
-                {new StaticMemoryValue<string> {Value = "Character"}, MemoryStack.Pop()},
-                {new StaticMemoryValue<string> {Value = "Content"}, MemoryStack.Pop()}
+                {new SerializableMemoryValue<string> {Value = "Character"}, MemoryStack.Pop()},
+                {new SerializableMemoryValue<string> {Value = "Content"}, MemoryStack.Pop()}
             }));
         }
 
@@ -344,56 +344,54 @@ namespace Core.VisualNovel.Runtime {
             var rawValue = MemoryStack.Pop();
             switch (rawValue) {
                 case NullMemoryValue _:
-                    MemoryStack.Push(new StaticMemoryValue<bool> {Value = false});
+                    MemoryStack.Push(new SerializableMemoryValue<bool> {Value = false});
                     break;
-                case OffsetMemoryValue offsetMemoryValue:
-                    MemoryStack.Push(new StaticMemoryValue<bool> {Value = offsetMemoryValue.Offset != 0});
+                case ScopeMemoryValue offsetMemoryValue:
+                    MemoryStack.Push(new SerializableMemoryValue<bool> {Value = offsetMemoryValue.Entrance != 0});
                     break;
                 case TranslatableMemoryValue translatableMemoryValue:
-                    MemoryStack.Push(new StaticMemoryValue<bool> {
+                    MemoryStack.Push(new SerializableMemoryValue<bool> {
                         Value = ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.HasTranslation(ActiveLanguage, translatableMemoryValue.TranslationId)
                     });
                     break;
-                case StaticMemoryValue staticMemoryValue:
-                    MemoryStack.Push(new StaticMemoryValue<bool> {Value = staticMemoryValue.ToBoolean()});
+                case SerializableMemoryValue staticMemoryValue:
+                    MemoryStack.Push(new SerializableMemoryValue<bool> {Value = staticMemoryValue.ToBoolean()});
                     break;
             }
         }
 
-        private T TryCast<T>(IMemoryValue source) where T: class, IMemoryValue, new() {
-            var targetType = typeof(T);
-            if (targetType == typeof(NullMemoryValue)) {
-                return new T();
-            }
-            if (targetType == typeof(OffsetMemoryValue)) {
-                switch (source) {
-                    case NullMemoryValue nullMemoryValue:
-                        return new OffsetMemoryValue() as T;
-                    case OffsetMemoryValue offsetMemoryValue:
-                        break;
-                    case StaticMemoryValue staticMemoryValue:
-                        break;
-                    case TranslatableMemoryValue translatableMemoryValue:
-                        break;
-                }
-            }
-        }
-
+        // * ? + null = ?
+        // * null + ? = ?
+        // * offset + * = ERROR
+        // * translatable + static = static<string>
+        // * translatable + * = ERROR
         private void CreateAdd() {
             var valueRight = MemoryStack.Pop();
             var valueLeft = MemoryStack.Pop();
+            if (valueRight is NullMemoryValue) {
+                MemoryStack.Push(valueLeft.Duplicate());
+                return;
+            }
+            if (valueLeft is NullMemoryValue) {
+                MemoryStack.Push(valueRight.Duplicate());
+                return;
+            }
             switch (valueLeft) {
-                case NullMemoryValue nullMemoryValue:
+                case ScopeMemoryValue _:
+                    throw new RuntimeException(_callStack, $"Unable to add values: scene entrance/code offset is not allowed to join any binary operation");
+                case SerializableMemoryValue staticLeft:
+                    
                     break;
-                case OffsetMemoryValue offsetMemoryValue:
-                    break;
-                case StaticMemoryValue staticMemoryValue:
-                    break;
-                case TranslatableMemoryValue translatableMemoryValue:
+                case TranslatableMemoryValue translatableLeft:
+                    if (valueRight is SerializableMemoryValue stringStaticRight) {
+                        MemoryStack.Push(new SerializableMemoryValue<string> {
+                            Value = ScriptHeader.LoadAsset(translatableLeft.ScriptId).Header.GetTranslation(ActiveLanguage, translatableLeft.TranslationId) + stringStaticRight
+                        });
+                    } else {
+                        throw new RuntimeException(_callStack, $"Unable to add values: translatable string is only allowed to add with static value or null");
+                    }
                     break;
             }
-            var valueLeft = TryCast<typeof(targetType)>(MemoryStack.Pop());
-            
         }
     }
 }

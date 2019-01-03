@@ -9,8 +9,12 @@ namespace Core.Extensions {
         /// <param name="value">目标字符串</param>
         /// <param name="part">要删除的子串</param>
         /// <returns></returns>
-        public static string Remove(this string value, string part) {
+        public static string RemoveWhenStartsWith(this string value, string part) {
             var index = value.IndexOf(part, StringComparison.Ordinal);
+            if (index < 0) return value;
+            if (index + part.Length >= value.Length) {
+                return value.Substring(0, index);
+            }
             return index < 0 ? value : value.Substring(part.Length);
         }
         
@@ -20,13 +24,30 @@ namespace Core.Extensions {
         /// <param name="value">目标字符串</param>
         /// <param name="part">要删除的子串</param>
         /// <returns></returns>
-        public static string RemoveLast(this string value, string part) {
+        public static string RemoveWhenEndsWith(this string value, string part) {
             var index = value.LastIndexOf(part, StringComparison.Ordinal);
             return index < 0
                 ? value
                 : index + part.Length > value.Length
                     ? value.Remove(index, part.Length)
                     : value.Substring(0, index);
+        }
+
+        /// <summary>
+        /// 重复字符串若干次
+        /// </summary>
+        /// <param name="value">目标字符串</param>
+        /// <param name="times">重复次数</param>
+        /// <returns></returns>
+        public static string Repeat(this string value, int times) {
+            if (times < 0) throw new NotSupportedException("Unable to ");
+            if (times == 0) return "";
+            if (times == 1) return value;
+            var result = new StringBuilder(value, value.Length * times);
+            for (var i = 0; ++i < times;) {
+                result.Append(value);
+            }
+            return result.ToString();
         }
 
         /// <summary>

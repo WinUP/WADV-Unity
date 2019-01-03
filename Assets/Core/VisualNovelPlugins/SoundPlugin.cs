@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Core.VisualNovel.Interoperation;
 using Core.VisualNovel.Plugin;
 using Core.VisualNovel.Runtime;
-using Core.VisualNovel.Runtime.MemoryValues;
 
 namespace Core.VisualNovelPlugins {
     public class SoundPlugin : IVisualNovelPlugin {
         public string Name { get; } = "Sound";
 
-        public Task<IMemoryValue> Execute(ScriptRuntime context, IDictionary<IMemoryValue, IMemoryValue> parameters) {
+        public Task<ISerializableValue> Execute(ScriptRuntime context, IDictionary<ISerializableValue, ISerializableValue> parameters) {
             throw new NotImplementedException();
         }
 
@@ -17,7 +17,7 @@ namespace Core.VisualNovelPlugins {
             throw new NotImplementedException();
         }
 
-        public IMemoryValue ToValue() {
+        public ISerializableValue ToValue() {
             throw new NotImplementedException();
         }
     }

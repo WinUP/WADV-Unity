@@ -151,10 +151,10 @@ namespace Core.VisualNovel.Compiler {
         public static ScriptPaths CreatePathFromAsset(string asset) {
             asset = asset.UnifySlash();
             var assetDirectory = (Path.GetDirectoryName(asset) ?? asset).UnifySlash();
-            var idDirectory = assetDirectory.Remove("Assets/Resources/");
+            var idDirectory = assetDirectory.RemoveWhenStartsWith("Assets/Resources/");
             if (asset.EndsWith(".vns")) {
-                var assetWithoutExtension = asset.RemoveLast(".vns");
-                var id = assetWithoutExtension.Remove("Assets/Resources/");
+                var assetWithoutExtension = asset.RemoveWhenEndsWith(".vns");
+                var id = assetWithoutExtension.RemoveWhenStartsWith("Assets/Resources/");
                 return new ScriptPaths {
                     Source = asset,
                     SourceResource = id,
@@ -165,8 +165,8 @@ namespace Core.VisualNovel.Compiler {
                 };
             }
             if (asset.EndsWith(".bin.vnb")) {
-                var assetWithoutExtension = asset.RemoveLast(".bin.vnb");
-                var id = assetWithoutExtension.Remove("Assets/Resources/");
+                var assetWithoutExtension = asset.RemoveWhenEndsWith(".bin.vnb");
+                var id = assetWithoutExtension.RemoveWhenStartsWith("Assets/Resources/");
                 return new ScriptPaths {
                     Source = assetWithoutExtension + ".vns",
                     SourceResource = id,
@@ -181,8 +181,8 @@ namespace Core.VisualNovel.Compiler {
                 if (string.IsNullOrEmpty(language)) {
                     return null;
                 }
-                var assetWithoutExtension = asset.RemoveLast($".tr.{language}.txt");
-                var id = assetWithoutExtension.Remove("Assets/Resources/");
+                var assetWithoutExtension = asset.RemoveWhenEndsWith($".tr.{language}.txt");
+                var id = assetWithoutExtension.RemoveWhenStartsWith("Assets/Resources/");
                 return new ScriptPaths {
                     Source = assetWithoutExtension + ".vns",
                     SourceResource = id,

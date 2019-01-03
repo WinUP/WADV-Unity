@@ -20,7 +20,7 @@ namespace Core.VisualNovel.Plugin {
                     }
                     Register(plugin);
                 } catch (MissingMemberException) {
-                    Debug.Log($"Plugin {item.FullName} has no parameterless constructor, developer should register it to PluginManager manually to enable functions");
+                    Debug.LogWarning($"Plugin {item.FullName} has no parameterless constructor, developer should register it to PluginManager manually to enable functions");
                 }
             }
         }

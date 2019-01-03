@@ -150,8 +150,7 @@ namespace Core.VisualNovel.Compiler {
                     } else {
                         Generate(context, constantExpression.Name);
                     }
-                    context.File.OperationCode(flags.Any(e => e == CompilerFlag.UseSetLocalVariable) ? OperationCode.STCON : OperationCode.LDLOC, constantExpression.Position);
-                    context.File.OperationCode(OperationCode.LDCON, constantExpression.Position);
+                    context.File.OperationCode(flags.Any(e => e == CompilerFlag.UseSetLocalVariable) ? OperationCode.STCON : OperationCode.LDCON, constantExpression.Position);
                     break;
                 case DialogueExpression dialogueExpression:
                     context.File.LoadDialogue(dialogueExpression.Character, dialogueExpression.Content, dialogueExpression.Position);
@@ -274,7 +273,24 @@ namespace Core.VisualNovel.Compiler {
                     context.File.OperationCode(OperationCode.BVAL, toBooleanExpression.Position);
                     break;
                 case VariableExpression variableExpression:
-                    Generate(context, variableExpression.Name);
+                    if (variableExpression.Name is StringExpression variableNameExpression) {
+                        switch (variableNameExpression.Value.ToUpper()) {
+                            case "TRUE":
+                                context.File.LoadBoolean(true, variableNameExpression.Position);
+                                return;
+                            case "FALSE":
+                                context.File.LoadBoolean(false, variableNameExpression.Position);
+                                return;
+                            case "NULL":
+                                context.File.LoadNull(variableNameExpression.Position);
+                                return;
+                            default:
+                                Generate(context, variableNameExpression);
+                                break;
+                        }
+                    } else {
+                        Generate(context, variableExpression.Name);
+                    }
                     context.File.OperationCode(flags.Any(e => e == CompilerFlag.UseSetLocalVariable) ? OperationCode.STLOC : OperationCode.LDLOC, variableExpression.Position);
                     break;
             }
