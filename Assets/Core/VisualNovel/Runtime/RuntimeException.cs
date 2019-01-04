@@ -19,6 +19,10 @@ namespace Core.VisualNovel.Runtime {
             _scope = scope.Reverse().ToList();
         }
 
+        public RuntimeException(IEnumerable<CallStack> scope, Exception innerException) : base("Unexpected runtime exception occured, see inner exception for more information", innerException) {
+            _scope = scope.Reverse().ToList();
+        }
+
         public override string StackTrace {
             get {
                 var result = new StringBuilder();

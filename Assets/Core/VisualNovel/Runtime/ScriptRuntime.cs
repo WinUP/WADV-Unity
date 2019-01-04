@@ -293,7 +293,11 @@ namespace Core.VisualNovel.Runtime {
             for (var i = -1; ++i < parameterCount;) {
                 parameters.Add(MemoryStack.Pop(), MemoryStack.Pop());
             }
-            MemoryStack.Push(await plugin.Execute(this, parameters) ?? new NullMemoryValue());
+            try {
+                MemoryStack.Push(await plugin.Execute(this, parameters) ?? new NullMemoryValue());
+            } catch (Exception ex) {
+                throw new RuntimeException(_callStacks, ex);
+            }
         }
 
         private async Task CreateDialogue() {
@@ -309,7 +313,11 @@ namespace Core.VisualNovel.Runtime {
 
         private void CreateToBoolean() {
             var rawValue = MemoryStack.Pop();
-            MemoryStack.Push(new BooleanMemoryValue {Value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean() : rawValue != null});
+            try {
+                MemoryStack.Push(new BooleanMemoryValue {Value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean() : rawValue != null});
+            } catch (Exception ex) {
+                throw new RuntimeException(_callStacks, ex);
+            }
         }
 
         private void CreateBinaryOperation(OperatorType operatorType) {
@@ -318,37 +326,57 @@ namespace Core.VisualNovel.Runtime {
             switch (operatorType) {
                 case OperatorType.PickChild:
                     if (valueLeft is IPickChildOperator leftPick) {
-                        MemoryStack.Push(leftPick.PickChild(valueRight));
+                        try {
+                            MemoryStack.Push(leftPick.PickChild(valueRight));
+                        } catch (Exception ex) {
+                            throw new RuntimeException(_callStacks, ex);
+                        }
                     } else {
-                        throw new NotSupportedException($"Unable to pick {valueRight} from {valueLeft}: Parent expression has no pick child operator implementation");
+                        throw new RuntimeException(_callStacks, $"Unable to pick {valueRight} from {valueLeft}: Parent expression has no pick child operator implementation");
                     }
                     break;
                 case OperatorType.Add:
                     if (valueLeft is IAddOperator leftAdd) {
-                        MemoryStack.Push(leftAdd.AddWith(valueRight));
+                        try {
+                            MemoryStack.Push(leftAdd.AddWith(valueRight));
+                        } catch (Exception ex) {
+                            throw new RuntimeException(_callStacks, ex);
+                        }
                     } else {
-                        throw new NotSupportedException($"Unable to add {valueLeft} and {valueRight}: Left expression has no add operator implementation");
+                        throw new RuntimeException(_callStacks, $"Unable to add {valueLeft} and {valueRight}: Left expression has no add operator implementation");
                     }
                     break;
                 case OperatorType.Minus:
                     if (valueLeft is ISubtractOperator leftSubtract) {
-                        MemoryStack.Push(leftSubtract.SubtractWith(valueRight));
+                        try {
+                            MemoryStack.Push(leftSubtract.SubtractWith(valueRight));
+                        } catch (Exception ex) {
+                            throw new RuntimeException(_callStacks, ex);
+                        }
                     } else {
-                        throw new NotSupportedException($"Unable to subtract {valueLeft} and {valueRight}: Left expression has no subtract operator implementation");
+                        throw new RuntimeException(_callStacks, $"Unable to subtract {valueLeft} and {valueRight}: Left expression has no subtract operator implementation");
                     }
                     break;
                 case OperatorType.Multiply:
                     if (valueLeft is IMultiplyOperator leftMultiply) {
-                        MemoryStack.Push(leftMultiply.MultiplyWith(valueRight));
+                        try {
+                            MemoryStack.Push(leftMultiply.MultiplyWith(valueRight));
+                        } catch (Exception ex) {
+                            throw new RuntimeException(_callStacks, ex);
+                        }
                     } else {
-                        throw new NotSupportedException($"Unable to multiply {valueLeft} and {valueRight}: Left expression has no multiply operator implementation");
+                        throw new RuntimeException(_callStacks, $"Unable to multiply {valueLeft} and {valueRight}: Left expression has no multiply operator implementation");
                     }
                     break;
                 case OperatorType.Divide:
                     if (valueLeft is IDivideOperator leftDivide) {
-                        MemoryStack.Push(leftDivide.DivideWith(valueRight));
+                        try {
+                            MemoryStack.Push(leftDivide.DivideWith(valueRight));
+                        } catch (Exception ex) {
+                            throw new RuntimeException(_callStacks, ex);
+                        }
                     } else {
-                        throw new NotSupportedException($"Unable to divide {valueLeft} and {valueRight}: Left expression has no divide operator implementation");
+                        throw new RuntimeException(_callStacks, $"Unable to divide {valueLeft} and {valueRight}: Left expression has no divide operator implementation");
                     }
                     break;
                 case OperatorType.GreaterThan:
@@ -365,8 +393,6 @@ namespace Core.VisualNovel.Runtime {
                     break;
                 case OperatorType.LogicNotEqualsTo:
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(operatorType), operatorType, $"Unsupported runtime operator {operatorType}");
             }
         }
     }
