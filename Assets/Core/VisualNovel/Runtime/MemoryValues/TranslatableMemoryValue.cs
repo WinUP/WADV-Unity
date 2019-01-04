@@ -28,5 +28,9 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             var defaultTranslation = ScriptHeader.LoadAsset(ScriptId).Header.GetTranslation(TranslationManager.DefaultLanguage, TranslationId);
             return $"TranslatableMemoryValue {{ScriptId = {ScriptId}, TranslationId = {TranslationId}, Default = {defaultTranslation}}}";
         }
+
+        public override string ToString() {
+            return ConvertToString();
+        }
     }
 }

@@ -231,6 +231,12 @@ namespace Core.VisualNovel.Runtime.Editor {
                 case OperationCode.STLOC:
                     assemblyContent.AppendLine("stloc");
                     break;
+                case OperationCode.STCON:
+                    assemblyContent.AppendLine("stcon");
+                    break;
+                case OperationCode.STMEM:
+                    assemblyContent.AppendLine("stmem");
+                    break;
                 case OperationCode.PICK:
                     assemblyContent.AppendLine("pick");
                     break;

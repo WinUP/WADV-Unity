@@ -64,8 +64,8 @@ namespace Core.VisualNovel.Compiler {
                         binaryExpression.Operator == OperatorType.MinusBy || binaryExpression.Operator == OperatorType.MultiplyBy ||
                         binaryExpression.Operator == OperatorType.DivideBy) {
                         Generate(context, binaryExpression.Left, CompilerFlag.UseSetLocalVariable);
-                        if (!(binaryExpression.Left is VariableExpression)) {
-                            context.File.OperationCode(OperationCode.STLOC, binaryExpression.Left.Position);
+                        if (!(binaryExpression.Left is VariableExpression)) { // 对于所有赋值类语句，如果左侧不是自带赋值指令的变量表达式则补充一个赋值指令来改写内存堆栈值
+                            context.File.OperationCode(OperationCode.STMEM, binaryExpression.Left.Position);
                         }
                     } else {
                         Generate(context, binaryExpression.Left);

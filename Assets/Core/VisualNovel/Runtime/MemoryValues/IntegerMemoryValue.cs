@@ -39,6 +39,10 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             return Value.ToString();
         }
 
+        public override string ToString() {
+            return $"IntegerMemoryValue {{Value = {ConvertToString()}}}";
+        }
+
         /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
             return new IntegerMemoryValue {Value = Value + ToInteger(target)};

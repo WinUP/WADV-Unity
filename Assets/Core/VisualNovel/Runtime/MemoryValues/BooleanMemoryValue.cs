@@ -7,7 +7,8 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
     /// 表示一个32位浮点数内存堆栈值
     /// </summary>
     [Serializable]
-    public class BooleanMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, IMultiplyOperator {
+    public class BooleanMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, IMultiplyOperator,
+                                      IPickChildOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
@@ -38,6 +39,10 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             return Value ? "True" : "False";
         }
 
+        public override string ToString() {
+            return $"BooleanMemoryValue {{Value = {ConvertToString()}}}";
+        }
+
         /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
             return new BooleanMemoryValue {
@@ -50,6 +55,23 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             return new BooleanMemoryValue {
                 Value = Value && (target is IBooleanConverter booleanTarget ? booleanTarget.ConvertToBoolean() : target != null)
             };
+        }
+
+        /// <inheritdoc />
+        public SerializableValue PickChild(SerializableValue name) {
+            if (!(name is IStringConverter stringConverter))
+                throw new NotSupportedException($"Unable to get feature in boolean variable with feature id {name}: Only string feature name is accepted");
+            var target = stringConverter.ConvertToString();
+            switch (target) {
+                case "Reverse":
+                    return new BooleanMemoryValue {Value = !Value};
+                case "ToNumber":
+                    return new IntegerMemoryValue {Value = ConvertToInteger()};
+                case "ToString":
+                    return new StringMemoryValue {Value = ConvertToString()};
+                default:
+                    throw new NotSupportedException($"Unable to get feature in boolean variable with feature id {target}: Unsupported feature");
+            }
         }
     }
 }

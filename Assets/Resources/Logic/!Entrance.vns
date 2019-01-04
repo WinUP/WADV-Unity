@@ -14,11 +14,12 @@ VNS版本[@init]测试脚本。首先测试无角色对话。
 #测试 这里测试基本指令，首先暂停2秒。[Pause=2000]然后等待点击。[Pause]之后把字号[Size+=5]加大并[Color=#808080]上色[/Color]然后回到[/Size]原始大小。
 #测试 现在测试变量声明和赋值。
 
-@temp = [Object 0=@#false 1=@#false 3=TEMP]
+@temp = [Object 0=@#false 1=@#false]
+@temp->3 = TEMP
 @TEMP = true
 @temp3 = @(@temp->3)
 
-#测试2 变量的值应该为true：[@temp3]
+#测试2 变量的值应该为字符串true：[@temp3]
 
 @true = @#false
 
@@ -28,7 +29,7 @@ VNS版本[@init]测试脚本。首先测试无角色对话。
 
 [Dialogue Character=测试2 Content=("这里测试可翻译的复杂对话，(1 + 2) * 3 = " + ((1 + 2) * 3)) 广播]
 [Dialogue Character=测试2 Content=('这里测试不可翻译的复杂对话，(1 + 2) / 2.0 = ' + ((1 + 2) / 2.0)) 广播]
-[Dialogue Character=[Character ID=测试3 DisplayName="第三个测试"] Content=[Format Template="这里测试复合指令，这句话应该是由{角色}说的" 角色=@#测试3->显示名]]
+[Dialogue Character=[Character ID=测试3 DisplayName="第三个测试"] Content=["这里测试复合指令，这句话应该是由{角色}说的"->Format 角色=@#测试3->DisplayName]]
 
 @temp = !!@#测试3
 

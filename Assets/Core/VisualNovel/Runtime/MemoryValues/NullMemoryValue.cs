@@ -33,6 +33,10 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             return "";
         }
 
+        public override string ToString() {
+            return $"NullMemoryValue {{}}";
+        }
+
         /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
             return target.Duplicate();

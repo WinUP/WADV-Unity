@@ -6,18 +6,10 @@ using Core.VisualNovel.Plugin;
 using Core.VisualNovel.Runtime;
 
 namespace Core.VisualNovelPlugins {
-    public class SoundPlugin : IVisualNovelPlugin {
-        public string Name { get; } = "Sound";
+    public class SoundPlugin : VisualNovelPlugin {
+        public SoundPlugin() : base("Sound") { }
 
-        public Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters) {
-            throw new NotImplementedException();
-        }
-
-        public IVisualNovelPlugin PickChild(ScriptRuntime context, string childName) {
-            throw new NotImplementedException();
-        }
-
-        public SerializableValue ToValue() {
+        public override Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters) {
             throw new NotImplementedException();
         }
     }

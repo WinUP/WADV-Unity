@@ -318,63 +318,69 @@ namespace Core.VisualNovel.Compiler {
         /// </summary>
         STCON,
         /// <summary>
-        /// 取子元素
+        /// 内存堆栈赋值
         /// <para>格式：<code>3B</code></para>
+        /// <para>栈结构要求：栈顶元素描述赋值目标，第二个元素描述值</para>
+        /// </summary>
+        STMEM,
+        /// <summary>
+        /// 取子元素
+        /// <para>格式：<code>3C</code></para>
         /// <para>栈结构要求：栈顶元素描述父对象，第二个元素描述子对象名称</para>
         /// </summary>
         PICK,
         /// <summary>
         /// 创建作用域
-        /// <para>格式：<code>3C</code></para>
+        /// <para>格式：<code>3D</code></para>
         /// </summary>
         SCOPE,
         /// <summary>
         /// 销毁作用域
-        /// <para>格式：<code>3D</code></para>
+        /// <para>格式：<code>3E</code></para>
         /// </summary>
         LEAVE,
         /// <summary>
         /// 返回到上一个有记录的执行偏移地址
-        /// <para>格式：<code>3E</code></para>
+        /// <para>格式：<code>3F</code></para>
         /// </summary>
         RET,
         /// <summary>
         /// 调用栈顶元素所指的函数（该指令是一系列变量赋值指令+BR的简写）
-        /// <para>格式：<code>3F</code></para>
+        /// <para>格式：<code>40</code></para>
         /// <para>栈结构要求：栈顶元素描述函数名，第二个元素描述参数数目，之后的元素以参数名、参数值的顺序描述每个参数</para>
         /// </summary>
         FUNC,
         /// <summary>
         /// 如果栈顶元素真值不为true则跳转到指定标签处
-        /// <para>格式：<code>40 &lt;7 bit format int32&gt;</code></para>
+        /// <para>格式：<code>41 &lt;7 bit format int32&gt;</code></para>
         /// <para>栈结构要求：栈不能为空</para>
         /// </summary>
         BF_S,
         /// <summary>
         /// 无条件跳转到指定标签处
-        /// <para>格式：<code>41 &lt;7 bit format int32&gt;</code></para>
+        /// <para>格式：<code>42 &lt;7 bit format int32&gt;</code></para>
         /// </summary>
         BR_S,
         /// <summary>
         /// 如果栈顶元素真值不为true则跳转到指定标签处，同时记录当前偏移地址
-        /// <para>格式：<code>42 &lt;7 bit format int32&gt;</code></para>
+        /// <para>格式：<code>43 &lt;7 bit format int32&gt;</code></para>
         /// <para>栈结构要求：栈不能为空</para>
         /// </summary>
         BF,
         /// <summary>
         /// 无条件跳转到指定标签处，同时记录当前偏移地址
-        /// <para>格式：<code>43 &lt;7 bit format int32&gt;</code></para>
+        /// <para>格式：<code>44 &lt;7 bit format int32&gt;</code></para>
         /// </summary>
         BR,
         /// <summary>
         /// 导入脚本执行结果
-        /// <para>格式：<code>44</code></para>
+        /// <para>格式：<code>45</code></para>
         /// <para>栈结构要求：栈顶元素描述目标脚本路径</para>
         /// </summary>
         LOAD,
         /// <summary>
         /// 导出表达式结果
-        /// <para>格式：<code>45</code></para>
+        /// <para>格式：<code>46</code></para>
         /// <para>栈结构要求：栈顶元素描述导出项名，第二个元素描述项值</para>
         /// </summary>
         EXP

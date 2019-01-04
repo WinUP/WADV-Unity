@@ -10,12 +10,12 @@ namespace Core.VisualNovel.Plugin {
     /// 插件管理器
     /// </summary>
     public static class PluginManager {
-        private static readonly Dictionary<string, IVisualNovelPlugin> Plugins = new Dictionary<string, IVisualNovelPlugin>();
+        private static readonly Dictionary<string, VisualNovelPlugin> Plugins = new Dictionary<string, VisualNovelPlugin>();
 
         static PluginManager() {
-            foreach (var item in Assembly.GetExecutingAssembly().GetTypes().Where(e => e.IsClass && e.GetInterfaces().Contains(typeof(IVisualNovelPlugin)))) {
+            foreach (var item in Assembly.GetExecutingAssembly().GetTypes().Where(e => e.IsClass && e.GetInterfaces().Contains(typeof(VisualNovelPlugin)))) {
                 try {
-                    if (!(Activator.CreateInstance(item) is IVisualNovelPlugin plugin)) {
+                    if (!(Activator.CreateInstance(item) is VisualNovelPlugin plugin)) {
                         throw new MissingMemberException();
                     }
                     Register(plugin);
@@ -29,10 +29,9 @@ namespace Core.VisualNovel.Plugin {
         /// 根据名称寻找插件
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="language"></param>
         /// <returns></returns>
         [CanBeNull]
-        public static IVisualNovelPlugin Find(string name) {
+        public static VisualNovelPlugin Find(string name) {
             return Plugins.ContainsKey(name) ? Plugins[name] : null;
         }
 
@@ -41,7 +40,7 @@ namespace Core.VisualNovel.Plugin {
         /// <para>相同名称的插件会覆盖之前注册的插件并将在Unity控制台中显示警告，旧有插件的翻译也会被销毁</para>
         /// </summary>
         /// <param name="plugin">要注册的插件</param>
-        public static void Register([NotNull] IVisualNovelPlugin plugin) {
+        public static void Register([NotNull] VisualNovelPlugin plugin) {
             if (Plugins.ContainsKey(plugin.Name)) {
                 Unregister(plugin);
             }
@@ -52,7 +51,7 @@ namespace Core.VisualNovel.Plugin {
         /// 注销一个插件
         /// </summary>
         /// <param name="plugin">要注销的插件</param>
-        public static void Unregister(IVisualNovelPlugin plugin) {
+        public static void Unregister(VisualNovelPlugin plugin) {
             if (!Plugins.ContainsKey(plugin.Name)) {
                 return;
             }
@@ -64,7 +63,7 @@ namespace Core.VisualNovel.Plugin {
         /// </summary>
         /// <param name="plugin">目标插件</param>
         /// <returns></returns>
-        public static bool Contains(IVisualNovelPlugin plugin) {
+        public static bool Contains(VisualNovelPlugin plugin) {
             return Plugins.ContainsValue(plugin);
         }
 

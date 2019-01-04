@@ -40,6 +40,10 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             return Value.ToString(CultureInfo.InvariantCulture);
         }
 
+        public override string ToString() {
+            return $"FloatMemoryValue {{Value = {ConvertToString()}}}";
+        }
+
         /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
             return new FloatMemoryValue {Value = Value + ToFloat(target)};

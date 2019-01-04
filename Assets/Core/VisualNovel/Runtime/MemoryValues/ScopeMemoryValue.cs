@@ -43,6 +43,10 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             return $"OffsetMemoryValue {{ScriptId = {ScriptId}, Entrance = {Entrance}}}";
         }
 
+        public override string ToString() {
+            return ConvertToString();
+        }
+
         /// <summary>
         /// 按照名称查找变量
         /// </summary>

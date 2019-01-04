@@ -140,10 +140,10 @@
     <Compile Include="Assets\Core\VisualNovel\Interoperation\IStringConverter.cs" />
     <Compile Include="Assets\Core\VisualNovel\Interoperation\ISubtractOperator.cs" />
     <Compile Include="Assets\Core\VisualNovel\Interoperation\SerializableValue.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Plugin\IVisualNovelPlugin.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginDescription.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginIdentifier.cs" />
     <Compile Include="Assets\Core\VisualNovel\Plugin\PluginManager.cs" />
+    <Compile Include="Assets\Core\VisualNovel\Plugin\VisualNovelPlugin.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\CallStack.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\ExtendedBinaryReader.cs" />
     <Compile Include="Assets\Core\VisualNovel\Runtime\MemoryValues\BooleanMemoryValue.cs" />
@@ -166,6 +166,7 @@
     <Compile Include="Assets\Core\VisualNovel\Translation\ScriptTranslation.cs" />
     <Compile Include="Assets\Core\VisualNovel\Translation\Translation.cs" />
     <Compile Include="Assets\Core\VisualNovel\Translation\TranslationManager.cs" />
+    <Compile Include="Assets\Core\VisualNovelPlugins\ObjectPlugin.cs" />
     <Compile Include="Assets\Core\VisualNovelPlugins\SoundPlugin.cs" />
     <None Include="Assets\Resources\Logic\Utilities.tr.jp.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">

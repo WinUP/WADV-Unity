@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Core.MessageSystem;
 using Core.VisualNovel.Compiler;
@@ -8,7 +7,6 @@ using Core.VisualNovel.Compiler.Expressions;
 using Core.VisualNovel.Interoperation;
 using Core.VisualNovel.Plugin;
 using Core.VisualNovel.Runtime.MemoryValues;
-using NUnit.Framework.Constraints;
 
 // ! 为求效率，VNB运行环境在文件头正确的情况下假设文件格式绝对正确，只会做运行时数据检查，不会进行任何格式检查
 
@@ -196,31 +194,40 @@ namespace Core.VisualNovel.Runtime {
                     CreateToBoolean();
                     break;
                 case OperationCode.ADD:
-                    CreateAdd();
+                    CreateBinaryOperation(OperatorType.Add);
                     break;
                 case OperationCode.SUB:
+                    CreateBinaryOperation(OperatorType.Minus);
                     break;
                 case OperationCode.MUL:
+                    CreateBinaryOperation(OperatorType.Multiply);
                     break;
                 case OperationCode.DIV:
+                    CreateBinaryOperation(OperatorType.Divide);
                     break;
                 case OperationCode.NOT:
                     break;
                 case OperationCode.EQL:
+                    CreateBinaryOperation(OperatorType.EqualsTo);
                     break;
                 case OperationCode.CGE:
+                    CreateBinaryOperation(OperatorType.NotLessThan);
                     break;
                 case OperationCode.CGT:
+                    CreateBinaryOperation(OperatorType.GreaterThan);
                     break;
                 case OperationCode.CLE:
+                    CreateBinaryOperation(OperatorType.NotGreaterThan);
                     break;
                 case OperationCode.CLT:
+                    CreateBinaryOperation(OperatorType.LesserThan);
                     break;
                 case OperationCode.STLOC:
                     break;
                 case OperationCode.STCON:
                     break;
                 case OperationCode.PICK:
+                    CreateBinaryOperation(OperatorType.PickChild);
                     break;
                 case OperationCode.SCOPE:
                     break;
@@ -310,22 +317,39 @@ namespace Core.VisualNovel.Runtime {
             var valueLeft = MemoryStack.Pop();
             switch (operatorType) {
                 case OperatorType.PickChild:
+                    if (valueLeft is IPickChildOperator leftPick) {
+                        MemoryStack.Push(leftPick.PickChild(valueRight));
+                    } else {
+                        throw new NotSupportedException($"Unable to pick {valueRight} from {valueLeft}: Parent expression has no pick child operator implementation");
+                    }
                     break;
                 case OperatorType.Add:
-                    break;
-                case OperatorType.AddBy:
+                    if (valueLeft is IAddOperator leftAdd) {
+                        MemoryStack.Push(leftAdd.AddWith(valueRight));
+                    } else {
+                        throw new NotSupportedException($"Unable to add {valueLeft} and {valueRight}: Left expression has no add operator implementation");
+                    }
                     break;
                 case OperatorType.Minus:
-                    break;
-                case OperatorType.MinusBy:
+                    if (valueLeft is ISubtractOperator leftSubtract) {
+                        MemoryStack.Push(leftSubtract.SubtractWith(valueRight));
+                    } else {
+                        throw new NotSupportedException($"Unable to subtract {valueLeft} and {valueRight}: Left expression has no subtract operator implementation");
+                    }
                     break;
                 case OperatorType.Multiply:
-                    break;
-                case OperatorType.MultiplyBy:
+                    if (valueLeft is IMultiplyOperator leftMultiply) {
+                        MemoryStack.Push(leftMultiply.MultiplyWith(valueRight));
+                    } else {
+                        throw new NotSupportedException($"Unable to multiply {valueLeft} and {valueRight}: Left expression has no multiply operator implementation");
+                    }
                     break;
                 case OperatorType.Divide:
-                    break;
-                case OperatorType.DivideBy:
+                    if (valueLeft is IDivideOperator leftDivide) {
+                        MemoryStack.Push(leftDivide.DivideWith(valueRight));
+                    } else {
+                        throw new NotSupportedException($"Unable to divide {valueLeft} and {valueRight}: Left expression has no divide operator implementation");
+                    }
                     break;
                 case OperatorType.GreaterThan:
                     break;
@@ -342,27 +366,7 @@ namespace Core.VisualNovel.Runtime {
                 case OperatorType.LogicNotEqualsTo:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(operatorType), operatorType, null);
-            }
-        }
-
-        private void CreateAdd() {
-            var valueRight = MemoryStack.Pop();
-            var valueLeft = MemoryStack.Pop();
-            if (valueLeft is IAddOperator leftAdd) {
-                MemoryStack.Push(leftAdd.AddWith(valueRight));
-            } else {
-                throw new NotSupportedException($"Unable to add {valueLeft} and {valueRight}: Left expression has no add operator implementation");
-            }
-        }
-
-        private void CreateSubtract() {
-            var valueRight = MemoryStack.Pop();
-            var valueLeft = MemoryStack.Pop();
-            if (valueLeft is ISubtractOperator leftSubtract) {
-                MemoryStack.Push(leftSubtract.SubtractWith(valueRight));
-            } else {
-                throw new NotSupportedException($"Unable to subtract {valueLeft} and {valueRight}: Left expression has no subtract operator implementation");
+                    throw new ArgumentOutOfRangeException(nameof(operatorType), operatorType, $"Unsupported runtime operator {operatorType}");
             }
         }
     }
