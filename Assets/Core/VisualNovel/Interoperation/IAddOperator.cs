@@ -8,6 +8,6 @@ namespace Core.VisualNovel.Interoperation {
         /// </summary>
         /// <param name="target">目标值</param>
         /// <returns></returns>
-        ISerializableValue AddWith(ISerializableValue target);
+        SerializableValue AddWith(SerializableValue target);
     }
 }

@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using Core.MessageSystem;
 using Core.VisualNovel.Compiler;
+using Core.VisualNovel.Compiler.Expressions;
+using Core.VisualNovel.Interoperation;
 using Core.VisualNovel.Plugin;
 using Core.VisualNovel.Runtime.MemoryValues;
-using Core.VisualNovel.Runtime.Variables;
-using Core.VisualNovel.Runtime.Variables.Values;
+using NUnit.Framework.Constraints;
 
 // ! 为求效率，VNB运行环境在文件头正确的情况下假设文件格式绝对正确，只会做运行时数据检查，不会进行任何格式检查
 
@@ -24,18 +25,18 @@ namespace Core.VisualNovel.Runtime {
         /// <summary>
         /// 获取当前激活的顶层作用域
         /// </summary>
-        public FunctionScope ActiveFunctionScope => _callStack.Peek();
+        public ScopeMemoryValue ActiveScope { get; set; }
         
         /// <summary>
         /// 获取当前内存堆栈
         /// </summary>
-        public Stack<IMemoryValue> MemoryStack => new Stack<IMemoryValue>();
+        public Stack<SerializableValue> MemoryStack => new Stack<SerializableValue>();
         
         /// <summary>
         /// 获取或修改脚本导出的数据
         /// <para>在脚本尚未执行结束的情况下，导出数据可能不完整</para>
         /// </summary>
-        public Dictionary<string, IMemoryValue> Export => new Dictionary<string, IMemoryValue>();
+        public Dictionary<string, SerializableValue> Exported => new Dictionary<string, SerializableValue>();
 
         /// <summary>
         /// 获取或设置当前激活的语言
@@ -50,13 +51,19 @@ namespace Core.VisualNovel.Runtime {
                         _activeLanguage = stringMessage.Content;
                         break;
                     default:
-                        throw new RuntimeException(_callStack, $"Unable to change language: Message was modified to non-string type during broadcast");
+                        throw new RuntimeException(_callStacks, $"Unable to change language: Message was modified to non-string type during broadcast");
                 }
             }
         }
-
-        private readonly Stack<FunctionScope> _callStack = new Stack<FunctionScope>();
+        
         private string _activeLanguage;
+        private readonly List<CallStack> _callStacks = new List<CallStack>();
+
+        public ScriptRuntime() { }
+
+        private ScriptRuntime(IEnumerable<CallStack> initialCallStack) {
+            _callStacks.AddRange(initialCallStack);
+        }
 
         /// <summary>
         /// 加载脚本
@@ -83,24 +90,7 @@ namespace Core.VisualNovel.Runtime {
             LoadScript(id);
             JumpTo(offset);
         }
-
-        /// <summary>
-        /// 在当前执行上下文中递归向上查找变量
-        /// </summary>
-        /// <param name="name">变量名</param>
-        /// <param name="onlyConstant">是否只查找常量表</param>
-        /// <returns></returns>
-        public Variable FindVariable(string name, bool onlyConstant) {
-            if (string.IsNullOrEmpty(name)) {
-                throw new RuntimeException(_callStack, "Unable to find variable: expected name is empty or null");
-            }
-            foreach (var stack in _callStack) {
-                var item = (onlyConstant ? stack.Variables.Where(e => e.Value.IsConstant) : stack.Variables).Where(e => e.Key == name).ToList();
-                if (item.Any()) return item.First().Value;
-            }
-            return null;
-        }
-
+        
         /// <summary>
         /// 从当前代码段偏移位置开始执行脚本
         /// </summary>
@@ -125,10 +115,10 @@ namespace Core.VisualNovel.Runtime {
                 case OperationCode.LDC_I4_6:
                 case OperationCode.LDC_I4_7:
                 case OperationCode.LDC_I4_8:
-                    LoadStaticValue((byte) code - (byte) OperationCode.LDC_I4_0);
+                    MemoryStack.Push(new IntegerMemoryValue {Value = (byte) code - (byte) OperationCode.LDC_I4_0});
                     break;
                 case OperationCode.LDC_I4:
-                    LoadStaticValue(Script.ReadInteger());
+                    MemoryStack.Push(new IntegerMemoryValue {Value = Script.ReadInteger()});
                     break;
                 case OperationCode.LDC_R4_0:
                 case OperationCode.LDC_R4_025:
@@ -154,44 +144,44 @@ namespace Core.VisualNovel.Runtime {
                 case OperationCode.LDC_R4_525:
                 case OperationCode.LDC_R4_55:
                 case OperationCode.LDC_R4_575:
-                    LoadStaticValue(((byte) code - (byte) OperationCode.LDC_R4_0) * (float) 0.25);
+                    MemoryStack.Push(new FloatMemoryValue {Value = ((byte) code - (byte) OperationCode.LDC_R4_0) * (float) 0.25});
                     break;
                 case OperationCode.LDC_R4:
-                    LoadStaticValue(Script.ReadFloat());
+                    MemoryStack.Push(new FloatMemoryValue {Value = Script.ReadFloat()});
                     break;
                 case OperationCode.LDSTR:
-                    LoadStaticValue(Script.ReadStringConstant());
+                    MemoryStack.Push(new StringMemoryValue {Value = Script.ReadStringConstant()});
                     break;
                 case OperationCode.LDENTRY:
-                    LoadOffsetValue(Script.ReadLabelOffset());
+                    LoadEntrance(Script.Header.Id, Script.ReadLabelOffset(), ActiveScope.Duplicate() as ScopeMemoryValue);
                     break;
                 case OperationCode.LDSTT:
-                    LoadTranslatableValue(Script.ReadUInt32());
+                    LoadTranslate(Script.ReadUInt32());
                     break;
                 case OperationCode.LDNUL:
                     LoadNull();
                     break;
                 case OperationCode.LDLOC:
                     var variableName = PopString();
-                    var loadedVariable = FindVariable(variableName, false);
+                    var loadedVariable = ActiveScope.FindVariable(variableName, true, VariableSearchMode.All);
                     if (loadedVariable == null) {
-                        throw new RuntimeException(_callStack, $"Unable to load variable: expected variable/constant ${variableName} not existed");
+                        throw new RuntimeException(_callStacks, $"Unable to load variable: expected variable/constant ${variableName} not existed");
                     }
-                    LoadVariable(loadedVariable);
+                    MemoryStack.Push(loadedVariable.Value);
                     break;
                 case OperationCode.LDCON:
                     var constantName = PopString();
-                    var loadedConstant = FindVariable(constantName, true);
+                    var loadedConstant = ActiveScope.FindVariable(constantName, true, VariableSearchMode.OnlyConstant);
                     if (loadedConstant == null) {
-                        throw new RuntimeException(_callStack, $"Unable to load constant: expected constant ${constantName} not existed");
+                        throw new RuntimeException(_callStacks, $"Unable to load constant: expected constant ${constantName} not existed");
                     }
-                    LoadVariable(loadedConstant);
+                    MemoryStack.Push(loadedConstant.Value);
                     break;
                 case OperationCode.LDT:
-                    MemoryStack.Push(new SerializableMemoryValue<bool> {Value = true});
+                    MemoryStack.Push(new BooleanMemoryValue {Value = true});
                     break;
                 case OperationCode.LDF:
-                    MemoryStack.Push(new SerializableMemoryValue<bool> {Value = false});
+                    MemoryStack.Push(new BooleanMemoryValue {Value = false});
                     break;
                 case OperationCode.CALL:
                     await CreatePluginCall();
@@ -257,74 +247,44 @@ namespace Core.VisualNovel.Runtime {
             }
             return true;
         }
-
-        private void LoadStaticValue<T>(T value) {
-            MemoryStack.Push(new SerializableMemoryValue<T> {Value = value});
-        }
         
-        private void LoadOffsetValue(long value, ScriptFile script = null, Stack<FunctionScope> stack = null) {
-            MemoryStack.Push(new ScopeMemoryValue {ScriptId = (script ?? Script).Header.Id, Entrance = value, RunningStack = stack});
+        private void LoadEntrance(string scriptId, long entrance, ScopeMemoryValue parent) {
+            MemoryStack.Push(new ScopeMemoryValue {ScriptId = scriptId, Entrance = entrance, ParentScope = parent});
         }
 
-        private void LoadTranslatableValue(uint id) {
+        private void LoadTranslate(uint id) {
             MemoryStack.Push(new TranslatableMemoryValue {TranslationId = id, ScriptId = Script.Header.Id});
         }
 
         private void LoadNull() {
             MemoryStack.Push(new NullMemoryValue());
         }
-
-        private void LoadVariable(Variable variable) {
-            switch (variable.Value) {
-                case BooleanVariableValue booleanVariableValue:
-                    LoadStaticValue(booleanVariableValue.Value);
-                    break;
-                case ExternVariableValue externVariableValue:
-                    LoadStaticValue(externVariableValue.Value);
-                    break;
-                case FloatVariableValue floatVariableValue:
-                    LoadStaticValue(floatVariableValue.Value);
-                    break;
-                case IntegerVariableValue integerVariableValue:
-                    LoadStaticValue(integerVariableValue.Value);
-                    break;
-                case NullVariableValue _:
-                    LoadNull();
-                    break;
-                case OffsetVariableValue offsetVariableValue:
-                    MemoryStack.Push(new ScopeMemoryValue {ScriptId = offsetVariableValue.ScriptId, Entrance = offsetVariableValue.Offset, RunningStack = offsetVariableValue.RunningStack});
-                    break;
-                case StringVariableValue stringVariableValue:
-                    LoadStaticValue(stringVariableValue.Value);
-                    break;
-            }
-        }
         
         private string PopString() {
-            string name;
-            if (MemoryStack.Pop() is SerializableMemoryValue<string> stringMemoryValue) {
-                name = stringMemoryValue.Value;
-            } else if (MemoryStack.Pop() is TranslatableMemoryValue translatableMemoryValue) {
-                name = ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.GetTranslation(ActiveLanguage, translatableMemoryValue.TranslationId);
-            } else {
-                return null;
+            var rawValue = MemoryStack.Pop();
+            switch (rawValue) {
+                case StringMemoryValue stringMemoryValue:
+                    return stringMemoryValue.Value;
+                case TranslatableMemoryValue translatableMemoryValue:
+                    return ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.GetTranslation(ActiveLanguage, translatableMemoryValue.TranslationId);
+                default:
+                    return null;
             }
-            return name;
         }
         
         private async Task CreatePluginCall() {
             var pluginNameValue = PopString();
             if (string.IsNullOrEmpty(pluginNameValue)) {
-                throw new RuntimeException(_callStack, "Unable to find plugin: expected plugin name is empty or null");
-            }
-            var parameterCount = Script.ReadInteger();
-            var parameters = new Dictionary<IMemoryValue, IMemoryValue>();
-            for (var i = -1; ++i < parameterCount;) {
-                parameters.Add(MemoryStack.Pop(), MemoryStack.Pop());
+                throw new RuntimeException(_callStacks, "Unable to find plugin: expected plugin name is empty or null");
             }
             var plugin = PluginManager.Find(pluginNameValue);
             if (plugin == null) {
-                throw new RuntimeException(_callStack, $"Unable to find plugin: expected plugin {pluginNameValue} not existed");
+                throw new RuntimeException(_callStacks, $"Unable to find plugin: expected plugin {pluginNameValue} not existed");
+            }
+            var parameterCount = Script.ReadInteger();
+            var parameters = new Dictionary<SerializableValue, SerializableValue>();
+            for (var i = -1; ++i < parameterCount;) {
+                parameters.Add(MemoryStack.Pop(), MemoryStack.Pop());
             }
             MemoryStack.Push(await plugin.Execute(this, parameters) ?? new NullMemoryValue());
         }
@@ -332,65 +292,77 @@ namespace Core.VisualNovel.Runtime {
         private async Task CreateDialogue() {
             var plugin = PluginManager.Find("Dialogue");
             if (plugin == null) {
-                throw new RuntimeException(_callStack, $"Unable to create dialogue: no dialogue plugin registered");
+                throw new RuntimeException(_callStacks, $"Unable to create dialogue: no dialogue plugin registered");
             }
-            MemoryStack.Push(await plugin.Execute(this, new Dictionary<IMemoryValue, IMemoryValue> {
-                {new SerializableMemoryValue<string> {Value = "Character"}, MemoryStack.Pop()},
-                {new SerializableMemoryValue<string> {Value = "Content"}, MemoryStack.Pop()}
+            MemoryStack.Push(await plugin.Execute(this, new Dictionary<SerializableValue, SerializableValue> {
+                {new StringMemoryValue {Value = "Character"}, MemoryStack.Pop()},
+                {new StringMemoryValue {Value = "Content"}, MemoryStack.Pop()}
             }));
         }
 
         private void CreateToBoolean() {
             var rawValue = MemoryStack.Pop();
-            switch (rawValue) {
-                case NullMemoryValue _:
-                    MemoryStack.Push(new SerializableMemoryValue<bool> {Value = false});
+            MemoryStack.Push(new BooleanMemoryValue {Value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean() : rawValue != null});
+        }
+
+        private void CreateBinaryOperation(OperatorType operatorType) {
+            var valueRight = MemoryStack.Pop();
+            var valueLeft = MemoryStack.Pop();
+            switch (operatorType) {
+                case OperatorType.PickChild:
                     break;
-                case ScopeMemoryValue offsetMemoryValue:
-                    MemoryStack.Push(new SerializableMemoryValue<bool> {Value = offsetMemoryValue.Entrance != 0});
+                case OperatorType.Add:
                     break;
-                case TranslatableMemoryValue translatableMemoryValue:
-                    MemoryStack.Push(new SerializableMemoryValue<bool> {
-                        Value = ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.HasTranslation(ActiveLanguage, translatableMemoryValue.TranslationId)
-                    });
+                case OperatorType.AddBy:
                     break;
-                case SerializableMemoryValue staticMemoryValue:
-                    MemoryStack.Push(new SerializableMemoryValue<bool> {Value = staticMemoryValue.ToBoolean()});
+                case OperatorType.Minus:
                     break;
+                case OperatorType.MinusBy:
+                    break;
+                case OperatorType.Multiply:
+                    break;
+                case OperatorType.MultiplyBy:
+                    break;
+                case OperatorType.Divide:
+                    break;
+                case OperatorType.DivideBy:
+                    break;
+                case OperatorType.GreaterThan:
+                    break;
+                case OperatorType.LesserThan:
+                    break;
+                case OperatorType.EqualsTo:
+                    break;
+                case OperatorType.NotLessThan:
+                    break;
+                case OperatorType.NotGreaterThan:
+                    break;
+                case OperatorType.LogicEqualsTo:
+                    break;
+                case OperatorType.LogicNotEqualsTo:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(operatorType), operatorType, null);
             }
         }
 
-        // * ? + null = ?
-        // * null + ? = ?
-        // * offset + * = ERROR
-        // * translatable + static = static<string>
-        // * translatable + * = ERROR
         private void CreateAdd() {
             var valueRight = MemoryStack.Pop();
             var valueLeft = MemoryStack.Pop();
-            if (valueRight is NullMemoryValue) {
-                MemoryStack.Push(valueLeft.Duplicate());
-                return;
+            if (valueLeft is IAddOperator leftAdd) {
+                MemoryStack.Push(leftAdd.AddWith(valueRight));
+            } else {
+                throw new NotSupportedException($"Unable to add {valueLeft} and {valueRight}: Left expression has no add operator implementation");
             }
-            if (valueLeft is NullMemoryValue) {
-                MemoryStack.Push(valueRight.Duplicate());
-                return;
-            }
-            switch (valueLeft) {
-                case ScopeMemoryValue _:
-                    throw new RuntimeException(_callStack, $"Unable to add values: scene entrance/code offset is not allowed to join any binary operation");
-                case SerializableMemoryValue staticLeft:
-                    
-                    break;
-                case TranslatableMemoryValue translatableLeft:
-                    if (valueRight is SerializableMemoryValue stringStaticRight) {
-                        MemoryStack.Push(new SerializableMemoryValue<string> {
-                            Value = ScriptHeader.LoadAsset(translatableLeft.ScriptId).Header.GetTranslation(ActiveLanguage, translatableLeft.TranslationId) + stringStaticRight
-                        });
-                    } else {
-                        throw new RuntimeException(_callStack, $"Unable to add values: translatable string is only allowed to add with static value or null");
-                    }
-                    break;
+        }
+
+        private void CreateSubtract() {
+            var valueRight = MemoryStack.Pop();
+            var valueLeft = MemoryStack.Pop();
+            if (valueLeft is ISubtractOperator leftSubtract) {
+                MemoryStack.Push(leftSubtract.SubtractWith(valueRight));
+            } else {
+                throw new NotSupportedException($"Unable to subtract {valueLeft} and {valueRight}: Left expression has no subtract operator implementation");
             }
         }
     }

@@ -9,7 +9,7 @@ namespace Core.VisualNovelPlugins {
     public class SoundPlugin : IVisualNovelPlugin {
         public string Name { get; } = "Sound";
 
-        public Task<ISerializableValue> Execute(ScriptRuntime context, IDictionary<ISerializableValue, ISerializableValue> parameters) {
+        public Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters) {
             throw new NotImplementedException();
         }
 
@@ -17,7 +17,7 @@ namespace Core.VisualNovelPlugins {
             throw new NotImplementedException();
         }
 
-        public ISerializableValue ToValue() {
+        public SerializableValue ToValue() {
             throw new NotImplementedException();
         }
     }

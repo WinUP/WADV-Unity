@@ -1,28 +1,20 @@
+using System;
 using Core.VisualNovel.Interoperation;
 
 namespace Core.VisualNovel.Runtime.MemoryValues {
-    /// <inheritdoc cref="ISerializableValue" />
+    /// <inheritdoc cref="SerializableValue" />
     /// <summary>
     /// 表示一个32位浮点数内存堆栈值
     /// </summary>
-    public class BooleanMemoryValue : ISerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, IMultiplyOperator {
+    [Serializable]
+    public class BooleanMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, IMultiplyOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
         public bool Value { get; set; }
 
         /// <inheritdoc />
-        public byte[] Serialize() {
-            return new[] {(byte) (Value ? 1 : 0)};
-        }
-
-        /// <inheritdoc />
-        public void Deserialize(byte[] source) {
-            Value = source[0] != 0;
-        }
-
-        /// <inheritdoc />
-        public ISerializableValue Duplicate() {
+        public override SerializableValue Duplicate() {
             return new BooleanMemoryValue {Value = Value};
         }
 
@@ -47,14 +39,14 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         }
 
         /// <inheritdoc />
-        public ISerializableValue AddWith(ISerializableValue target) {
+        public SerializableValue AddWith(SerializableValue target) {
             return new BooleanMemoryValue {
                 Value = Value || (target is IBooleanConverter booleanTarget ? booleanTarget.ConvertToBoolean() : target != null)
             };
         }
 
         /// <inheritdoc />
-        public ISerializableValue MultiplyWith(ISerializableValue target) {
+        public SerializableValue MultiplyWith(SerializableValue target) {
             return new BooleanMemoryValue {
                 Value = Value && (target is IBooleanConverter booleanTarget ? booleanTarget.ConvertToBoolean() : target != null)
             };

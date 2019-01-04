@@ -3,28 +3,19 @@ using Core.VisualNovel.Interoperation;
 using UnityEngine;
 
 namespace Core.VisualNovel.Runtime.MemoryValues {
-    /// <inheritdoc cref="ISerializableValue" />
+    /// <inheritdoc cref="SerializableValue" />
     /// <summary>
     /// 表示一个32位整数内存堆栈值
     /// </summary>
-    public class IntegerMemoryValue : ISerializableValue, IBooleanConverter, IIntegerConverter, IFloatConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator {
+    [Serializable]
+    public class IntegerMemoryValue : SerializableValue, IBooleanConverter, IIntegerConverter, IFloatConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
         public int Value { get; set; }
 
         /// <inheritdoc />
-        public byte[] Serialize() {
-            return new LiteMemorySteamWriter().Write(Value).ToArray();
-        }
-
-        /// <inheritdoc />
-        public void Deserialize(byte[] source) {
-            Value = new LiteMemoryStreamReader(source).ReadInt32();
-        }
-
-        /// <inheritdoc />
-        public ISerializableValue Duplicate() {
+        public override SerializableValue Duplicate() {
             return new IntegerMemoryValue {Value = Value};
         }
 
@@ -49,26 +40,26 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         }
 
         /// <inheritdoc />
-        public ISerializableValue AddWith(ISerializableValue target) {
+        public SerializableValue AddWith(SerializableValue target) {
             return new IntegerMemoryValue {Value = Value + ToInteger(target)};
         }
 
         /// <inheritdoc />
-        public ISerializableValue SubtractWith(ISerializableValue target) {
+        public SerializableValue SubtractWith(SerializableValue target) {
             return new IntegerMemoryValue {Value = Value - ToInteger(target)};
         }
 
         /// <inheritdoc />
-        public ISerializableValue MultiplyWith(ISerializableValue target) {
+        public SerializableValue MultiplyWith(SerializableValue target) {
             return new IntegerMemoryValue {Value = Value * ToInteger(target)};
         }
 
         /// <inheritdoc />
-        public ISerializableValue DivideWith(ISerializableValue target) {
+        public SerializableValue DivideWith(SerializableValue target) {
             return new IntegerMemoryValue {Value = Value / ToInteger(target)};
         }
 
-        private static int ToInteger(ISerializableValue target) {
+        private static int ToInteger(SerializableValue target) {
             switch (target) {
                 case IIntegerConverter intTarget:
                     return intTarget.ConvertToInteger();

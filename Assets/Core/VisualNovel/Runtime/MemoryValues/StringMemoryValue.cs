@@ -4,26 +4,19 @@ using Core.VisualNovel.Interoperation;
 using UnityEngine;
 
 namespace Core.VisualNovel.Runtime.MemoryValues {
-    /// <inheritdoc cref="ISerializableValue" />
+    /// <inheritdoc cref="SerializableValue" />
     /// <summary>
     /// 表示一个字符串内存堆栈值
     /// </summary>
-    public class StringMemoryValue : ISerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator {
+    [Serializable]
+    public class StringMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
         public string Value { get; set; }
 
-        public byte[] Serialize() {
-            throw new NotImplementedException();
-        }
-
-        public void Deserialize(byte[] source) {
-            throw new NotImplementedException();
-        }
-
         /// <inheritdoc />
-        public ISerializableValue Duplicate() {
+        public override SerializableValue Duplicate() {
             return new StringMemoryValue {Value = Value};
         }
 
@@ -53,19 +46,19 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         }
 
         /// <inheritdoc />
-        public ISerializableValue AddWith(ISerializableValue target) {
+        public SerializableValue AddWith(SerializableValue target) {
             var targetString = target is IStringConverter stringTarget ? stringTarget.ConvertToString() : target.ToString();
             return new StringMemoryValue {Value = $"{Value}{targetString}"};
         }
 
         /// <inheritdoc />
-        public ISerializableValue SubtractWith(ISerializableValue target) {
+        public SerializableValue SubtractWith(SerializableValue target) {
             var targetString = target is IStringConverter stringTarget ? stringTarget.ConvertToString() : target.ToString();
             return new StringMemoryValue {Value = Value.Replace(targetString, "")};
         }
 
         /// <inheritdoc />
-        public ISerializableValue MultiplyWith(ISerializableValue target) {
+        public SerializableValue MultiplyWith(SerializableValue target) {
             switch (target) {
                 case IIntegerConverter intTarget:
                     return new StringMemoryValue {Value = Value.Repeat(intTarget.ConvertToInteger())};
@@ -81,7 +74,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         }
 
         /// <inheritdoc />
-        public ISerializableValue DivideWith(ISerializableValue target) {
+        public SerializableValue DivideWith(SerializableValue target) {
             switch (target) {
                 case IIntegerConverter intTarget:
                     return new StringMemoryValue {Value = DivideString(Value, intTarget.ConvertToInteger())};

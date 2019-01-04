@@ -2,21 +2,14 @@ using System;
 using Core.VisualNovel.Interoperation;
 
 namespace Core.VisualNovel.Runtime.MemoryValues {
-    /// <inheritdoc cref="ISerializableValue" />
+    /// <inheritdoc cref="SerializableValue" />
     /// <summary>
     /// 表示一个空内存堆栈值
     /// </summary>
-    public class NullMemoryValue : ISerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator {
+    [Serializable]
+    public class NullMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator {
         /// <inheritdoc />
-        public byte[] Serialize() {
-            return new byte[0];
-        }
-
-        /// <inheritdoc />
-        public void Deserialize(byte[] source) { }
-
-        /// <inheritdoc />
-        public ISerializableValue Duplicate() {
+        public override SerializableValue Duplicate() {
             return new NullMemoryValue();
         }
 
@@ -41,22 +34,22 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         }
 
         /// <inheritdoc />
-        public ISerializableValue AddWith(ISerializableValue target) {
+        public SerializableValue AddWith(SerializableValue target) {
             return target.Duplicate();
         }
 
         /// <inheritdoc />
-        public ISerializableValue SubtractWith(ISerializableValue target) {
+        public SerializableValue SubtractWith(SerializableValue target) {
             return target is NullMemoryValue ? new NullMemoryValue() : throw new NotSupportedException("Unable to subtract null with any other value except null");
         }
 
         /// <inheritdoc />
-        public ISerializableValue MultiplyWith(ISerializableValue target) {
+        public SerializableValue MultiplyWith(SerializableValue target) {
             return new NullMemoryValue();
         }
 
         /// <inheritdoc />
-        public ISerializableValue DivideWith(ISerializableValue target) {
+        public SerializableValue DivideWith(SerializableValue target) {
             return target is NullMemoryValue ? new NullMemoryValue() : throw new NotSupportedException("Unable to divide null with any other value except null");
         }
     }

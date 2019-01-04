@@ -19,7 +19,7 @@ namespace Core.VisualNovel.Plugin {
         /// <param name="context">执行上下文</param>
         /// <param name="parameters">参数列表</param>
         /// <returns></returns>
-        Task<ISerializableValue> Execute(ScriptRuntime context, IDictionary<ISerializableValue, ISerializableValue> parameters);
+        Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters);
         
         /// <summary>
         /// 从当前插件中获取指定名称的子插件
@@ -33,6 +33,6 @@ namespace Core.VisualNovel.Plugin {
         /// 将此插件的数据转换为内存堆栈值
         /// </summary>
         /// <returns></returns>
-        ISerializableValue ToValue();
+        SerializableValue ToValue();
     }
 }

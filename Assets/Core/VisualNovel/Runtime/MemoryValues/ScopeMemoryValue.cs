@@ -1,13 +1,17 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Core.Extensions;
 using Core.VisualNovel.Interoperation;
 using JetBrains.Annotations;
 
 namespace Core.VisualNovel.Runtime.MemoryValues {
-    /// <inheritdoc cref="ISerializableValue" />
+    /// <inheritdoc cref="SerializableValue" />
     /// <summary>
     /// 表示一个作用域内存堆栈值
     /// </summary>
-    public class ScopeMemoryValue : ISerializableValue, IStringConverter {
+    [Serializable]
+    public class ScopeMemoryValue : SerializableValue, IStringConverter {
         /// <summary>
         /// 获取或设置偏移量
         /// </summary>
@@ -24,24 +28,48 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         [CanBeNull]
         public ScopeMemoryValue ParentScope { get; set; }
         
-        private readonly Dictionary<string, VariableMemoryValue> _variables = new Dictionary<string, VariableMemoryValue>();
-
-        public byte[] Serialize() {
-            
-        }
-
-        public void Deserialize(byte[] source) {
-            throw new System.NotImplementedException();
-        }
-
+        /// <summary>
+        /// 获取局部变量列表
+        /// </summary>
+        public Dictionary<string, VariableMemoryValue> LocalVariables { get; private set; } = new Dictionary<string, VariableMemoryValue>();
+        
         /// <inheritdoc />
-        public ISerializableValue Duplicate() {
-            return new ScopeMemoryValue {Entrance = Entrance, ScriptId = ScriptId, ParentScope = ParentScope?.Duplicate() as ScopeMemoryValue};
+        public override SerializableValue Duplicate() {
+            return new ScopeMemoryValue {Entrance = Entrance, ScriptId = ScriptId, ParentScope = ParentScope, LocalVariables = LocalVariables.Duplicate()};
         }
 
         /// <inheritdoc />
         public string ConvertToString() {
             return $"OffsetMemoryValue {{ScriptId = {ScriptId}, Entrance = {Entrance}}}";
+        }
+
+        /// <summary>
+        /// 按照名称查找变量
+        /// </summary>
+        /// <param name="name">目标变量名</param>
+        /// <param name="includeParent">是否递归向上查找父作用域（如果有）</param>
+        /// <param name="mode">搜索模式</param>
+        /// <returns></returns>
+        [CanBeNull]
+        public VariableMemoryValue FindVariable(string name, bool includeParent, VariableSearchMode mode) {
+            if (string.IsNullOrEmpty(name)) return null;
+            IEnumerable<KeyValuePair<string, VariableMemoryValue>> items;
+            switch (mode) {
+                case VariableSearchMode.All:
+                    items = LocalVariables;
+                    break;
+                case VariableSearchMode.OnlyConstant:
+                    items = LocalVariables.Where(e => e.Value.IsConstant);
+                    break;
+                case VariableSearchMode.OnlyNonConstant:
+                    items = LocalVariables.Where(e => !e.Value.IsConstant);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode), mode, $"Unknown VariableSearchMode {mode}");
+            }
+            var result = items.Where(e => e.Key == name).ToList();
+            if (result.Any()) return result.First().Value;
+            return includeParent ? ParentScope?.FindVariable(name, true, mode) : null;
         }
     }
 }
