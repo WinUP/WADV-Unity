@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.Extensions;
 using Core.VisualNovel.Interoperation;
@@ -13,6 +14,7 @@ namespace Core.VisualNovelPlugins {
     /// <summary>
     /// 为VNS提供对象支持（一定程度上可充当异构数组使用）
     /// </summary>
+    [UsedImplicitly]
     public class ObjectPlugin : VisualNovelPlugin {
         public ObjectPlugin() : base("Object") { }
         
@@ -30,7 +32,7 @@ namespace Core.VisualNovelPlugins {
         /// <para>VNS对象是一个键值对存储序列，可以使用32位浮点数、32位整数或字符串作为键值存储任意SerializableValue并对可转换键值按上述优先级查找元素</para>
         /// </summary>
         [Serializable]
-        private class ObjectDelegate : SerializableValue, IPickChildOperator {
+        private class ObjectDelegate : SerializableValue, IPickChildOperator, IStringConverter {
             private Dictionary<string, VariableMemoryValue> _stringValues = new Dictionary<string, VariableMemoryValue>();
             private Dictionary<float, VariableMemoryValue> _floatValues = new Dictionary<float, VariableMemoryValue>();
             private Dictionary<int, VariableMemoryValue> _integerValues = new Dictionary<int, VariableMemoryValue>();
@@ -144,6 +146,13 @@ namespace Core.VisualNovelPlugins {
                         break;
                 }
                 return result ?? Add(name, new NullMemoryValue());
+            }
+
+            public string ConvertToString() {
+                var list = _floatValues.Values.ToList();
+                list.AddRange(_integerValues.Values.ToList());
+                list.AddRange(_stringValues.Values.ToList());
+                return $"{string.Join(", ", list.Select(e => e.Value).Select(e => e is IStringConverter stringConverter ? stringConverter.ConvertToString() : e.ToString()))}";
             }
         }
     }
