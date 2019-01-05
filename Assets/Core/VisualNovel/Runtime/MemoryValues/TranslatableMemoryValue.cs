@@ -5,7 +5,11 @@ using Core.VisualNovel.Translation;
 namespace Core.VisualNovel.Runtime.MemoryValues {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// 表示一个可翻译内存堆栈值
+    /// <para>表示一个可翻译内存堆栈值</para>
+    /// <list type="bullet">
+    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <item><description>字符串转换器</description></item>
+    /// </list>
     /// </summary>
     [Serializable]
     public class TranslatableMemoryValue : SerializableValue, IStringConverter {

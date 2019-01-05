@@ -31,16 +31,6 @@ namespace Core.VisualNovel.Plugin {
         public abstract Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters);
 
         /// <summary>
-        /// 从当前插件中获取指定名称的子插件
-        /// </summary>
-        /// <param name="context">执行上下文</param>
-        /// <param name="childName">子插件名称</param>
-        /// <returns></returns>
-        public virtual VisualNovelPlugin PickChild(ScriptRuntime context, string childName) {
-            throw new NotSupportedException($"Unable to pick child {childName} from plugin {GetType().FullName}: unsupported operation");
-        }
-
-        /// <summary>
         /// 将此插件的数据转换为内存堆栈值
         /// </summary>
         /// <returns></returns>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Core.MessageSystem;
 using Core.VisualNovel.Compiler;
@@ -7,6 +8,7 @@ using Core.VisualNovel.Compiler.Expressions;
 using Core.VisualNovel.Interoperation;
 using Core.VisualNovel.Plugin;
 using Core.VisualNovel.Runtime.MemoryValues;
+using UnityEngine;
 
 // ! 为求效率，VNB运行环境在文件头正确的情况下假设文件格式绝对正确，只会做运行时数据检查，不会进行任何格式检查
 
@@ -163,17 +165,19 @@ namespace Core.VisualNovel.Runtime {
                     var variableName = PopString();
                     var loadedVariable = ActiveScope.FindVariable(variableName, true, VariableSearchMode.All);
                     if (loadedVariable == null) {
-                        throw new RuntimeException(_callStacks, $"Unable to load variable: expected variable/constant ${variableName} not existed");
+                        LoadNull();
+                    } else {
+                        MemoryStack.Push(loadedVariable.Value);
                     }
-                    MemoryStack.Push(loadedVariable.Value);
                     break;
                 case OperationCode.LDCON:
                     var constantName = PopString();
                     var loadedConstant = ActiveScope.FindVariable(constantName, true, VariableSearchMode.OnlyConstant);
                     if (loadedConstant == null) {
-                        throw new RuntimeException(_callStacks, $"Unable to load constant: expected constant ${constantName} not existed");
+                        LoadNull();
+                    } else {
+                        MemoryStack.Push(loadedConstant.Value);
                     }
-                    MemoryStack.Push(loadedConstant.Value);
                     break;
                 case OperationCode.LDT:
                     MemoryStack.Push(new BooleanMemoryValue {Value = true});
@@ -206,6 +210,7 @@ namespace Core.VisualNovel.Runtime {
                     CreateBinaryOperation(OperatorType.Divide);
                     break;
                 case OperationCode.NOT:
+                    CreateToBoolean(true);
                     break;
                 case OperationCode.EQL:
                     CreateBinaryOperation(OperatorType.EqualsTo);
@@ -225,6 +230,8 @@ namespace Core.VisualNovel.Runtime {
                 case OperationCode.STLOC:
                     break;
                 case OperationCode.STCON:
+                    break;
+                case OperationCode.STMEM:
                     break;
                 case OperationCode.PICK:
                     CreateBinaryOperation(OperatorType.PickChild);
@@ -278,16 +285,28 @@ namespace Core.VisualNovel.Runtime {
                     return null;
             }
         }
+
+        private VisualNovelPlugin FindPlugin() {
+            var rawValue = MemoryStack.Pop();
+            VisualNovelPlugin plugin;
+            switch (rawValue) {
+                case StringMemoryValue stringMemoryValue:
+                    plugin = PluginManager.Find(stringMemoryValue.Value);
+                    if (plugin == null) throw new RuntimeException(_callStacks, $"Unable to find plugin: expected plugin {stringMemoryValue.Value} not existed");
+                    break;
+                case TranslatableMemoryValue translatableMemoryValue:
+                    var translation = ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.GetTranslation(ActiveLanguage, translatableMemoryValue.TranslationId);
+                    plugin = PluginManager.Find(translation);
+                    if (plugin == null) throw new RuntimeException(_callStacks, $"Unable to find plugin: expected plugin {translation} not existed");
+                    break;
+                default:
+                    throw new RuntimeException(_callStacks, $"Unable to find plugin: expected plugin name {rawValue} is not string value");
+            }
+            return plugin;
+        }
         
         private async Task CreatePluginCall() {
-            var pluginNameValue = PopString();
-            if (string.IsNullOrEmpty(pluginNameValue)) {
-                throw new RuntimeException(_callStacks, "Unable to find plugin: expected plugin name is empty or null");
-            }
-            var plugin = PluginManager.Find(pluginNameValue);
-            if (plugin == null) {
-                throw new RuntimeException(_callStacks, $"Unable to find plugin: expected plugin {pluginNameValue} not existed");
-            }
+            var plugin = FindPlugin();
             var parameterCount = Script.ReadInteger();
             var parameters = new Dictionary<SerializableValue, SerializableValue>();
             for (var i = -1; ++i < parameterCount;) {
@@ -311,10 +330,14 @@ namespace Core.VisualNovel.Runtime {
             }));
         }
 
-        private void CreateToBoolean() {
+        private void CreateToBoolean(bool reverse = false) {
             var rawValue = MemoryStack.Pop();
             try {
-                MemoryStack.Push(new BooleanMemoryValue {Value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean() : rawValue != null});
+                var result = new BooleanMemoryValue {Value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean() : rawValue != null};
+                if (reverse) {
+                    result.Value = !result.Value;
+                }
+                MemoryStack.Push(result);
             } catch (Exception ex) {
                 throw new RuntimeException(_callStacks, ex);
             }
@@ -325,6 +348,7 @@ namespace Core.VisualNovel.Runtime {
             var valueLeft = MemoryStack.Pop();
             switch (operatorType) {
                 case OperatorType.PickChild:
+                    // 处理复制
                     if (valueLeft is IPickChildOperator leftPick) {
                         try {
                             MemoryStack.Push(leftPick.PickChild(valueRight));
@@ -380,18 +404,41 @@ namespace Core.VisualNovel.Runtime {
                     }
                     break;
                 case OperatorType.GreaterThan:
-                    break;
                 case OperatorType.LesserThan:
-                    break;
-                case OperatorType.EqualsTo:
-                    break;
                 case OperatorType.NotLessThan:
-                    break;
                 case OperatorType.NotGreaterThan:
+                    if (valueLeft is ICompareOperator leftCompare) {
+                        try {
+                            var compareResult = leftCompare.CompareWith(valueRight);
+                            if (compareResult < 0) {
+                                MemoryStack.Push(new BooleanMemoryValue {Value = operatorType == OperatorType.LesserThan || operatorType == OperatorType.NotGreaterThan});
+                            } else if (compareResult == 0) {
+                                MemoryStack.Push(new BooleanMemoryValue {Value = operatorType == OperatorType.NotLessThan || operatorType == OperatorType.NotGreaterThan});
+                            } else {
+                                MemoryStack.Push(new BooleanMemoryValue {Value = operatorType == OperatorType.GreaterThan || operatorType == OperatorType.NotLessThan});
+                            }
+                        } catch (Exception ex) {
+                            throw new RuntimeException(_callStacks, ex);
+                        }
+                    } else {
+                        throw new RuntimeException(_callStacks, $"Unable to compare {valueLeft} and {valueRight}: Left expression has no compare operator implementation");
+                    }
                     break;
                 case OperatorType.LogicEqualsTo:
-                    break;
                 case OperatorType.LogicNotEqualsTo:
+                    if (valueLeft is IEqualOperator leftEqual) {
+                        try {
+                            var result = new BooleanMemoryValue {Value = leftEqual.EqualsWith(valueRight)};
+                            if (operatorType == OperatorType.LogicNotEqualsTo) {
+                                result.Value = !result.Value;
+                            }
+                            MemoryStack.Push(result);
+                        } catch (Exception ex) {
+                            throw new RuntimeException(_callStacks, ex);
+                        }
+                    } else {
+                        throw new RuntimeException(_callStacks, $"Unable to compare {valueLeft} and {valueRight}: Left expression has no equal operator implementation");
+                    }
                     break;
             }
         }

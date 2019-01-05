@@ -8,7 +8,11 @@ using JetBrains.Annotations;
 namespace Core.VisualNovel.Runtime.MemoryValues {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// 表示一个作用域内存堆栈值
+    /// <para>表示一个作用域内存堆栈值</para>
+    /// <list type="bullet">
+    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <item><description>字符串转换器</description></item>
+    /// </list>
     /// </summary>
     [Serializable]
     public class ScopeMemoryValue : SerializableValue, IStringConverter {

@@ -9,7 +9,8 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
     /// 表示一个字符串内存堆栈值
     /// </summary>
     [Serializable]
-    public class StringMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator {
+    public class StringMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
+                                     IEqualOperator{
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
@@ -47,6 +48,16 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
 
         public override string ToString() {
             return $"StringMemoryValue {{Value = {ConvertToString()}}}";
+        }
+
+        /// <inheritdoc />
+        public bool EqualsWith(SerializableValue target) {
+            switch (target) {
+                case IStringConverter stringConverter:
+                    return stringConverter.ConvertToString() == Value;
+                default:
+                    return false;
+            }
         }
 
         /// <inheritdoc />

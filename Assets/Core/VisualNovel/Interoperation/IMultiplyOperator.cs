@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace Core.VisualNovel.Interoperation {
     /// <summary>
     /// 表示一个乘法互操作器
@@ -8,6 +10,7 @@ namespace Core.VisualNovel.Interoperation {
         /// </summary>
         /// <param name="target">目标值</param>
         /// <returns></returns>
-        SerializableValue MultiplyWith(SerializableValue target);
+        [CanBeNull]
+        SerializableValue MultiplyWith([NotNull] SerializableValue target);
     }
 }

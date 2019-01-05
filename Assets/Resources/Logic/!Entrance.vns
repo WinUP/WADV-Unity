@@ -91,7 +91,7 @@ VNS版本[@init]测试脚本。首先测试无角色对话。
 ;scene Closure1
     @temp = 1
     ;scene Closure2
-        [@temp->Write Value=(@temp + 1)]
+        @temp += 1
 
 @runner = (;call Closure1)
 @temp = (;call runner)

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Core.Extensions;
 using Core.VisualNovel.Compiler.Expressions;
@@ -63,7 +62,7 @@ namespace Core.VisualNovel.Compiler {
                     if (binaryExpression.Operator == OperatorType.EqualsTo || binaryExpression.Operator == OperatorType.AddBy ||
                         binaryExpression.Operator == OperatorType.MinusBy || binaryExpression.Operator == OperatorType.MultiplyBy ||
                         binaryExpression.Operator == OperatorType.DivideBy) {
-                        Generate(context, binaryExpression.Left, CompilerFlag.UseSetLocalVariable);
+                        Generate(context, binaryExpression.Left, CompilerFlag.UsePickFromPlugin);
                         if (!(binaryExpression.Left is VariableExpression)) { // 对于所有赋值类语句，如果左侧不是自带赋值指令的变量表达式则补充一个赋值指令来改写内存堆栈值
                             context.File.OperationCode(OperationCode.STMEM, binaryExpression.Left.Position);
                         }
@@ -107,13 +106,13 @@ namespace Core.VisualNovel.Compiler {
                         }
                     }
                     break;
-                case CallExpression commandExpression:
-                    foreach (var parameter in commandExpression.Parameters) {
+                case CallExpression callExpression:
+                    foreach (var parameter in callExpression.Parameters) {
                         Generate(context, parameter);
                     }
-                    context.File.LoadInteger(commandExpression.Parameters.Count, commandExpression.Position);
-                    Generate(context, commandExpression.Target);
-                    context.File.Call(commandExpression.Position);
+                    context.File.LoadInteger(callExpression.Parameters.Count, callExpression.Position);
+                    Generate(context, callExpression.Target, CompilerFlag.UsePickFromPlugin);
+                    context.File.Call(callExpression.Position);
                     break;
                 case ConditionExpression conditionExpression: // 协同处理ConditionContentExpression
                     var conditionEndLabel = context.NextLabelId;

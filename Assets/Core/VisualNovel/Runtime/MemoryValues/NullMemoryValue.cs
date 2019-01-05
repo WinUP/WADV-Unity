@@ -4,10 +4,23 @@ using Core.VisualNovel.Interoperation;
 namespace Core.VisualNovel.Runtime.MemoryValues {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// 表示一个空内存堆栈值
+    /// <para>表示一个空内存堆栈值</para>
+    /// <list type="bullet">
+    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <item><description>布尔转换器</description></item>
+    ///     <item><description>浮点转换器</description></item>
+    ///     <item><description>整数转换器</description></item>
+    ///     <item><description>字符串转换器</description></item>
+    ///     <item><description>加法互操作器</description></item>
+    ///     <item><description>减法互操作器</description></item>
+    ///     <item><description>乘法互操作器</description></item>
+    ///     <item><description>除法互操作器</description></item>
+    ///     <item><description>真值比较互操作器</description></item>
+    /// </list>
     /// </summary>
     [Serializable]
-    public class NullMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator {
+    public class NullMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
+                                   IEqualOperator{
         /// <inheritdoc />
         public override SerializableValue Duplicate() {
             return new NullMemoryValue();
@@ -35,6 +48,11 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
 
         public override string ToString() {
             return $"NullMemoryValue {{}}";
+        }
+
+        /// <inheritdoc />
+        public bool EqualsWith(SerializableValue target) {
+            return target is NullMemoryValue;
         }
 
         /// <inheritdoc />

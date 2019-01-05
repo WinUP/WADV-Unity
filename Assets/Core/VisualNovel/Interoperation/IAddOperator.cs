@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace Core.VisualNovel.Interoperation {
     /// <summary>
     /// 表示一个加法互操作器
@@ -8,6 +10,7 @@ namespace Core.VisualNovel.Interoperation {
         /// </summary>
         /// <param name="target">目标值</param>
         /// <returns></returns>
-        SerializableValue AddWith(SerializableValue target);
+        [CanBeNull]
+        SerializableValue AddWith([NotNull] SerializableValue target);
     }
 }
