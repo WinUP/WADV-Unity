@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.MessageSystem;
@@ -8,6 +9,7 @@ using Core.VisualNovel.Compiler.Expressions;
 using Core.VisualNovel.Interoperation;
 using Core.VisualNovel.Plugin;
 using Core.VisualNovel.Runtime.MemoryValues;
+using JetBrains.Annotations;
 using UnityEngine;
 
 // ! 为求效率，VNB运行环境在文件头正确的情况下假设文件格式绝对正确，只会做运行时数据检查，不会进行任何格式检查
@@ -25,6 +27,7 @@ namespace Core.VisualNovel.Runtime {
         /// <summary>
         /// 获取当前激活的顶层作用域
         /// </summary>
+        [CanBeNull]
         public ScopeMemoryValue ActiveScope { get; set; }
         
         /// <summary>
@@ -153,7 +156,7 @@ namespace Core.VisualNovel.Runtime {
                     MemoryStack.Push(new StringMemoryValue {Value = Script.ReadStringConstant()});
                     break;
                 case OperationCode.LDENTRY:
-                    LoadEntrance(Script.Header.Id, Script.ReadLabelOffset(), ActiveScope.Duplicate() as ScopeMemoryValue);
+                    LoadEntrance(Script.Header.Id, Script.ReadLabelOffset(), ActiveScope?.Duplicate() as ScopeMemoryValue);
                     break;
                 case OperationCode.LDSTT:
                     LoadTranslate(Script.ReadUInt32());
@@ -163,7 +166,7 @@ namespace Core.VisualNovel.Runtime {
                     break;
                 case OperationCode.LDLOC:
                     var variableName = PopString();
-                    var loadedVariable = ActiveScope.FindVariable(variableName, true, VariableSearchMode.All);
+                    var loadedVariable = ActiveScope?.FindVariable(variableName, true, VariableSearchMode.All);
                     if (loadedVariable == null) {
                         LoadNull();
                     } else {
@@ -172,7 +175,7 @@ namespace Core.VisualNovel.Runtime {
                     break;
                 case OperationCode.LDCON:
                     var constantName = PopString();
-                    var loadedConstant = ActiveScope.FindVariable(constantName, true, VariableSearchMode.OnlyConstant);
+                    var loadedConstant = ActiveScope?.FindVariable(constantName, true, VariableSearchMode.OnlyConstant);
                     if (loadedConstant == null) {
                         LoadNull();
                     } else {
@@ -237,10 +240,13 @@ namespace Core.VisualNovel.Runtime {
                     CreateBinaryOperation(OperatorType.PickChild);
                     break;
                 case OperationCode.SCOPE:
+                    CreateScope();
                     break;
                 case OperationCode.LEAVE:
+                    LeaveScope();
                     break;
                 case OperationCode.RET:
+                    ReturnToPreviousScript();
                     break;
                 case OperationCode.FUNC:
                     break;
@@ -286,6 +292,30 @@ namespace Core.VisualNovel.Runtime {
             }
         }
 
+        private void CreateScope() {
+            var newScope = new ScopeMemoryValue {ScriptId = Script.Header.Id, Entrance = Script.CurrentPosition};
+            if (ActiveScope != null) {
+                ActiveScope.ParentScope = newScope;
+            }
+            ActiveScope = newScope;
+        }
+
+        private void LeaveScope() {
+            if (ActiveScope == null) throw new RuntimeException(_callStacks, "Unable to leave scope: No scope activated");
+            ActiveScope = ActiveScope.ParentScope;
+        }
+
+        private void ReturnToPreviousScript() {
+            if (_callStacks.Count < 1) {
+                Script.MoveToEnd();
+                return;
+            }
+            var pointer = _callStacks.Last();
+            _callStacks.Remove(pointer);
+            Script = ScriptFile.Load(pointer.ScriptId);
+            Script.MoveTo(pointer.Offset);
+        }
+
         private VisualNovelPlugin FindPlugin() {
             var rawValue = MemoryStack.Pop();
             VisualNovelPlugin plugin;
@@ -322,7 +352,7 @@ namespace Core.VisualNovel.Runtime {
         private async Task CreateDialogue() {
             var plugin = PluginManager.Find("Dialogue");
             if (plugin == null) {
-                throw new RuntimeException(_callStacks, $"Unable to create dialogue: no dialogue plugin registered");
+                throw new RuntimeException(_callStacks, "Unable to create dialogue: no dialogue plugin registered");
             }
             MemoryStack.Push(await plugin.Execute(this, new Dictionary<SerializableValue, SerializableValue> {
                 {new StringMemoryValue {Value = "Character"}, MemoryStack.Pop()},

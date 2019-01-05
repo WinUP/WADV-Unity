@@ -29,7 +29,16 @@ namespace Core.VisualNovelPlugins {
         /// <inheritdoc cref="SerializableValue" />
         /// <summary>
         /// 表示一个VNS对象
-        /// <para>VNS对象是一个键值对存储序列，可以使用32位浮点数、32位整数或字符串作为键值存储任意SerializableValue并对可转换键值按上述优先级查找元素</para>
+        /// <para>VNS对象是键值对存储序列，可以使用32位浮点数、32位整数或字符串作为键值存储任意可序列化值并对可转换键值按上述优先级转换后查找元素</para>
+        ///<list type="bullet">
+        ///     <listheader><description>互操作支持</description></listheader>
+        ///     <item><description>字符串转换器</description></item>
+        ///     <item><description>取子元素互操作器</description></item>
+        /// </list>
+        /// <list type="bullet">
+        ///     <listheader><description>子元素/特性支持</description></listheader>
+        ///     <item><description>使用任意可识别布尔/数字/字符串作为键存储可序列化值</description></item>
+        /// </list>
         /// </summary>
         [Serializable]
         private class ObjectDelegate : SerializableValue, IPickChildOperator, IStringConverter {

@@ -67,6 +67,13 @@ namespace Core.VisualNovel.Runtime {
         }
 
         /// <summary>
+        /// 移动到代码段末尾
+        /// </summary>
+        public void MoveToEnd() {
+            _reader.BaseStream.Position = _reader.BaseStream.Length;
+        }
+
+        /// <summary>
         /// 跳转到指定标签处
         /// </summary>
         /// <param name="labelId">标签ID</param>
