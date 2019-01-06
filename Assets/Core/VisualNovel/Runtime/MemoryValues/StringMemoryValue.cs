@@ -6,11 +6,23 @@ using UnityEngine;
 namespace Core.VisualNovel.Runtime.MemoryValues {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// 表示一个字符串内存堆栈值
+    /// <para>表示一个字符串内存堆栈值</para>
+    /// <list type="bullet">
+    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <item><description>布尔转换器</description></item>
+    ///     <item><description>浮点转换器</description></item>
+    ///     <item><description>整数转换器</description></item>
+    ///     <item><description>字符串转换器</description></item>
+    ///     <item><description>加法互操作器</description></item>
+    ///     <item><description>减法互操作器</description></item>
+    ///     <item><description>乘法互操作器</description></item>
+    ///     <item><description>除法互操作器</description></item>
+    ///     <item><description>真值比较互操作器</description></item>
+    /// </list>
     /// </summary>
     [Serializable]
     public class StringMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                                     IEqualOperator{
+                                     IEqualOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>

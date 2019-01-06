@@ -122,10 +122,10 @@ namespace Core.VisualNovel.Compiler {
                         conditionNextLabel = context.NextLabelId;
                         Generate(context, branch.Condition);
                         context.File.OperationCode(OperationCode.BVAL, branch.Position);
-                        context.File.OperationCode(OperationCode.BF_S, branch.Position);
+                        context.File.OperationCode(OperationCode.BF, branch.Position);
                         context.File.Write7BitEncodedInteger(conditionNextLabel);
                         Generate(context, branch.Body);
-                        context.File.OperationCode(OperationCode.BR_S, branch.Body.Position);
+                        context.File.OperationCode(OperationCode.BR, branch.Body.Position);
                         context.File.Write7BitEncodedInteger(conditionEndLabel);
                     }
                     context.File.CreateLabel(conditionEndLabel);
@@ -182,11 +182,10 @@ namespace Core.VisualNovel.Compiler {
                     context.File.LoadString(functionExpression.Name, functionExpression.Position);
                     context.File.OperationCode(OperationCode.STLOC, functionExpression.Position);
                     // 令外部代码执行时跳过函数部分
-                    context.File.OperationCode(OperationCode.BR_S, SourcePosition.UnavailablePosition);
+                    context.File.OperationCode(OperationCode.BR, SourcePosition.UnavailablePosition);
                     context.File.Write7BitEncodedInteger(functionEnd);
                     // 开始函数生成
                     context.File.CreateLabel(functionStart);
-                    context.File.OperationCode(OperationCode.SCOPE, functionExpression.Position);
                     // 默认值赋值
                     foreach (var parameter in functionExpression.Parameters) {
                         if (!(parameter.Value is EmptyExpression)) {
@@ -194,7 +193,7 @@ namespace Core.VisualNovel.Compiler {
                             context.File.LoadNull(parameter.Position);
                             Generate(context, parameter.Name);
                             context.File.OperationCode(OperationCode.EQL, parameter.Position);
-                            context.File.OperationCode(OperationCode.BF_S, parameter.Position);
+                            context.File.OperationCode(OperationCode.BF, parameter.Position);
                             context.File.Write7BitEncodedInteger(nextParameterCheck);
                             Generate(context, parameter.Value);
                             Generate(context, parameter.Name);
@@ -206,7 +205,6 @@ namespace Core.VisualNovel.Compiler {
                     // 生成函数体
                     Generate(context, functionExpression.Body, CompilerFlag.NotCreateScope);
                     // 结束函数生成
-                    context.File.OperationCode(OperationCode.LEAVE, SourcePosition.UnavailablePosition);
                     context.File.OperationCode(OperationCode.RET, SourcePosition.UnavailablePosition);
                     context.File.CreateLabel(functionEnd);
                     break;
@@ -227,10 +225,10 @@ namespace Core.VisualNovel.Compiler {
                     context.File.CreateLabel(loopStartLabel);
                     Generate(context, loopExpression.Condition);
                     context.File.OperationCode(OperationCode.BVAL, loopExpression.Position);
-                    context.File.OperationCode(OperationCode.BF_S, loopExpression.Condition.Position);
+                    context.File.OperationCode(OperationCode.BF, loopExpression.Condition.Position);
                     context.File.Write7BitEncodedInteger(loopEndLabel);
                     Generate(context, loopExpression.Body);
-                    context.File.OperationCode(OperationCode.BR_S, loopExpression.Body.Position);
+                    context.File.OperationCode(OperationCode.BR, loopExpression.Body.Position);
                     context.File.Write7BitEncodedInteger(loopStartLabel);
                     context.File.CreateLabel(loopEndLabel);
                     break;

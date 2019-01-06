@@ -8,18 +8,18 @@ namespace Core.VisualNovel.Runtime {
     /// 表示一个运行时错误
     /// </summary>
     public class RuntimeException : Exception {
-        private readonly List<CallStack> _scope;
+        private readonly List<CallStack.StackItem> _scope;
         
         /// <summary>
         /// 创建一个运行时错误
         /// </summary>
         /// <param name="scope">调用堆栈</param>
         /// <param name="message">错误信息</param>
-        public RuntimeException(IEnumerable<CallStack> scope, string message) : base(message) {
+        public RuntimeException(IEnumerable<CallStack.StackItem> scope, string message) : base(message) {
             _scope = scope.Reverse().ToList();
         }
 
-        public RuntimeException(IEnumerable<CallStack> scope, Exception innerException) : base(innerException.Message, innerException) {
+        public RuntimeException(IEnumerable<CallStack.StackItem> scope, Exception innerException) : base(innerException.Message, innerException) {
             _scope = scope.Reverse().ToList();
         }
 

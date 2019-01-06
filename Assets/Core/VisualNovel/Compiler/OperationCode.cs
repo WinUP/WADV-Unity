@@ -355,32 +355,21 @@ namespace Core.VisualNovel.Compiler {
         /// <para>格式：<code>41 &lt;7 bit format int32&gt;</code></para>
         /// <para>栈结构要求：栈不能为空</para>
         /// </summary>
-        BF_S,
+        BF,
         /// <summary>
         /// 无条件跳转到指定标签处
         /// <para>格式：<code>42 &lt;7 bit format int32&gt;</code></para>
         /// </summary>
-        BR_S,
-        /// <summary>
-        /// 如果栈顶元素真值不为true则跳转到指定标签处，同时记录当前偏移地址
-        /// <para>格式：<code>43 &lt;7 bit format int32&gt;</code></para>
-        /// <para>栈结构要求：栈不能为空</para>
-        /// </summary>
-        BF,
-        /// <summary>
-        /// 无条件跳转到指定标签处，同时记录当前偏移地址
-        /// <para>格式：<code>44 &lt;7 bit format int32&gt;</code></para>
-        /// </summary>
         BR,
         /// <summary>
         /// 导入脚本执行结果
-        /// <para>格式：<code>45</code></para>
+        /// <para>格式：<code>43</code></para>
         /// <para>栈结构要求：栈顶元素描述目标脚本路径</para>
         /// </summary>
         LOAD,
         /// <summary>
         /// 导出表达式结果
-        /// <para>格式：<code>46</code></para>
+        /// <para>格式：<code>44</code></para>
         /// <para>栈结构要求：栈顶元素描述导出项名，第二个元素描述项值</para>
         /// </summary>
         EXP

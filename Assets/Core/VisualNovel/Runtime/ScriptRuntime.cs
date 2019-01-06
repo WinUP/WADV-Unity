@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Core.MessageSystem;
 using Core.VisualNovel.Compiler;
@@ -10,7 +9,6 @@ using Core.VisualNovel.Interoperation;
 using Core.VisualNovel.Plugin;
 using Core.VisualNovel.Runtime.MemoryValues;
 using JetBrains.Annotations;
-using UnityEngine;
 
 // ! 为求效率，VNB运行环境在文件头正确的情况下假设文件格式绝对正确，只会做运行时数据检查，不会进行任何格式检查
 
@@ -39,7 +37,7 @@ namespace Core.VisualNovel.Runtime {
         /// 获取或修改脚本导出的数据
         /// <para>在脚本尚未执行结束的情况下，导出数据可能不完整</para>
         /// </summary>
-        public Dictionary<string, SerializableValue> Exported => new Dictionary<string, SerializableValue>();
+        public Dictionary<string, SerializableValue> Exported { get; } = new Dictionary<string, SerializableValue>();
 
         /// <summary>
         /// 获取或设置当前激活的语言
@@ -54,45 +52,27 @@ namespace Core.VisualNovel.Runtime {
                         _activeLanguage = stringMessage.Content;
                         break;
                     default:
-                        throw new RuntimeException(_callStacks, $"Unable to change language: Message was modified to non-string type during broadcast");
+                        throw new RuntimeException(_callStack, $"Unable to change language: Message was modified to non-string type during broadcast");
                 }
             }
         }
         
         private string _activeLanguage;
-        private readonly List<CallStack> _callStacks = new List<CallStack>();
+        private readonly CallStack _callStack = new CallStack();
+        private readonly Stack<ScopeMemoryValue> _historyScope = new Stack<ScopeMemoryValue>();
 
-        public ScriptRuntime() { }
-
-        private ScriptRuntime(IEnumerable<CallStack> initialCallStack) {
-            _callStacks.AddRange(initialCallStack);
+        public ScriptRuntime(ScriptFile script) {
+            if (script == null) throw new ArgumentException("Unable to load script: expected script is not existed", nameof(script));
+            Script = Script;
+        }
+        
+        private ScriptRuntime(ScriptFile script, IEnumerable<CallStack.StackItem> initialCallStack) : this(script) {
+            _callStack.Push(initialCallStack);
         }
 
-        /// <summary>
-        /// 加载脚本
-        /// </summary>
-        /// <param name="id">脚本ID</param>e
-        public void LoadScript(string id) {
-            Script = ScriptFile.Load(id);
-        }
+        public ScriptRuntime(string scriptId) : this(ScriptFile.Load(scriptId)) { }
 
-        /// <summary>
-        /// 跳转到代码段指定偏移处
-        /// </summary>
-        /// <param name="offset">目标偏移值</param>
-        public void JumpTo(long offset) {
-            Script?.MoveTo(offset);
-        }
-
-        /// <summary>
-        /// 跳转到目标脚本代码段指定偏移处
-        /// </summary>
-        /// <param name="id">目标脚本ID</param>
-        /// <param name="offset">目标偏移值</param>
-        public void JumpTo(string id, long offset) {
-            LoadScript(id);
-            JumpTo(offset);
-        }
+        public ScriptRuntime(string scriptId, IEnumerable<CallStack.StackItem> initialCallStack) : this(ScriptFile.Load(scriptId), initialCallStack) { }
         
         /// <summary>
         /// 从当前代码段偏移位置开始执行脚本
@@ -102,10 +82,14 @@ namespace Core.VisualNovel.Runtime {
             if (Script == null) {
                 throw new NotSupportedException("Unable to execute bytecode: no active script detected");
             }
+            _callStack.Clear();
+            _callStack.Push(Script);
             while (await ExecuteSingleLine()) {}
         }
 
         private async Task<bool> ExecuteSingleLine() {
+            if (_callStack.Count == 0) return false;
+            _callStack.Last.Offset = Script.CurrentPosition;
             var code = Script.ReadOperationCode();
             if (code == null) return false;
             switch (code) {
@@ -156,31 +140,19 @@ namespace Core.VisualNovel.Runtime {
                     MemoryStack.Push(new StringMemoryValue {Value = Script.ReadStringConstant()});
                     break;
                 case OperationCode.LDENTRY:
-                    LoadEntrance(Script.Header.Id, Script.ReadLabelOffset(), ActiveScope?.Duplicate() as ScopeMemoryValue);
+                    LoadEntrance();
                     break;
                 case OperationCode.LDSTT:
-                    LoadTranslate(Script.ReadUInt32());
+                    LoadTranslate();
                     break;
                 case OperationCode.LDNUL:
                     LoadNull();
                     break;
                 case OperationCode.LDLOC:
-                    var variableName = PopString();
-                    var loadedVariable = ActiveScope?.FindVariable(variableName, true, VariableSearchMode.All);
-                    if (loadedVariable == null) {
-                        LoadNull();
-                    } else {
-                        MemoryStack.Push(loadedVariable.Value);
-                    }
+                    LoadVariable(VariableSearchMode.All);
                     break;
                 case OperationCode.LDCON:
-                    var constantName = PopString();
-                    var loadedConstant = ActiveScope?.FindVariable(constantName, true, VariableSearchMode.OnlyConstant);
-                    if (loadedConstant == null) {
-                        LoadNull();
-                    } else {
-                        MemoryStack.Push(loadedConstant.Value);
-                    }
+                    LoadVariable(VariableSearchMode.OnlyConstant);
                     break;
                 case OperationCode.LDT:
                     MemoryStack.Push(new BooleanMemoryValue {Value = true});
@@ -249,10 +221,7 @@ namespace Core.VisualNovel.Runtime {
                     ReturnToPreviousScript();
                     break;
                 case OperationCode.FUNC:
-                    break;
-                case OperationCode.BF_S:
-                    break;
-                case OperationCode.BR_S:
+                    CreateFunctionCall();
                     break;
                 case OperationCode.BF:
                     break;
@@ -261,6 +230,7 @@ namespace Core.VisualNovel.Runtime {
                 case OperationCode.LOAD:
                     break;
                 case OperationCode.EXP:
+                    Export();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -268,16 +238,30 @@ namespace Core.VisualNovel.Runtime {
             return true;
         }
         
-        private void LoadEntrance(string scriptId, long entrance, ScopeMemoryValue parent) {
-            MemoryStack.Push(new ScopeMemoryValue {ScriptId = scriptId, Entrance = entrance, ParentScope = parent});
+        private void LoadEntrance() {
+            MemoryStack.Push(new ScopeMemoryValue {
+                ScriptId = Script.Header.Id,
+                Entrance = Script.ReadLabelOffset(),
+                ParentScope = ActiveScope?.Duplicate() as ScopeMemoryValue
+            });
         }
 
-        private void LoadTranslate(uint id) {
-            MemoryStack.Push(new TranslatableMemoryValue {TranslationId = id, ScriptId = Script.Header.Id});
+        private void LoadTranslate() {
+            MemoryStack.Push(new TranslatableMemoryValue {TranslationId = Script.ReadUInt32(), ScriptId = Script.Header.Id});
         }
 
         private void LoadNull() {
             MemoryStack.Push(new NullMemoryValue());
+        }
+
+        private void LoadVariable(VariableSearchMode mode) {
+            var name = PopString();
+            var target = ActiveScope?.FindVariable(name, true, mode);
+            if (target == null) {
+                LoadNull();
+            } else {
+                MemoryStack.Push(target.Value);
+            }
         }
         
         private string PopString() {
@@ -300,38 +284,49 @@ namespace Core.VisualNovel.Runtime {
             ActiveScope = newScope;
         }
 
+        private void CreateFunctionCall() {
+            var functionName = MemoryStack.Pop();
+            if (!(functionName is IStringConverter stringConverter)) throw new RuntimeException(_callStack, $"Unable to call scene: name {functionName} is not string value");
+            var function = ActiveScope?.FindVariable(stringConverter.ConvertToString(), true, VariableSearchMode.All);
+            if (function == null || !(function.Value is ScopeMemoryValue functionBody)) throw new RuntimeException(_callStack, $"Unable to call function: expected function {stringConverter.ConvertToString()} not existed in current scope");
+            // 生成形参
+            var paramCount = ((IntegerMemoryValue) MemoryStack.Pop()).Value;
+            for (var i = -1; ++i < paramCount;) {
+                var paramName = PopString();
+                if (string.IsNullOrEmpty(paramName)) throw new RuntimeException(_callStack, $"Unable to call {functionName}: expected parameter name {paramName} is not string value");
+                functionBody.LocalVariables.Add(paramName, new VariableMemoryValue {Value = MemoryStack.Pop()});
+            }
+            // 切换作用域
+            ActiveScope = functionBody;
+            // 重定向执行位置
+            Script = ScriptFile.Load(functionBody.ScriptId);
+            Script.MoveTo(functionBody.Entrance);
+            _callStack.Push(Script);
+            _historyScope.Push(ActiveScope);
+        }
+
         private void LeaveScope() {
-            if (ActiveScope == null) throw new RuntimeException(_callStacks, "Unable to leave scope: No scope activated");
+            if (ActiveScope == null) throw new RuntimeException(_callStack, "Unable to leave scope: No scope activated");
             ActiveScope = ActiveScope.ParentScope;
         }
 
         private void ReturnToPreviousScript() {
-            if (_callStacks.Count < 1) {
-                Script.MoveToEnd();
-                return;
-            }
-            var pointer = _callStacks.Last();
-            _callStacks.Remove(pointer);
+            // 清空局部作用域
+            ActiveScope?.LocalVariables.Clear();
+            // 切换历史作用域
+            ActiveScope = _historyScope.Pop();
+            // 重定向执行位置
+            _callStack.Pop();
+            var pointer = _callStack.Last;
             Script = ScriptFile.Load(pointer.ScriptId);
             Script.MoveTo(pointer.Offset);
         }
-
+        
         private VisualNovelPlugin FindPlugin() {
-            var rawValue = MemoryStack.Pop();
-            VisualNovelPlugin plugin;
-            switch (rawValue) {
-                case StringMemoryValue stringMemoryValue:
-                    plugin = PluginManager.Find(stringMemoryValue.Value);
-                    if (plugin == null) throw new RuntimeException(_callStacks, $"Unable to find plugin: expected plugin {stringMemoryValue.Value} not existed");
-                    break;
-                case TranslatableMemoryValue translatableMemoryValue:
-                    var translation = ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.GetTranslation(ActiveLanguage, translatableMemoryValue.TranslationId);
-                    plugin = PluginManager.Find(translation);
-                    if (plugin == null) throw new RuntimeException(_callStacks, $"Unable to find plugin: expected plugin {translation} not existed");
-                    break;
-                default:
-                    throw new RuntimeException(_callStacks, $"Unable to find plugin: expected plugin name {rawValue} is not string value");
-            }
+            var pluginName = PopString();
+            if (string.IsNullOrEmpty(pluginName)) throw new RuntimeException(_callStack, $"Unable to find plugin: expected string name");
+            var plugin = PluginManager.Find(pluginName);
+            if (plugin == null) throw new RuntimeException(_callStack, $"Unable to find plugin: expected plugin {pluginName} not existed");
             return plugin;
         }
         
@@ -345,14 +340,14 @@ namespace Core.VisualNovel.Runtime {
             try {
                 MemoryStack.Push(await plugin.Execute(this, parameters) ?? new NullMemoryValue());
             } catch (Exception ex) {
-                throw new RuntimeException(_callStacks, ex);
+                throw new RuntimeException(_callStack, ex);
             }
         }
 
         private async Task CreateDialogue() {
             var plugin = PluginManager.Find("Dialogue");
             if (plugin == null) {
-                throw new RuntimeException(_callStacks, "Unable to create dialogue: no dialogue plugin registered");
+                throw new RuntimeException(_callStack, "Unable to create dialogue: no dialogue plugin registered");
             }
             MemoryStack.Push(await plugin.Execute(this, new Dictionary<SerializableValue, SerializableValue> {
                 {new StringMemoryValue {Value = "Character"}, MemoryStack.Pop()},
@@ -369,7 +364,7 @@ namespace Core.VisualNovel.Runtime {
                 }
                 MemoryStack.Push(result);
             } catch (Exception ex) {
-                throw new RuntimeException(_callStacks, ex);
+                throw new RuntimeException(_callStack, ex);
             }
         }
 
@@ -378,15 +373,17 @@ namespace Core.VisualNovel.Runtime {
             var valueLeft = MemoryStack.Pop();
             switch (operatorType) {
                 case OperatorType.PickChild:
-                    // 处理复制
-                    if (valueLeft is IPickChildOperator leftPick) {
+                    if (valueRight is IStringConverter rightStringConverter && rightStringConverter.ConvertToString() == "Duplicate") {
+                        // 复制(Duplicate)由于统一实现的困难暂且由运行环境处理
+                        MemoryStack.Push(valueLeft.Duplicate());
+                    } else if (valueLeft is IPickChildOperator leftPick) {
                         try {
                             MemoryStack.Push(leftPick.PickChild(valueRight));
                         } catch (Exception ex) {
-                            throw new RuntimeException(_callStacks, ex);
+                            throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStacks, $"Unable to pick {valueRight} from {valueLeft}: Parent expression has no pick child operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to pick {valueRight} from {valueLeft}: Parent expression has no pick child operator implementation");
                     }
                     break;
                 case OperatorType.Add:
@@ -394,10 +391,10 @@ namespace Core.VisualNovel.Runtime {
                         try {
                             MemoryStack.Push(leftAdd.AddWith(valueRight));
                         } catch (Exception ex) {
-                            throw new RuntimeException(_callStacks, ex);
+                            throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStacks, $"Unable to add {valueLeft} and {valueRight}: Left expression has no add operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to add {valueLeft} and {valueRight}: Left expression has no add operator implementation");
                     }
                     break;
                 case OperatorType.Minus:
@@ -405,10 +402,10 @@ namespace Core.VisualNovel.Runtime {
                         try {
                             MemoryStack.Push(leftSubtract.SubtractWith(valueRight));
                         } catch (Exception ex) {
-                            throw new RuntimeException(_callStacks, ex);
+                            throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStacks, $"Unable to subtract {valueLeft} and {valueRight}: Left expression has no subtract operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to subtract {valueLeft} and {valueRight}: Left expression has no subtract operator implementation");
                     }
                     break;
                 case OperatorType.Multiply:
@@ -416,10 +413,10 @@ namespace Core.VisualNovel.Runtime {
                         try {
                             MemoryStack.Push(leftMultiply.MultiplyWith(valueRight));
                         } catch (Exception ex) {
-                            throw new RuntimeException(_callStacks, ex);
+                            throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStacks, $"Unable to multiply {valueLeft} and {valueRight}: Left expression has no multiply operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to multiply {valueLeft} and {valueRight}: Left expression has no multiply operator implementation");
                     }
                     break;
                 case OperatorType.Divide:
@@ -427,10 +424,10 @@ namespace Core.VisualNovel.Runtime {
                         try {
                             MemoryStack.Push(leftDivide.DivideWith(valueRight));
                         } catch (Exception ex) {
-                            throw new RuntimeException(_callStacks, ex);
+                            throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStacks, $"Unable to divide {valueLeft} and {valueRight}: Left expression has no divide operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to divide {valueLeft} and {valueRight}: Left expression has no divide operator implementation");
                     }
                     break;
                 case OperatorType.GreaterThan:
@@ -448,10 +445,10 @@ namespace Core.VisualNovel.Runtime {
                                 MemoryStack.Push(new BooleanMemoryValue {Value = operatorType == OperatorType.GreaterThan || operatorType == OperatorType.NotLessThan});
                             }
                         } catch (Exception ex) {
-                            throw new RuntimeException(_callStacks, ex);
+                            throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStacks, $"Unable to compare {valueLeft} and {valueRight}: Left expression has no compare operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to compare {valueLeft} and {valueRight}: Left expression has no compare operator implementation");
                     }
                     break;
                 case OperatorType.LogicEqualsTo:
@@ -464,13 +461,30 @@ namespace Core.VisualNovel.Runtime {
                             }
                             MemoryStack.Push(result);
                         } catch (Exception ex) {
-                            throw new RuntimeException(_callStacks, ex);
+                            throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStacks, $"Unable to compare {valueLeft} and {valueRight}: Left expression has no equal operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to compare {valueLeft} and {valueRight}: Left expression has no equal operator implementation");
                     }
                     break;
             }
+        }
+
+        private void Export() {
+            var exportName = PopString();
+            if (string.IsNullOrEmpty(exportName)) throw new RuntimeException(_callStack, $"Unable to export value: export name {exportName} is not string value");
+            if (Exported.ContainsKey(exportName)) {
+                Exported.Remove(exportName);
+            }
+            Exported.Add(exportName, MemoryStack.Pop());
+        }
+
+        private async Task Load() {
+            var scriptId = PopString();
+            if (string.IsNullOrEmpty(scriptId)) throw new RuntimeException(_callStack, $"Unable to load script: script id {scriptId} is not string value");
+            var runtime = new ScriptRuntime(scriptId, _callStack);
+            await runtime.ExecuteScript();
+            
         }
     }
 }

@@ -122,8 +122,8 @@ namespace Core.VisualNovel.Runtime {
         /// </summary>
         /// <returns></returns>
         public string ReadStringConstant() {
-            var labelId = _reader.Read7BitEncodedInt();
-            return Header.Strings[labelId];
+            var stringId = _reader.Read7BitEncodedInt();
+            return Header.Strings[stringId];
         }
 
         /// <summary>

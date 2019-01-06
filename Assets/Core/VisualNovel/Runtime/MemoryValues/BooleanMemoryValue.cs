@@ -4,7 +4,7 @@ using Core.VisualNovel.Interoperation;
 namespace Core.VisualNovel.Runtime.MemoryValues {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// <para>表示一个32位布尔内存值</para>
+    /// <para>表示一个布尔内存值</para>
     /// <list type="bullet">
     ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>

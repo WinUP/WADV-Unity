@@ -254,21 +254,13 @@ namespace Core.VisualNovel.Runtime.Editor {
                 case OperationCode.FUNC:
                     assemblyContent.AppendLine("func");
                     break;
-                case OperationCode.BF_S:
+                case OperationCode.BF:
                     var jumpIfFalseLabelIndex = file.Read7BitEncodedInt();
                     assemblyContent.AppendLine($"bf.s {jumpIfFalseLabelIndex}");
                     break;
-                case OperationCode.BR_S:
+                case OperationCode.BR:
                     var jumpLabelIndex = file.Read7BitEncodedInt();
                     assemblyContent.AppendLine($"br.s {jumpLabelIndex}");
-                    break;
-                case OperationCode.BF:
-                    var navigateIfFalseLabelIndex = file.Read7BitEncodedInt();
-                    assemblyContent.AppendLine($"bf.s {navigateIfFalseLabelIndex}");
-                    break;
-                case OperationCode.BR:
-                    var navigateLabelIndex = file.Read7BitEncodedInt();
-                    assemblyContent.AppendLine($"br.s {navigateLabelIndex}");
                     break;
                 case OperationCode.LOAD:
                     assemblyContent.AppendLine("load");
