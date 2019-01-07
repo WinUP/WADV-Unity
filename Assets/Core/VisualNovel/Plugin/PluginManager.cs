@@ -13,15 +13,17 @@ namespace Core.VisualNovel.Plugin {
         private static readonly Dictionary<string, VisualNovelPlugin> Plugins = new Dictionary<string, VisualNovelPlugin>();
 
         static PluginManager() {
-            foreach (var item in Assembly.GetExecutingAssembly().GetTypes().Where(e => e.IsClass && e.GetInterfaces().Contains(typeof(VisualNovelPlugin)))) {
+            var plugins = new List<VisualNovelPlugin>();
+            foreach (var item in Assembly.GetExecutingAssembly().GetTypes().Where(IsPlugin)) {
                 try {
-                    if (!(Activator.CreateInstance(item) is VisualNovelPlugin plugin)) {
-                        throw new MissingMemberException();
-                    }
-                    Register(plugin);
+                    var plugin = (VisualNovelPlugin) Activator.CreateInstance(item);
+                    plugins.Add(plugin);
                 } catch (MissingMemberException) {
                     Debug.LogWarning($"Plugin {item.FullName} has no parameterless constructor, developer should register it to PluginManager manually to enable functions");
                 }
+            }
+            foreach (var plugin in plugins.OrderByDescending(e => e.InitPriority)) {
+                Register(plugin);
             }
         }
 
@@ -74,6 +76,16 @@ namespace Core.VisualNovel.Plugin {
         /// <returns></returns>
         public static bool Contains(string name) {
             return Plugins.ContainsKey(name);
+        }
+
+        private static bool IsPlugin(Type e) {
+            if (!e.IsClass || e.IsAbstract) return false;
+            var baseType = e;
+            do {
+                baseType = baseType.BaseType;
+                if (baseType != null && baseType == typeof(VisualNovelPlugin)) return true;
+            } while (baseType != null);
+            return false;
         }
     }
 }

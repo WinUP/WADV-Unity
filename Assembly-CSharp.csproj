@@ -170,9 +170,32 @@
     <Compile Include="Assets\Core\VisualNovel\Translation\ScriptTranslation.cs" />
     <Compile Include="Assets\Core\VisualNovel\Translation\Translation.cs" />
     <Compile Include="Assets\Core\VisualNovel\Translation\TranslationManager.cs" />
-    <Compile Include="Assets\Core\VisualNovelPlugins\CharacterPlugin.cs" />
+    <Compile Include="Assets\Core\VisualNovelPlugins\Dialogue\CharacterPlugin.cs" />
+    <Compile Include="Assets\Core\VisualNovelPlugins\Dialogue\CharacterValue.cs" />
+    <Compile Include="Assets\Core\VisualNovelPlugins\Dialogue\ClearDialogueItem.cs" />
+    <Compile Include="Assets\Core\VisualNovelPlugins\Dialogue\DialoguePlugin.cs" />
+    <Compile Include="Assets\Core\VisualNovelPlugins\Dialogue\IDialogueItem.cs" />
+    <Compile Include="Assets\Core\VisualNovelPlugins\Dialogue\PauseDialogueItem.cs" />
+    <Compile Include="Assets\Core\VisualNovelPlugins\Dialogue\TextDialogueItem.cs" />
     <Compile Include="Assets\Core\VisualNovelPlugins\SoundPlugin.cs" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMPro_Properties.cginc" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
+    <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Mobile Masking.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_Bitmap-Mobile.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF Overlay.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMPro_Surface.cginc" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Mobile Overlay.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_Bitmap.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMPro.cginc" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Mobile.shader" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_Sprite.shader" />
     <None Include="Assets\Resources\Logic\Utilities.tr.jp.txt" />
+    <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface.shader" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/bo/SCB_YUME_NO_MISAKI_SAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

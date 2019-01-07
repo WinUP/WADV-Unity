@@ -13,12 +13,18 @@ namespace Core.VisualNovel.Plugin {
         /// 插件默认名称
         /// </summary>
         public string Name { get; }
+        
+        /// <summary>
+        /// 加载优先级
+        /// </summary>
+        internal int InitPriority { get; set; }
 
         /// <summary>
         /// 创建一个WADV插件
         /// </summary>
         /// <param name="name">插件名</param>
-        protected VisualNovelPlugin(string name) {
+        /// <param name="priority">加载优先级</param>
+        protected VisualNovelPlugin(string name, int priority = 0) {
             Name = name;
         }
 
