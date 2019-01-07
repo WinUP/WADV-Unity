@@ -18,7 +18,6 @@ namespace Core.VisualNovel.Compiler {
             var context = new ByteCodeGeneratorContext();
             // 生成主程序段
             Generate(context, root);
-            context.File.OperationCode(OperationCode.RET, new SourcePosition());
             // 生成各种段
             var (code, labels, strings, positions, translations) = context.File.CreateSegments();
             context.File.Close();
@@ -62,7 +61,7 @@ namespace Core.VisualNovel.Compiler {
                     if (binaryExpression.Operator == OperatorType.EqualsTo || binaryExpression.Operator == OperatorType.AddBy ||
                         binaryExpression.Operator == OperatorType.MinusBy || binaryExpression.Operator == OperatorType.MultiplyBy ||
                         binaryExpression.Operator == OperatorType.DivideBy) {
-                        Generate(context, binaryExpression.Left, CompilerFlag.UsePickFromPlugin);
+                        Generate(context, binaryExpression.Left, CompilerFlag.UseSetLocalVariable);
                         if (!(binaryExpression.Left is VariableExpression)) { // 对于所有赋值类语句，如果左侧不是自带赋值指令的变量表达式则补充一个赋值指令来改写内存堆栈值
                             context.File.OperationCode(OperationCode.STMEM, binaryExpression.Left.Position);
                         }
@@ -111,7 +110,7 @@ namespace Core.VisualNovel.Compiler {
                         Generate(context, parameter);
                     }
                     context.File.LoadInteger(callExpression.Parameters.Count, callExpression.Position);
-                    Generate(context, callExpression.Target, CompilerFlag.UsePickFromPlugin);
+                    Generate(context, callExpression.Target);
                     context.File.Call(callExpression.Position);
                     break;
                 case ConditionExpression conditionExpression: // 协同处理ConditionContentExpression

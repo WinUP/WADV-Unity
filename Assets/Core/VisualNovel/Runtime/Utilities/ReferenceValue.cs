@@ -1,10 +1,10 @@
 using System;
 using Core.VisualNovel.Interoperation;
 
-namespace Core.VisualNovel.Runtime.MemoryValues {
+namespace Core.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// <para>表示一个变量内存堆栈值</para>
+    /// <para>表示一个间接引用内存值</para>
     ///  <list type="bullet">
     ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>字符串转换器</description></item>
@@ -16,7 +16,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
     /// </list>
     /// </summary>
     [Serializable]
-    public class VariableMemoryValue : SerializableValue, IStringConverter, IPickChildOperator {
+    public class ReferenceValue : SerializableValue, IStringConverter, IPickChildOperator {
         /// <summary>
         /// 获取或设置变量值
         /// </summary>
@@ -24,7 +24,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             set {
                 if (value == _value) return;
                 if (IsConstant) throw new NotSupportedException("Cannot assign value to constant variable");
-                _value = value ?? new NullMemoryValue();
+                _value = value ?? new NullValue();
             }
         }
         
@@ -37,12 +37,17 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
 
         /// <inheritdoc />
         public override SerializableValue Duplicate() {
-            return new VariableMemoryValue {IsConstant = IsConstant, Value = Value.Duplicate()};
+            return new ReferenceValue {IsConstant = IsConstant, Value = Value.Duplicate()};
         }
 
         /// <inheritdoc />
         public string ConvertToString() {
             return Value is IStringConverter stringConverter ? stringConverter.ConvertToString() : $"VariableMemoryValue {{ Value = {Value} }}";
+        }
+        
+        /// <inheritdoc />
+        public string ConvertToString(string language) {
+            return Value is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : $"VariableMemoryValue {{ Value = {Value} }}";
         }
 
         /// <inheritdoc />
@@ -52,7 +57,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             var target = stringConverter.ConvertToString();
             switch (target) {
                 case "ToString":
-                    return new StringMemoryValue {Value = ConvertToString()};
+                    return new StringValue {Value = ConvertToString()};
                 default:
                     throw new NotSupportedException($"Unable to get feature in variable: unsupported feature {target}");
             }

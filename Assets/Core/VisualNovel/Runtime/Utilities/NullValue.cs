@@ -1,10 +1,10 @@
 using System;
 using Core.VisualNovel.Interoperation;
 
-namespace Core.VisualNovel.Runtime.MemoryValues {
+namespace Core.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// <para>表示一个空内存堆栈值</para>
+    /// <para>表示一个空内存值</para>
     /// <list type="bullet">
     ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
@@ -19,11 +19,11 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
     /// </list>
     /// </summary>
     [Serializable]
-    public class NullMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
+    public class NullValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
                                    IEqualOperator{
         /// <inheritdoc />
         public override SerializableValue Duplicate() {
-            return new NullMemoryValue();
+            return new NullValue();
         }
 
         /// <inheritdoc />
@@ -45,14 +45,19 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         public string ConvertToString() {
             return "";
         }
+        
+        /// <inheritdoc />
+        public string ConvertToString(string language) {
+            return ConvertToString();
+        }
 
         public override string ToString() {
-            return $"NullMemoryValue {{}}";
+            return $"NullValue {{}}";
         }
 
         /// <inheritdoc />
         public bool EqualsWith(SerializableValue target) {
-            return target is NullMemoryValue;
+            return target is NullValue;
         }
 
         /// <inheritdoc />
@@ -62,17 +67,17 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
 
         /// <inheritdoc />
         public SerializableValue SubtractWith(SerializableValue target) {
-            return target is NullMemoryValue ? new NullMemoryValue() : throw new NotSupportedException("Unable to subtract null with any other value except null");
+            return target is NullValue ? new NullValue() : throw new NotSupportedException("Unable to subtract null with any other value except null");
         }
 
         /// <inheritdoc />
         public SerializableValue MultiplyWith(SerializableValue target) {
-            return new NullMemoryValue();
+            return new NullValue();
         }
 
         /// <inheritdoc />
         public SerializableValue DivideWith(SerializableValue target) {
-            return target is NullMemoryValue ? new NullMemoryValue() : throw new NotSupportedException("Unable to divide null with any other value except null");
+            return target is NullValue ? new NullValue() : throw new NotSupportedException("Unable to divide null with any other value except null");
         }
     }
 }

@@ -2,10 +2,10 @@ using System;
 using Core.VisualNovel.Interoperation;
 using UnityEngine;
 
-namespace Core.VisualNovel.Runtime.MemoryValues {
+namespace Core.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// <para>表示一个32位整数内存堆栈值</para>
+    /// <para>表示一个32位整数内存值</para>
     /// <list type="bullet">
     ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
@@ -28,7 +28,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
     /// </list>
     /// </summary>
     [Serializable]
-    public class IntegerMemoryValue : SerializableValue, IBooleanConverter, IIntegerConverter, IFloatConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
+    public class IntegerValue : SerializableValue, IBooleanConverter, IIntegerConverter, IFloatConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
                                       ICompareOperator, IEqualOperator, IPickChildOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
@@ -60,7 +60,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
 
         /// <inheritdoc />
         public override SerializableValue Duplicate() {
-            return new IntegerMemoryValue {Value = Value};
+            return new IntegerValue {Value = Value};
         }
 
         /// <inheritdoc />
@@ -82,10 +82,15 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         public string ConvertToString() {
             return Value.ToString();
         }
+        
+        /// <inheritdoc />
+        public string ConvertToString(string language) {
+            return ConvertToString();
+        }
 
         /// <inheritdoc />
         public override string ToString() {
-            return $"IntegerMemoryValue {{Value = {ConvertToString()}}}";
+            return $"IntegerValue {{Value = {ConvertToString()}}}";
         }
 
         /// <inheritdoc />
@@ -95,13 +100,13 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             var target = stringConverter.ConvertToString();
             switch (target) {
                 case "ToBoolean":
-                    return new BooleanMemoryValue {Value = ConvertToBoolean()};
+                    return new BooleanValue {Value = ConvertToBoolean()};
                 case "ToNegative":
-                    return new IntegerMemoryValue {Value = -Value};
+                    return new IntegerValue {Value = -Value};
                 case "ToFloat":
-                    return new FloatMemoryValue {Value = ConvertToFloat()};
+                    return new FloatValue {Value = ConvertToFloat()};
                 case "ToString":
-                    return new StringMemoryValue {Value = ConvertToString()};
+                    return new StringValue {Value = ConvertToString()};
                 default:
                     throw new NotSupportedException($"Unable to get feature in integer value: unsupported feature {target}");
             }
@@ -118,28 +123,28 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
 
         /// <inheritdoc />
         public int CompareWith(SerializableValue target) {
-            var value = Value - FloatMemoryValue.TryParse(target);
+            var value = Value - FloatValue.TryParse(target);
             return value.Equals(0.0F) ? 0 : value < 0 ? -1 : 1;
         }
 
         /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
-            return new IntegerMemoryValue {Value = Value + TryParse(target)};
+            return new IntegerValue {Value = Value + TryParse(target)};
         }
 
         /// <inheritdoc />
         public SerializableValue SubtractWith(SerializableValue target) {
-            return new IntegerMemoryValue {Value = Value - TryParse(target)};
+            return new IntegerValue {Value = Value - TryParse(target)};
         }
 
         /// <inheritdoc />
         public SerializableValue MultiplyWith(SerializableValue target) {
-            return new IntegerMemoryValue {Value = Value * TryParse(target)};
+            return new IntegerValue {Value = Value * TryParse(target)};
         }
 
         /// <inheritdoc />
         public SerializableValue DivideWith(SerializableValue target) {
-            return new IntegerMemoryValue {Value = Value / TryParse(target)};
+            return new IntegerValue {Value = Value / TryParse(target)};
         }
     }
 }

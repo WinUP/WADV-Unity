@@ -5,17 +5,17 @@ using Core.Extensions;
 using Core.VisualNovel.Interoperation;
 using JetBrains.Annotations;
 
-namespace Core.VisualNovel.Runtime.MemoryValues {
+namespace Core.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// <para>表示一个作用域内存堆栈值</para>
+    /// <para>表示一个作用域内存值</para>
     /// <list type="bullet">
     ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>字符串转换器</description></item>
     /// </list>
     /// </summary>
     [Serializable]
-    public class ScopeMemoryValue : SerializableValue, IStringConverter {
+    public class ScopeValue : SerializableValue, IStringConverter {
         /// <summary>
         /// 获取或设置偏移量
         /// </summary>
@@ -30,21 +30,26 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         /// 获取或设置父函数
         /// </summary>
         [CanBeNull]
-        public ScopeMemoryValue ParentScope { get; set; }
+        public ScopeValue ParentScope { get; set; }
         
         /// <summary>
         /// 获取局部变量列表
         /// </summary>
-        public Dictionary<string, VariableMemoryValue> LocalVariables { get; private set; } = new Dictionary<string, VariableMemoryValue>();
+        public Dictionary<string, ReferenceValue> LocalVariables { get; private set; } = new Dictionary<string, ReferenceValue>();
         
         /// <inheritdoc />
         public override SerializableValue Duplicate() {
-            return new ScopeMemoryValue {Entrance = Entrance, ScriptId = ScriptId, ParentScope = ParentScope, LocalVariables = LocalVariables.Duplicate()};
+            return new ScopeValue {Entrance = Entrance, ScriptId = ScriptId, ParentScope = ParentScope, LocalVariables = LocalVariables.Duplicate()};
         }
 
         /// <inheritdoc />
         public string ConvertToString() {
-            return $"OffsetMemoryValue {{ScriptId = {ScriptId}, Entrance = {Entrance}}}";
+            return $"ScopeValue {{ScriptId = {ScriptId}, Entrance = {Entrance}}}";
+        }
+        
+        /// <inheritdoc />
+        public string ConvertToString(string language) {
+            return ConvertToString();
         }
 
         public override string ToString() {
@@ -52,16 +57,16 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         }
 
         /// <summary>
-        /// 按照名称查找变量
+        /// 按照名称查找变量及其所在的作用域
         /// </summary>
         /// <param name="name">目标变量名</param>
         /// <param name="includeParent">是否递归向上查找父作用域（如果有）</param>
         /// <param name="mode">搜索模式</param>
         /// <returns></returns>
         [CanBeNull]
-        public VariableMemoryValue FindVariable(string name, bool includeParent, VariableSearchMode mode) {
+        public (ReferenceValue Target, ScopeValue Scope)? FindVariableAndScope(string name, bool includeParent, VariableSearchMode mode) {
             if (string.IsNullOrEmpty(name)) return null;
-            IEnumerable<KeyValuePair<string, VariableMemoryValue>> items;
+            IEnumerable<KeyValuePair<string, ReferenceValue>> items;
             switch (mode) {
                 case VariableSearchMode.All:
                     items = LocalVariables;
@@ -76,8 +81,20 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
                     throw new ArgumentOutOfRangeException(nameof(mode), mode, $"Unknown VariableSearchMode {mode}");
             }
             var result = items.Where(e => e.Key == name).ToList();
-            if (result.Any()) return result.First().Value;
-            return includeParent ? ParentScope?.FindVariable(name, true, mode) : null;
+            if (result.Any()) return (result.First().Value, this);
+            return includeParent ? ParentScope?.FindVariableAndScope(name, true, mode) : null;
+        }
+
+        /// <summary>
+        /// 按照名称查找变量
+        /// </summary>
+        /// <param name="name">目标变量名</param>
+        /// <param name="includeParent">是否递归向上查找父作用域（如果有）</param>
+        /// <param name="mode">搜索模式</param>
+        /// <returns></returns>
+        [CanBeNull]
+        public ReferenceValue FindVariable(string name, bool includeParent, VariableSearchMode mode) {
+            return FindVariableAndScope(name, includeParent, mode)?.Target;
         }
     }
 }

@@ -3,10 +3,10 @@ using System.Globalization;
 using Core.VisualNovel.Interoperation;
 using UnityEngine;
 
-namespace Core.VisualNovel.Runtime.MemoryValues {
+namespace Core.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// <para>表示一个32位浮点数内存堆栈值</para>
+    /// <para>表示一个32位浮点数内存值</para>
     /// <list type="bullet">
     ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
@@ -29,7 +29,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
     /// </list>
     /// </summary>
     [Serializable]
-    public class FloatMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
+    public class FloatValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
                                     IEqualOperator, ICompareOperator, IPickChildOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
@@ -61,7 +61,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         
         /// <inheritdoc />
         public override SerializableValue Duplicate() {
-            return new FloatMemoryValue {Value = Value};
+            return new FloatValue {Value = Value};
         }
 
         /// <inheritdoc />
@@ -83,10 +83,15 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         public string ConvertToString() {
             return Value.ToString(CultureInfo.InvariantCulture);
         }
+        
+        /// <inheritdoc />
+        public string ConvertToString(string language) {
+            return ConvertToString();
+        }
 
         /// <inheritdoc />
         public override string ToString() {
-            return $"FloatMemoryValue {{Value = {ConvertToString()}}}";
+            return $"FloatValue {{Value = {ConvertToString()}}}";
         }
 
         /// <inheritdoc />
@@ -96,13 +101,13 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             var target = stringConverter.ConvertToString();
             switch (target) {
                 case "ToBoolean":
-                    return new BooleanMemoryValue {Value = ConvertToBoolean()};
+                    return new BooleanValue {Value = ConvertToBoolean()};
                 case "ToNegative":
-                    return new FloatMemoryValue {Value = -Value};
+                    return new FloatValue {Value = -Value};
                 case "ToInteger":
-                    return new IntegerMemoryValue {Value = ConvertToInteger()};
+                    return new IntegerValue {Value = ConvertToInteger()};
                 case "ToString":
-                    return new StringMemoryValue {Value = ConvertToString()};
+                    return new StringValue {Value = ConvertToString()};
                 default:
                     throw new NotSupportedException($"Unable to get feature in float value: unsupported feature {target}");
             }
@@ -125,22 +130,22 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
 
         /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
-            return new FloatMemoryValue {Value = Value + TryParse(target)};
+            return new FloatValue {Value = Value + TryParse(target)};
         }
 
         /// <inheritdoc />
         public SerializableValue SubtractWith(SerializableValue target) {
-            return new FloatMemoryValue {Value = Value - TryParse(target)};
+            return new FloatValue {Value = Value - TryParse(target)};
         }
 
         /// <inheritdoc />
         public SerializableValue MultiplyWith(SerializableValue target) {
-            return new FloatMemoryValue {Value = Value * TryParse(target)};
+            return new FloatValue {Value = Value * TryParse(target)};
         }
 
         /// <inheritdoc />
         public SerializableValue DivideWith(SerializableValue target) {
-            return new FloatMemoryValue {Value = Value / TryParse(target)};
+            return new FloatValue {Value = Value / TryParse(target)};
         }
     }
 }

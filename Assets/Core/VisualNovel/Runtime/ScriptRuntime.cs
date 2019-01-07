@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Core.Extensions;
 using Core.MessageSystem;
 using Core.VisualNovel.Compiler;
 using Core.VisualNovel.Compiler.Expressions;
 using Core.VisualNovel.Interoperation;
 using Core.VisualNovel.Plugin;
-using Core.VisualNovel.Runtime.MemoryValues;
+using Core.VisualNovel.Runtime.Utilities;
 using JetBrains.Annotations;
+using UnityEditor;
+using UnityEngine;
 
 // ! 为求效率，VNB运行环境在文件头正确的情况下假设文件格式绝对正确，只会做运行时数据检查，不会进行任何格式检查
 
@@ -17,6 +19,16 @@ namespace Core.VisualNovel.Runtime {
     /// 脚本运行环境
     /// </summary>
     public class ScriptRuntime {
+        [MenuItem("Test/Test Runtime")]
+        public static void Test() {
+            var runtime = new ScriptRuntime("Logic/Entrance");
+            var task = runtime.ExecuteScript();
+            task.Wait();
+            foreach (var (name, value) in runtime.Exported) {
+                Debug.Log($"Export {name}: {value}");
+            }
+        }
+        
         /// <summary>
         /// 获取正在执行的脚本文件
         /// </summary>
@@ -26,12 +38,12 @@ namespace Core.VisualNovel.Runtime {
         /// 获取当前激活的顶层作用域
         /// </summary>
         [CanBeNull]
-        public ScopeMemoryValue ActiveScope { get; set; }
-        
+        public ScopeValue ActiveScope { get; set; }
+
         /// <summary>
         /// 获取当前内存堆栈
         /// </summary>
-        public Stack<SerializableValue> MemoryStack => new Stack<SerializableValue>();
+        public Stack<SerializableValue> MemoryStack { get; } = new Stack<SerializableValue>();
         
         /// <summary>
         /// 获取或修改脚本导出的数据
@@ -59,11 +71,10 @@ namespace Core.VisualNovel.Runtime {
         
         private string _activeLanguage;
         private readonly CallStack _callStack = new CallStack();
-        private readonly Stack<ScopeMemoryValue> _historyScope = new Stack<ScopeMemoryValue>();
+        private readonly Stack<ScopeValue> _historyScope = new Stack<ScopeValue>();
 
         public ScriptRuntime(ScriptFile script) {
-            if (script == null) throw new ArgumentException("Unable to load script: expected script is not existed", nameof(script));
-            Script = Script;
+            Script = script ?? throw new ArgumentException("Unable to load script: expected script is not existed", nameof(script));
         }
         
         private ScriptRuntime(ScriptFile script, IEnumerable<CallStack.StackItem> initialCallStack) : this(script) {
@@ -102,10 +113,10 @@ namespace Core.VisualNovel.Runtime {
                 case OperationCode.LDC_I4_6:
                 case OperationCode.LDC_I4_7:
                 case OperationCode.LDC_I4_8:
-                    MemoryStack.Push(new IntegerMemoryValue {Value = (byte) code - (byte) OperationCode.LDC_I4_0});
+                    MemoryStack.Push(new IntegerValue {Value = (byte) code - (byte) OperationCode.LDC_I4_0});
                     break;
                 case OperationCode.LDC_I4:
-                    MemoryStack.Push(new IntegerMemoryValue {Value = Script.ReadInteger()});
+                    MemoryStack.Push(new IntegerValue {Value = Script.ReadInteger()});
                     break;
                 case OperationCode.LDC_R4_0:
                 case OperationCode.LDC_R4_025:
@@ -131,13 +142,13 @@ namespace Core.VisualNovel.Runtime {
                 case OperationCode.LDC_R4_525:
                 case OperationCode.LDC_R4_55:
                 case OperationCode.LDC_R4_575:
-                    MemoryStack.Push(new FloatMemoryValue {Value = ((byte) code - (byte) OperationCode.LDC_R4_0) * (float) 0.25});
+                    MemoryStack.Push(new FloatValue {Value = ((byte) code - (byte) OperationCode.LDC_R4_0) * (float) 0.25});
                     break;
                 case OperationCode.LDC_R4:
-                    MemoryStack.Push(new FloatMemoryValue {Value = Script.ReadFloat()});
+                    MemoryStack.Push(new FloatValue {Value = Script.ReadFloat()});
                     break;
                 case OperationCode.LDSTR:
-                    MemoryStack.Push(new StringMemoryValue {Value = Script.ReadStringConstant()});
+                    MemoryStack.Push(new StringValue {Value = Script.ReadStringConstant()});
                     break;
                 case OperationCode.LDENTRY:
                     LoadEntrance();
@@ -155,10 +166,10 @@ namespace Core.VisualNovel.Runtime {
                     LoadVariable(VariableSearchMode.OnlyConstant);
                     break;
                 case OperationCode.LDT:
-                    MemoryStack.Push(new BooleanMemoryValue {Value = true});
+                    MemoryStack.Push(new BooleanValue {Value = true});
                     break;
                 case OperationCode.LDF:
-                    MemoryStack.Push(new BooleanMemoryValue {Value = false});
+                    MemoryStack.Push(new BooleanValue {Value = false});
                     break;
                 case OperationCode.CALL:
                     await CreatePluginCall();
@@ -203,10 +214,13 @@ namespace Core.VisualNovel.Runtime {
                     CreateBinaryOperation(OperatorType.LesserThan);
                     break;
                 case OperationCode.STLOC:
+                    SetVariable(VariableSearchMode.All);
                     break;
                 case OperationCode.STCON:
+                    SetVariable(VariableSearchMode.OnlyConstant);
                     break;
                 case OperationCode.STMEM:
+                    SetMemory();
                     break;
                 case OperationCode.PICK:
                     CreateBinaryOperation(OperatorType.PickChild);
@@ -224,10 +238,16 @@ namespace Core.VisualNovel.Runtime {
                     CreateFunctionCall();
                     break;
                 case OperationCode.BF:
+                    var condition = MemoryStack.Pop();
+                    if (!(condition is NullValue) && condition is IBooleanConverter booleanConverter && booleanConverter.ConvertToBoolean()) {
+                        Move();
+                    }
                     break;
                 case OperationCode.BR:
+                    Move();
                     break;
                 case OperationCode.LOAD:
+                    await Load();
                     break;
                 case OperationCode.EXP:
                     Export();
@@ -237,21 +257,57 @@ namespace Core.VisualNovel.Runtime {
             }
             return true;
         }
+
+        private void Move() {
+            Script.MoveTo(Script.ReadLabelOffset());
+        }
+
+        private void SetVariable(VariableSearchMode mode) {
+            var name = PopString();
+            var value = MemoryStack.Pop();
+            if (string.IsNullOrEmpty(name)) throw new RuntimeException(_callStack, $"Unable to set variable: expected name {name} is not string value");
+            var variable = ActiveScope?.FindVariableAndScope(name, true, mode);
+            if (variable.HasValue) {
+                try {
+                    if (value == null || value is NullValue) {
+                        variable.Value.Scope.LocalVariables.Remove(name);
+                    } else {
+                        variable.Value.Target.Value = value;
+                    }
+                } catch (Exception ex) {
+                    throw new RuntimeException(_callStack, ex);
+                }
+            } else {
+                ActiveScope?.LocalVariables.Add(name, new ReferenceValue {Value = value, IsConstant = mode == VariableSearchMode.OnlyConstant});
+            }
+            MemoryStack.Push(value);
+        }
+
+        private void SetMemory() {
+            var target = MemoryStack.Pop();
+            var value = MemoryStack.Pop();
+            if (target is ReferenceValue referenceTarget) {
+                referenceTarget.Value = value;
+            } else {
+                throw new RuntimeException(_callStack, $"Unable to set memory: expected target {target} is not reference/variable value");
+            }
+            MemoryStack.Push(value);
+        }
         
         private void LoadEntrance() {
-            MemoryStack.Push(new ScopeMemoryValue {
+            MemoryStack.Push(new ScopeValue {
                 ScriptId = Script.Header.Id,
                 Entrance = Script.ReadLabelOffset(),
-                ParentScope = ActiveScope?.Duplicate() as ScopeMemoryValue
+                ParentScope = ActiveScope?.Duplicate() as ScopeValue
             });
         }
 
         private void LoadTranslate() {
-            MemoryStack.Push(new TranslatableMemoryValue {TranslationId = Script.ReadUInt32(), ScriptId = Script.Header.Id});
+            MemoryStack.Push(new TranslatableValue {TranslationId = Script.ReadUInt32(), ScriptId = Script.Header.Id});
         }
 
         private void LoadNull() {
-            MemoryStack.Push(new NullMemoryValue());
+            MemoryStack.Push(new NullValue());
         }
 
         private void LoadVariable(VariableSearchMode mode) {
@@ -267,9 +323,9 @@ namespace Core.VisualNovel.Runtime {
         private string PopString() {
             var rawValue = MemoryStack.Pop();
             switch (rawValue) {
-                case StringMemoryValue stringMemoryValue:
+                case StringValue stringMemoryValue:
                     return stringMemoryValue.Value;
-                case TranslatableMemoryValue translatableMemoryValue:
+                case TranslatableValue translatableMemoryValue:
                     return ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.GetTranslation(ActiveLanguage, translatableMemoryValue.TranslationId);
                 default:
                     return null;
@@ -277,7 +333,7 @@ namespace Core.VisualNovel.Runtime {
         }
 
         private void CreateScope() {
-            var newScope = new ScopeMemoryValue {ScriptId = Script.Header.Id, Entrance = Script.CurrentPosition};
+            var newScope = new ScopeValue {ScriptId = Script.Header.Id, Entrance = Script.CurrentPosition};
             if (ActiveScope != null) {
                 ActiveScope.ParentScope = newScope;
             }
@@ -288,13 +344,13 @@ namespace Core.VisualNovel.Runtime {
             var functionName = MemoryStack.Pop();
             if (!(functionName is IStringConverter stringConverter)) throw new RuntimeException(_callStack, $"Unable to call scene: name {functionName} is not string value");
             var function = ActiveScope?.FindVariable(stringConverter.ConvertToString(), true, VariableSearchMode.All);
-            if (function == null || !(function.Value is ScopeMemoryValue functionBody)) throw new RuntimeException(_callStack, $"Unable to call function: expected function {stringConverter.ConvertToString()} not existed in current scope");
+            if (function == null || !(function.Value is ScopeValue functionBody)) throw new RuntimeException(_callStack, $"Unable to call function: expected function {stringConverter.ConvertToString()} not existed in current scope");
             // 生成形参
-            var paramCount = ((IntegerMemoryValue) MemoryStack.Pop()).Value;
+            var paramCount = ((IntegerValue) MemoryStack.Pop()).Value;
             for (var i = -1; ++i < paramCount;) {
                 var paramName = PopString();
                 if (string.IsNullOrEmpty(paramName)) throw new RuntimeException(_callStack, $"Unable to call {functionName}: expected parameter name {paramName} is not string value");
-                functionBody.LocalVariables.Add(paramName, new VariableMemoryValue {Value = MemoryStack.Pop()});
+                functionBody.LocalVariables.Add(paramName, new ReferenceValue {Value = MemoryStack.Pop()});
             }
             // 切换作用域
             ActiveScope = functionBody;
@@ -307,12 +363,12 @@ namespace Core.VisualNovel.Runtime {
 
         private void LeaveScope() {
             if (ActiveScope == null) throw new RuntimeException(_callStack, "Unable to leave scope: No scope activated");
+            // 清空局部作用域
+            ActiveScope?.LocalVariables.Clear();
             ActiveScope = ActiveScope.ParentScope;
         }
 
         private void ReturnToPreviousScript() {
-            // 清空局部作用域
-            ActiveScope?.LocalVariables.Clear();
             // 切换历史作用域
             ActiveScope = _historyScope.Pop();
             // 重定向执行位置
@@ -335,10 +391,10 @@ namespace Core.VisualNovel.Runtime {
             var parameterCount = Script.ReadInteger();
             var parameters = new Dictionary<SerializableValue, SerializableValue>();
             for (var i = -1; ++i < parameterCount;) {
-                parameters.Add(MemoryStack.Pop(), MemoryStack.Pop());
+                parameters.Add(MemoryStack.Pop() ?? new NullValue(), MemoryStack.Pop() ?? new NullValue());
             }
             try {
-                MemoryStack.Push(await plugin.Execute(this, parameters) ?? new NullMemoryValue());
+                MemoryStack.Push(await plugin.Execute(this, parameters) ?? new NullValue());
             } catch (Exception ex) {
                 throw new RuntimeException(_callStack, ex);
             }
@@ -350,15 +406,15 @@ namespace Core.VisualNovel.Runtime {
                 throw new RuntimeException(_callStack, "Unable to create dialogue: no dialogue plugin registered");
             }
             MemoryStack.Push(await plugin.Execute(this, new Dictionary<SerializableValue, SerializableValue> {
-                {new StringMemoryValue {Value = "Character"}, MemoryStack.Pop()},
-                {new StringMemoryValue {Value = "Content"}, MemoryStack.Pop()}
-            }));
+                {new StringValue {Value = "Character"}, MemoryStack.Pop()},
+                {new StringValue {Value = "Content"}, MemoryStack.Pop()}
+            }) ?? new NullValue());
         }
 
         private void CreateToBoolean(bool reverse = false) {
             var rawValue = MemoryStack.Pop();
             try {
-                var result = new BooleanMemoryValue {Value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean() : rawValue != null};
+                var result = new BooleanValue {Value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean() : rawValue != null};
                 if (reverse) {
                     result.Value = !result.Value;
                 }
@@ -438,11 +494,11 @@ namespace Core.VisualNovel.Runtime {
                         try {
                             var compareResult = leftCompare.CompareWith(valueRight);
                             if (compareResult < 0) {
-                                MemoryStack.Push(new BooleanMemoryValue {Value = operatorType == OperatorType.LesserThan || operatorType == OperatorType.NotGreaterThan});
+                                MemoryStack.Push(new BooleanValue {Value = operatorType == OperatorType.LesserThan || operatorType == OperatorType.NotGreaterThan});
                             } else if (compareResult == 0) {
-                                MemoryStack.Push(new BooleanMemoryValue {Value = operatorType == OperatorType.NotLessThan || operatorType == OperatorType.NotGreaterThan});
+                                MemoryStack.Push(new BooleanValue {Value = operatorType == OperatorType.NotLessThan || operatorType == OperatorType.NotGreaterThan});
                             } else {
-                                MemoryStack.Push(new BooleanMemoryValue {Value = operatorType == OperatorType.GreaterThan || operatorType == OperatorType.NotLessThan});
+                                MemoryStack.Push(new BooleanValue {Value = operatorType == OperatorType.GreaterThan || operatorType == OperatorType.NotLessThan});
                             }
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
@@ -455,7 +511,7 @@ namespace Core.VisualNovel.Runtime {
                 case OperatorType.LogicNotEqualsTo:
                     if (valueLeft is IEqualOperator leftEqual) {
                         try {
-                            var result = new BooleanMemoryValue {Value = leftEqual.EqualsWith(valueRight)};
+                            var result = new BooleanValue {Value = leftEqual.EqualsWith(valueRight)};
                             if (operatorType == OperatorType.LogicNotEqualsTo) {
                                 result.Value = !result.Value;
                             }
@@ -484,7 +540,11 @@ namespace Core.VisualNovel.Runtime {
             if (string.IsNullOrEmpty(scriptId)) throw new RuntimeException(_callStack, $"Unable to load script: script id {scriptId} is not string value");
             var runtime = new ScriptRuntime(scriptId, _callStack);
             await runtime.ExecuteScript();
-            
+            var result = new ObjectPlugin.ObjectValue();
+            foreach (var (name, value) in runtime.Exported) {
+                result.Add(new StringValue {Value = name}, value);
+            }
+            MemoryStack.Push(result);
         }
     }
 }

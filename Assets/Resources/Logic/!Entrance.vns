@@ -1,12 +1,15 @@
-﻿// 自动类型转换以右侧表达式类型为主
+﻿// 类型转换以左侧表达式的运算符重载内容为主
 // 变量取值顺序：当前域变量表->当前域常量表->上一层变量表->上一层常量表->再上一层……
+// 变量为一级值传递，变量内所有非一级资源均为引用传递
  
-@init = (;call ((;import '/Logic/Init')->version))
+@applicationName = (;call ((;import 'Logic/Utilities')->ApplicationName))
 
-VNS版本[@init]测试脚本。首先测试无角色对话。
+适用于工程"[@applicationName]"的VNS测试脚本。首先测试无角色对话。
 
-[Character ID=测试  DisplayName="测试"]
-[Character ID=测试2 DisplayName="另一个测试"]
+@applicationName = @null
+
+@测试  = [Character DisplayName="测试"]
+@测试2 = [Character DisplayName="另一个测试"]
 
 #测试 现在测试多角色的对话。
 #测试2 如果这句话显示为"另一个测试"则没有问题。
@@ -29,7 +32,7 @@ VNS版本[@init]测试脚本。首先测试无角色对话。
 
 [Dialogue Character=测试2 Content=("这里测试可翻译的复杂对话，(1 + 2) * 3 = " + ((1 + 2) * 3)) 广播]
 [Dialogue Character=测试2 Content=('这里测试不可翻译的复杂对话，(1 + 2) / 2.0 = ' + ((1 + 2) / 2.0)) 广播]
-[Dialogue Character=[Character ID=测试3 DisplayName="第三个测试"] Content=["这里测试复合指令，这句话应该是由{角色}说的"->Format 角色=@#测试3->DisplayName]]
+[Dialogue Character=[Character ID=测试3 DisplayName="第三个测试"] Content=[Format "这里测试复合指令，这句话应该是由{角色}说的" 角色=@#测试3->DisplayName]]
 
 @temp = !!@#测试3
 
@@ -80,7 +83,6 @@ VNS版本[@init]测试脚本。首先测试无角色对话。
 
 #测试 具名传递和导出测试
 
-// 函数作用域外的所有变量在函数中为只读模式，赋值会被重定向到新的同名局部变量上
 @temp = 1
 ;scene 测试场景3 @temp
     @temp = 2

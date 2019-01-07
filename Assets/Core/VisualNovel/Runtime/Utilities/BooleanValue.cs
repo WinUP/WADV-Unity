@@ -1,7 +1,7 @@
 using System;
 using Core.VisualNovel.Interoperation;
 
-namespace Core.VisualNovel.Runtime.MemoryValues {
+namespace Core.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
     /// <para>表示一个布尔内存值</para>
@@ -24,7 +24,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
     /// </list>
     /// </summary>
     [Serializable]
-    public class BooleanMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, IMultiplyOperator,
+    public class BooleanValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, IMultiplyOperator,
                                       IPickChildOperator, IEqualOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
@@ -56,7 +56,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
 
         /// <inheritdoc />
         public override SerializableValue Duplicate() {
-            return new BooleanMemoryValue {Value = Value};
+            return new BooleanValue {Value = Value};
         }
 
         /// <inheritdoc />
@@ -80,8 +80,13 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         }
 
         /// <inheritdoc />
+        public string ConvertToString(string language) {
+            return ConvertToString();
+        }
+
+        /// <inheritdoc />
         public override string ToString() {
-            return $"BooleanMemoryValue {{Value = {ConvertToString()}}}";
+            return $"BooleanValue {{Value = {ConvertToString()}}}";
         }
 
         /// <inheritdoc />
@@ -92,12 +97,12 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
 
         /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
-            return new BooleanMemoryValue {Value = Value || TryParse(target)};
+            return new BooleanValue {Value = Value || TryParse(target)};
         }
 
         /// <inheritdoc />
         public SerializableValue MultiplyWith(SerializableValue target) {
-            return new BooleanMemoryValue {Value = Value && TryParse(target)};
+            return new BooleanValue {Value = Value && TryParse(target)};
         }
 
         /// <inheritdoc />
@@ -107,11 +112,11 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
             var target = stringConverter.ConvertToString();
             switch (target) {
                 case "Reverse":
-                    return new BooleanMemoryValue {Value = !Value};
+                    return new BooleanValue {Value = !Value};
                 case "ToNumber":
-                    return new IntegerMemoryValue {Value = ConvertToInteger()};
+                    return new IntegerValue {Value = ConvertToInteger()};
                 case "ToString":
-                    return new StringMemoryValue {Value = ConvertToString()};
+                    return new StringValue {Value = ConvertToString()};
                 default:
                     throw new NotSupportedException($"Unable to get feature in boolean value: unsupported feature {target}");
             }

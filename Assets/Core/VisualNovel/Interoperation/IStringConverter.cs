@@ -8,5 +8,12 @@ namespace Core.VisualNovel.Interoperation {
         /// </summary>
         /// <returns></returns>
         string ConvertToString();
+
+        /// <summary>
+        /// 获取也定语言下的字符串值
+        /// </summary>
+        /// <param name="language">目标语言</param>
+        /// <returns></returns>
+        string ConvertToString(string language);
     }
 }

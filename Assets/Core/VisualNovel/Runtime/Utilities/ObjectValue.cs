@@ -5,11 +5,9 @@ using System.Threading.Tasks;
 using Core.Extensions;
 using Core.VisualNovel.Interoperation;
 using Core.VisualNovel.Plugin;
-using Core.VisualNovel.Runtime;
-using Core.VisualNovel.Runtime.MemoryValues;
 using JetBrains.Annotations;
 
-namespace Core.VisualNovelPlugins {
+namespace Core.VisualNovel.Runtime.Utilities {
     /// <inheritdoc />
     /// <summary>
     /// 为VNS提供对象支持（一定程度上可充当异构数组使用）
@@ -19,7 +17,7 @@ namespace Core.VisualNovelPlugins {
         public ObjectPlugin() : base("Object") { }
         
         public override Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters) {
-            var result = new ObjectDelegate();
+            var result = new ObjectValue();
             foreach (var (key, value) in parameters) {
                 result.Add(key, value);
             }
@@ -28,7 +26,7 @@ namespace Core.VisualNovelPlugins {
 
         /// <inheritdoc cref="SerializableValue" />
         /// <summary>
-        /// 表示一个VNS对象
+        /// 表示一个对象内存值
         /// <para>VNS对象是键值对存储序列，可以使用32位浮点数、32位整数或字符串作为键值存储任意可序列化值并对可转换键值按上述优先级转换后查找元素</para>
         ///<list type="bullet">
         ///     <listheader><description>互操作支持</description></listheader>
@@ -41,14 +39,14 @@ namespace Core.VisualNovelPlugins {
         /// </list>
         /// </summary>
         [Serializable]
-        private class ObjectDelegate : SerializableValue, IPickChildOperator, IStringConverter {
-            private Dictionary<string, VariableMemoryValue> _stringValues = new Dictionary<string, VariableMemoryValue>();
-            private Dictionary<float, VariableMemoryValue> _floatValues = new Dictionary<float, VariableMemoryValue>();
-            private Dictionary<int, VariableMemoryValue> _integerValues = new Dictionary<int, VariableMemoryValue>();
+        public class ObjectValue : SerializableValue, IPickChildOperator, IStringConverter {
+            private Dictionary<string, ReferenceValue> _stringValues = new Dictionary<string, ReferenceValue>();
+            private Dictionary<float, ReferenceValue> _floatValues = new Dictionary<float, ReferenceValue>();
+            private Dictionary<int, ReferenceValue> _integerValues = new Dictionary<int, ReferenceValue>();
             
             /// <inheritdoc />
             public override SerializableValue Duplicate() {
-                return new ObjectDelegate {
+                return new ObjectValue {
                     _stringValues = _stringValues.Duplicate(),
                     _floatValues = _floatValues.Duplicate(),
                     _integerValues = _integerValues.Duplicate()
@@ -56,30 +54,30 @@ namespace Core.VisualNovelPlugins {
             }
 
             [NotNull]
-            public VariableMemoryValue Add(SerializableValue name, SerializableValue value) {
-                VariableMemoryValue result;
+            public ReferenceValue Add(SerializableValue name, SerializableValue value) {
+                ReferenceValue result;
                 switch (name) {
-                    case FloatMemoryValue floatMemoryValue:
+                    case FloatValue floatMemoryValue:
                         if (_floatValues.ContainsKey(floatMemoryValue.Value)) {
                             result = _floatValues[floatMemoryValue.Value];
                         } else {
-                            result = new VariableMemoryValue {Value = value};
+                            result = new ReferenceValue {Value = value};
                             _floatValues.Add(floatMemoryValue.Value, result);
                         }
                         break;
-                    case IntegerMemoryValue integerMemoryValue:
+                    case IntegerValue integerMemoryValue:
                         if (_integerValues.ContainsKey(integerMemoryValue.Value)) {
                             result = _integerValues[integerMemoryValue.Value];
                         } else {
-                            result = new VariableMemoryValue {Value = value};
+                            result = new ReferenceValue {Value = value};
                             _integerValues.Add(integerMemoryValue.Value, result);
                         }
                         break;
-                    case StringMemoryValue stringMemoryValue:
+                    case StringValue stringMemoryValue:
                         if (_stringValues.ContainsKey(stringMemoryValue.Value)) {
                             result = _stringValues[stringMemoryValue.Value];
                         } else {
-                            result = new VariableMemoryValue {Value = value};
+                            result = new ReferenceValue {Value = value};
                             _stringValues.Add(stringMemoryValue.Value, result);
                         }
                         break;
@@ -88,7 +86,7 @@ namespace Core.VisualNovelPlugins {
                         if (_floatValues.ContainsKey(floatValue)) {
                             result = _floatValues[floatValue];
                         } else {
-                            result = new VariableMemoryValue {Value = value};
+                            result = new ReferenceValue {Value = value};
                             _floatValues.Add(floatValue, result);
                         }
                         break;
@@ -97,7 +95,7 @@ namespace Core.VisualNovelPlugins {
                         if (_integerValues.ContainsKey(integerValue)) {
                             result = _integerValues[integerValue];
                         } else {
-                            result = new VariableMemoryValue {Value = value};
+                            result = new ReferenceValue {Value = value};
                             _integerValues.Add(integerValue, result);
                         }
                         break;
@@ -106,7 +104,7 @@ namespace Core.VisualNovelPlugins {
                         if (_stringValues.ContainsKey(stringValue)) {
                             result = _stringValues[stringValue];
                         } else {
-                            result = new VariableMemoryValue {Value = value};
+                            result = new ReferenceValue {Value = value};
                             _stringValues.Add(stringValue, result);
                         }
                         break;
@@ -115,7 +113,7 @@ namespace Core.VisualNovelPlugins {
                         if (_stringValues.ContainsKey(defaultStringValue)) {
                             result = _stringValues[defaultStringValue];
                         } else {
-                            result = new VariableMemoryValue {Value = value};
+                            result = new ReferenceValue {Value = value};
                             _stringValues.Add(defaultStringValue, result);
                         }
                         break;
@@ -128,13 +126,13 @@ namespace Core.VisualNovelPlugins {
             public SerializableValue PickChild(SerializableValue name) {
                 SerializableValue result;
                 switch (name) {
-                    case FloatMemoryValue floatMemoryValue:
+                    case FloatValue floatMemoryValue:
                         result = _floatValues.ContainsKey(floatMemoryValue.Value) ? _floatValues[floatMemoryValue.Value] : null;
                         break;
-                    case IntegerMemoryValue integerMemoryValue:
+                    case IntegerValue integerMemoryValue:
                         result = _integerValues.ContainsKey(integerMemoryValue.Value) ? _integerValues[integerMemoryValue.Value] : null;
                         break;
-                    case StringMemoryValue stringMemoryValue:
+                    case StringValue stringMemoryValue:
                         result = _stringValues.ContainsKey(stringMemoryValue.Value) ? _stringValues[stringMemoryValue.Value] : null;
                         break;
                     case IFloatConverter floatConverter:
@@ -154,7 +152,7 @@ namespace Core.VisualNovelPlugins {
                         result = _stringValues.ContainsKey(defaultStringValue) ? _stringValues[defaultStringValue] : null;
                         break;
                 }
-                return result ?? Add(name, new NullMemoryValue());
+                return result ?? Add(name, new NullValue());
             }
 
             public string ConvertToString() {
@@ -162,6 +160,11 @@ namespace Core.VisualNovelPlugins {
                 list.AddRange(_integerValues.Values.ToList());
                 list.AddRange(_stringValues.Values.ToList());
                 return $"{string.Join(", ", list.Select(e => e.Value).Select(e => e is IStringConverter stringConverter ? stringConverter.ConvertToString() : e.ToString()))}";
+            }
+            
+            /// <inheritdoc />
+            public string ConvertToString(string language) {
+                return ConvertToString();
             }
         }
     }

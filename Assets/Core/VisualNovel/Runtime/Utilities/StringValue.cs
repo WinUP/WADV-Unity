@@ -3,10 +3,10 @@ using Core.Extensions;
 using Core.VisualNovel.Interoperation;
 using UnityEngine;
 
-namespace Core.VisualNovel.Runtime.MemoryValues {
+namespace Core.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
     /// <summary>
-    /// <para>表示一个字符串内存堆栈值</para>
+    /// <para>表示一个字符串内存值</para>
     /// <list type="bullet">
     ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
@@ -21,7 +21,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
     /// </list>
     /// </summary>
     [Serializable]
-    public class StringMemoryValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
+    public class StringValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
                                      IEqualOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
@@ -30,7 +30,7 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
 
         /// <inheritdoc />
         public override SerializableValue Duplicate() {
-            return new StringMemoryValue {Value = Value};
+            return new StringValue {Value = Value};
         }
 
         /// <inheritdoc />
@@ -57,9 +57,14 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         public string ConvertToString() {
             return Value;
         }
+        
+        /// <inheritdoc />
+        public string ConvertToString(string language) {
+            return ConvertToString();
+        }
 
         public override string ToString() {
-            return $"StringMemoryValue {{Value = {ConvertToString()}}}";
+            return $"StringValue {{Value = {ConvertToString()}}}";
         }
 
         /// <inheritdoc />
@@ -75,26 +80,26 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
             var targetString = target is IStringConverter stringTarget ? stringTarget.ConvertToString() : target.ToString();
-            return new StringMemoryValue {Value = $"{Value}{targetString}"};
+            return new StringValue {Value = $"{Value}{targetString}"};
         }
 
         /// <inheritdoc />
         public SerializableValue SubtractWith(SerializableValue target) {
             var targetString = target is IStringConverter stringTarget ? stringTarget.ConvertToString() : target.ToString();
-            return new StringMemoryValue {Value = Value.Replace(targetString, "")};
+            return new StringValue {Value = Value.Replace(targetString, "")};
         }
 
         /// <inheritdoc />
         public SerializableValue MultiplyWith(SerializableValue target) {
             switch (target) {
                 case IIntegerConverter intTarget:
-                    return new StringMemoryValue {Value = Value.Repeat(intTarget.ConvertToInteger())};
+                    return new StringValue {Value = Value.Repeat(intTarget.ConvertToInteger())};
                 case IFloatConverter floatTarget:
-                    return new StringMemoryValue {Value = Value.Repeat(Mathf.RoundToInt(floatTarget.ConvertToFloat()))};
+                    return new StringValue {Value = Value.Repeat(Mathf.RoundToInt(floatTarget.ConvertToFloat()))};
                 case IStringConverter _:
                     throw new NotSupportedException("Unable to multiply string constant with string constant");
                 case IBooleanConverter boolTarget:
-                    return new StringMemoryValue {Value = boolTarget.ConvertToBoolean() ? Value : ""};
+                    return new StringValue {Value = boolTarget.ConvertToBoolean() ? Value : ""};
                 default:
                     throw new NotSupportedException($"Unable to multiply string constant with unsupported value {target}");
             }
@@ -104,13 +109,13 @@ namespace Core.VisualNovel.Runtime.MemoryValues {
         public SerializableValue DivideWith(SerializableValue target) {
             switch (target) {
                 case IIntegerConverter intTarget:
-                    return new StringMemoryValue {Value = DivideString(Value, intTarget.ConvertToInteger())};
+                    return new StringValue {Value = DivideString(Value, intTarget.ConvertToInteger())};
                 case IFloatConverter floatTarget:
-                    return new StringMemoryValue {Value = DivideString(Value, Mathf.RoundToInt(floatTarget.ConvertToFloat()))};
+                    return new StringValue {Value = DivideString(Value, Mathf.RoundToInt(floatTarget.ConvertToFloat()))};
                 case IStringConverter _:
                     throw new NotSupportedException("Unable to divide string constant with string constant");
                 case IBooleanConverter boolTarget:
-                    return new StringMemoryValue {Value = boolTarget.ConvertToBoolean() ? Value : ""};
+                    return new StringValue {Value = boolTarget.ConvertToBoolean() ? Value : ""};
                 default:
                     throw new NotSupportedException($"Unable to divide string constant with unsupported value {target}");
             }
