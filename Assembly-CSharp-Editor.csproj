@@ -63,12 +63,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Core\VisualNovel\Compiler\Editor\CompileOptionsWindow.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Compiler\Editor\ScriptAssetPostProcessor.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Compiler\Editor\ScriptBinaryImporter.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Compiler\Editor\ScriptImporter.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Compiler\Editor\ScriptImporterEditor.cs" />
-    <Compile Include="Assets\Core\VisualNovel\Runtime\Editor\ScriptAssetEditor.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Compiler\Editor\CompileOptionsWindow.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Compiler\Editor\ScriptAssetPostProcessor.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Compiler\Editor\ScriptBinaryImporter.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Compiler\Editor\ScriptImporter.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Compiler\Editor\ScriptImporterEditor.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Runtime\Editor\ScriptAssetEditor.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/bo/SCB_YUME_NO_MISAKI_SAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
