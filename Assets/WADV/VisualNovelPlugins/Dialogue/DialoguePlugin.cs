@@ -14,7 +14,7 @@ using WADV.VisualNovelPlugins.Dialogue.DialogueItems;
 using JetBrains.Annotations;
 using UnityEngine;
 
-// ! CJK+ASCII Range+JP: 0020-007E,3000-30FF,31D0-31FF,4E00-9FEF,FF65-FF9F
+// ! CJK+ASCII Range+JP: 0020-007E,3000-30FF,31D0-31FF,4E00-9FEF,FF00-FFEF
 
 namespace WADV.VisualNovelPlugins.Dialogue {
     /// <inheritdoc />
