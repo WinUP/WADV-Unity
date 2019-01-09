@@ -33,7 +33,7 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         /// </summary>
         public const string NewDialogueMessageTag = "NEW_DIALOGUE";
         
-        private static Regex CommandTester { get; } = new Regex(@"([^=+]+)([=+]{1,2})(([\d.]+))$");
+        private static Regex CommandTester { get; } = new Regex(@"\s*([^=]+)\s*=\s*(([\d.]+))\s*$");
         
         public DialoguePlugin() : base("Dialogue") { }
 
@@ -43,12 +43,19 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         /// <param name="runtime">脚本运行环境</param>
         /// <param name="raw">原始对话内容</param>
         /// <returns></returns>
-        public static List<IDialogueItem> ProcessDialogueContent(ScriptRuntime runtime, IStringConverter raw) {
+        public static (List<IDialogueItem> Content, bool NoWait, bool NoClear) ProcessDialogueContent(ScriptRuntime runtime, IStringConverter raw) {
             var data = raw.ConvertToString();
             var result = new List<IDialogueItem>();
             var content = new StringBuilder();
             var style = new StyleList();
-            for (var i = -1; ++i < data.Length;) {
+            var noWait = false;
+            var noClear = false;
+            var i = -1;
+            if (data.StartsWith("[noclear]", StringComparison.OrdinalIgnoreCase)) {
+                noClear = true;
+                i = 8;
+            }
+            for (i = -1; ++i < data.Length;) {
                 switch (data[i]) {
                     case '\\' when i < data.Length - 1:
                         switch (data[i + 1]) {
@@ -100,8 +107,9 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                             var commandContent = command.ToLower().Trim();
                             if (commandContent.StartsWith("size")) { // 字号
                                 var parameter = ExtractParameter(commandContent);
+                                var relative = parameter.Value.Value.StartsWith("+") || parameter.Value.Value.StartsWith("-");
                                 if (parameter.HasValue && float.TryParse(parameter.Value.Value, out var number)) {
-                                    style.Size.AddLast((Mathf.RoundToInt(number), parameter.Value.Relative));
+                                    style.Size.AddLast((Mathf.RoundToInt(number), relative));
                                 } else {
                                     analyseFailed = true;
                                 }
@@ -129,7 +137,7 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                                     result.Add(new PauseDialogueItem {Time = null});
                                 } else {
                                     var parameter = ExtractParameter(commandContent);
-                                    if (parameter.HasValue && !parameter.Value.Relative && float.TryParse(parameter.Value.Value, out var number)) {
+                                    if (parameter.HasValue && float.TryParse(parameter.Value.Value, out var number)) {
                                         result.Add(new PauseDialogueItem {Time = number});
                                     } else {
                                         analyseFailed = true;
@@ -137,6 +145,10 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                                 }
                             } else if (commandContent == "clear") { // 清空
                                 result.Add(new ClearDialogueItem());
+                            } else if (commandContent == "nowait") {
+                                if (i == data.Length - 1) {
+                                    noWait = true;
+                                }
                             } else switch (command) {
                                 case "b": // 粗体
                                     style.Bold = true;
@@ -180,7 +192,7 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                         break;
                 }
             }
-            return result;
+            return (result, noWait, noClear);
         }
         
         public override async Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters) {
@@ -207,7 +219,7 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                         break;
                     case "Content":
                         if (value is IStringConverter stringContent) {
-                            dialogue.Content = ProcessDialogueContent(context, stringContent);
+                            (dialogue.Content, dialogue.NoWait, dialogue.NoClear) = ProcessDialogueContent(context, stringContent);
                         } else {
                             throw new ArgumentException($"Unable to create dialogue: unsupported content type {value}");
                         }
@@ -218,10 +230,10 @@ namespace WADV.VisualNovelPlugins.Dialogue {
             return new NullValue();
         }
 
-        private static (string Name, bool Relative, string Value)? ExtractParameter(string source) {
+        private static (string Name, string Value)? ExtractParameter(string source) {
             var match = CommandTester.Match(source);
             if (match.Groups.Count < 4) return null;
-            return (match.Groups[1].Value, match.Groups[2].Value == "=", match.Groups[3].Value);
+            return (match.Groups[1].Value, match.Groups[2].Value);
         }
 
         private class StyleList {

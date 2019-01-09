@@ -209,26 +209,22 @@ namespace WADV.Extensions {
             awaiter.Complete(null);
         }
 
-        private static IEnumerator AssetBundleCreateRequest(
-            SimpleCoroutineAwaiter<AssetBundle> awaiter, AssetBundleCreateRequest instruction) {
+        private static IEnumerator AssetBundleCreateRequest(SimpleCoroutineAwaiter<AssetBundle> awaiter, AssetBundleCreateRequest instruction) {
             yield return instruction;
             awaiter.Complete(instruction.assetBundle, null);
         }
 
-        private static IEnumerator ReturnSelf<T>(
-            SimpleCoroutineAwaiter<T> awaiter, T instruction) {
+        private static IEnumerator ReturnSelf<T>(SimpleCoroutineAwaiter<T> awaiter, T instruction) {
             yield return instruction;
             awaiter.Complete(instruction, null);
         }
 
-        private static IEnumerator AssetBundleRequest(
-            SimpleCoroutineAwaiter<UnityEngine.Object> awaiter, AssetBundleRequest instruction) {
+        private static IEnumerator AssetBundleRequest(SimpleCoroutineAwaiter<UnityEngine.Object> awaiter, AssetBundleRequest instruction) {
             yield return instruction;
             awaiter.Complete(instruction.asset, null);
         }
 
-        private static IEnumerator ResourceRequest(
-            SimpleCoroutineAwaiter<UnityEngine.Object> awaiter, ResourceRequest instruction) {
+        private static IEnumerator ResourceRequest(SimpleCoroutineAwaiter<UnityEngine.Object> awaiter, ResourceRequest instruction) {
             yield return instruction;
             awaiter.Complete(instruction.asset, null);
         }

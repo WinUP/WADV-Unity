@@ -13,14 +13,14 @@ namespace WADV.Thread {
         /// </summary>
         /// <returns></returns>
         public static WaitForUpdate UseMainThread() {
-            return WaitForUpdate();
+            return NextUpdate();
         }
 
         /// <summary>
         /// 等待下一个更新循环
         /// </summary>
         /// <returns></returns>
-        public static WaitForUpdate WaitForUpdate() {
+        public static WaitForUpdate NextUpdate() {
             return new WaitForUpdate();
         }
 

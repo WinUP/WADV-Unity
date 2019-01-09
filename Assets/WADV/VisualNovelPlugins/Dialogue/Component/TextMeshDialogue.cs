@@ -1,8 +1,12 @@
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using WADV.MessageSystem;
 using TMPro;
 using UnityEngine;
+using WADV.Extensions;
+using WADV.Thread;
+using WADV.VisualNovelPlugins.Dialogue.DialogueItems;
 
 namespace WADV.VisualNovelPlugins.Dialogue.Component {
     /// <inheritdoc cref="IMessenger" />
@@ -10,40 +14,70 @@ namespace WADV.VisualNovelPlugins.Dialogue.Component {
     /// 表示一个使用TextMesh渲染的对话框插件
     /// </summary>
     [RequireComponent(typeof(TextMeshProUGUI))]
-    public class TextMeshDialogue : MonoBehaviour, IMessenger {
-        /// <inheritdoc />
-        public int Mask { get; } = DialoguePlugin.MessageMask;
-
+    public class TextMeshDialogue : DialogueContent {
         private TextMeshProUGUI _textMesh;
-
-        /// <summary>
-        /// TextMesh对话框插件根消息监听器节点
-        /// </summary>
-        public static LinkedTreeNode<IMessenger> RootListenerNode { get; }
-
-        static TextMeshDialogue() {
-            RootListenerNode = MessageService.Receivers.CreateChild(new EmptyMessenger {Mask = DialoguePlugin.MessageMask});
-        }
 
         private void Start() {
             _textMesh = GetComponent<TextMeshProUGUI>();
             if (_textMesh == null) throw new NotSupportedException("Unable to create TextMeshDialogue: no TextMeshProUGUI component found in current object");
         }
 
-        private void OnDisable() {
-            RootListenerNode.CreateChild(this);
+        protected override string CurrentText => _textMesh.text;
+
+        protected override void ClearText() {
+            _textMesh.text = "";
         }
 
-        private void OnEnable() {
-            RootListenerNode.RemoveChild(this);
+        protected override Task ShowText(string historyText, TextDialogueItem currentText) {
+            var (startPart, endPart) = CreateStyle(currentText);
+            for (var i = -1; ++i < currentText.Text.Length;) {
+                _textMesh.text = $"{history}{startPart}{generator.Current}{endPart}";
+                for (var i = -1; ++i < frameSpan;) {
+                    await Dispatcher.NextUpdate();
+                }
+            }
+            while (generator.MoveNext()) {
+                _textMesh.text = $"{history}{startPart}{generator.Current}{endPart}";
+                for (var i = -1; ++i < frameSpan;) {
+                    await Dispatcher.NextUpdate();
+                }
+            }
+            history.Append(_textMesh.text);
         }
 
-        /// <inheritdoc />
-        public async Task<Message> Receive(Message message) {
-            if (message.Tag != DialoguePlugin.NewDialogueMessageTag || !(message is Message<DialogueDescription> dialogueMessage)) return message;
-            var dialogue = dialogueMessage.Content;
-            
-            return message;
+        private static (string StartPart, string EndPart) CreateStyle(TextDialogueItem source) {
+            var startPart = new StringBuilder();
+            var endPart = new StringBuilder();
+            if (source.Bold == true) {
+                startPart.Append("<b>");
+                endPart.Append("</b>");
+            }
+            if (!string.IsNullOrEmpty(source.Color)) {
+                startPart.Append(source.Color.StartsWith("#") ? $"<color={source.Color}>" : $"<color=\"{source.Color}\">");
+                endPart.Append("</color>");
+            }
+            if (source.Italic == true) {
+                startPart.Append("<i>");
+                endPart.Append("</i>");
+            }
+            if (source.Underline == true) {
+                startPart.Append("<u>");
+                endPart.Append("</u>");
+            }
+            if (source.Strikethrough == true) {
+                startPart.Append("<s>");
+                endPart.Append("</s>");
+            }
+            if (source.FontSize.HasValue) {
+                if (source.RelativeSize == true) {
+                    startPart.Append(source.FontSize >= 0 ? $"<size=+{source.FontSize}>" : $"<size=-{source.FontSize}>");
+                    endPart.Append("</size>");
+                } else {
+                    startPart.Append($"<size={source.FontSize}>");
+                    endPart.Append("</size>");
+                }
+            }
+            return (startPart.ToString(), endPart.ToString());
         }
     }
 }
