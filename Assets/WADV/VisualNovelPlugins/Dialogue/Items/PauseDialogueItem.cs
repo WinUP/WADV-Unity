@@ -1,4 +1,4 @@
-namespace WADV.VisualNovelPlugins.Dialogue.DialogueItems {
+namespace WADV.VisualNovelPlugins.Dialogue.Items {
     /// <summary>
     /// 用于冻结对话框一段时间的对话框内容
     /// </summary>

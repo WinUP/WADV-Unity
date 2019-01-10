@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace WADV.VisualNovelPlugins.Dialogue.DialogueItems {
+namespace WADV.VisualNovelPlugins.Dialogue.Items {
     /// <summary>
     /// 用于展示文本的对话框内容
     /// <para>所有样式均是对基础样式的补充或覆盖，不同TextDialogueItem之间的样式不重叠应用</para>

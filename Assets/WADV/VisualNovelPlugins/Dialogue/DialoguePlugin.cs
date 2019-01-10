@@ -10,9 +10,9 @@ using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime;
 using WADV.VisualNovel.Runtime.Utilities;
-using WADV.VisualNovelPlugins.Dialogue.DialogueItems;
 using JetBrains.Annotations;
 using UnityEngine;
+using WADV.VisualNovelPlugins.Dialogue.Items;
 
 // ! CJK+ASCII Range+JP: 0020-007E,3000-30FF,31D0-31FF,4E00-9FEF,FF00-FFEF
 
@@ -32,6 +32,10 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         /// 表示新建对话的消息标记
         /// </summary>
         public const string NewDialogueMessageTag = "NEW_DIALOGUE";
+
+        public const string ShowDialogueBoxMessageTag = "SHOW_DIALOGUE_TEXT";
+        
+        public const string HideDialogueBoxMessageTag = "HIDE_DIALOGUE_TEXT";
         
         private static Regex CommandTester { get; } = new Regex(@"\s*([^=]+)\s*=\s*(([\d.]+))\s*$");
         
@@ -223,6 +227,24 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                         } else {
                             throw new ArgumentException($"Unable to create dialogue: unsupported content type {value}");
                         }
+                        break;
+                    case "Show":
+                        float showValue;
+                        try {
+                            showValue = FloatValue.TryParse(value);
+                        } catch {
+                            showValue = 0.0F;
+                        }
+                        await MessageService.ProcessAsync(new Message<float>(showValue) {Mask = MessageMask, Tag = ShowDialogueBoxMessageTag});
+                        break;
+                    case "Hide":
+                        float hideValue;
+                        try {
+                            hideValue = FloatValue.TryParse(value);
+                        } catch {
+                            hideValue = 0.0F;
+                        }
+                        await MessageService.ProcessAsync(new Message<float>(hideValue) {Mask = MessageMask, Tag = HideDialogueBoxMessageTag});
                         break;
                 }
             }

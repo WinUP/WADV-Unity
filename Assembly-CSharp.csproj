@@ -63,6 +63,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Game\MathfExtended.cs" />
+    <Compile Include="Assets\Game\RuntimeTester.cs" />
+    <Compile Include="Assets\Game\UI\ImageShowHideListener.cs" />
     <Compile Include="Assets\WADV\Extensions\AwaitExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\DictionaryExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\EnumerableExtensions.cs" />
@@ -172,16 +175,17 @@
     <Compile Include="Assets\WADV\VisualNovel\Translation\TranslationManager.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\CharacterPlugin.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\CharacterValue.cs" />
-    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Component\DialogueContent.cs" />
-    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Component\TextMeshDialogue.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\DialogueDescription.cs" />
-    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\DialogueItems\ClearDialogueItem.cs" />
-    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\DialogueItems\IDialogueItem.cs" />
-    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\DialogueItems\PauseDialogueItem.cs" />
-    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\DialogueItems\TextDialogueItem.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\DialoguePlugin.cs" />
-    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Generator\SimpleTextGenerator.cs" />
-    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Generator\TextGenerator.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Items\ClearDialogueItem.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Items\IDialogueItem.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Items\PauseDialogueItem.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Items\TextDialogueItem.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Renderer\DialogueContentRenderer.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Renderer\TextMeshDialogueContentRenderer.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\TextGenerator\DialogueTextGenerator.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\TextGenerator\EmptyDialogueTextGenerator.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\TextGenerator\SimpleDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\SoundPlugin.cs" />
     <None Include="Assets\Resources\Logic\!Entrance.tr.jp.txt" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />

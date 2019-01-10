@@ -1,27 +1,39 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine;
 
-namespace WADV.VisualNovelPlugins.Dialogue.Generator {
-    /// <inheritdoc cref="MonoBehaviour" />
+namespace WADV.VisualNovelPlugins.Dialogue.TextGenerator {
+    /// <inheritdoc />
     /// <summary>
     /// 表示一个对话文本生成器
     /// </summary>
-    public abstract class TextGenerator : MonoBehaviour, IEnumerator<StringBuilder> {
+    public abstract class DialogueTextGenerator : IEnumerator<StringBuilder> {
         /// <summary>
         /// 获取或设置完整文本内容
         /// </summary>
         public abstract string Text { get; set; }
         
+        /// <summary>
+        /// 生成下一个文字
+        /// </summary>
+        /// <returns></returns>
         public abstract bool MoveNext();
 
+        /// <summary>
+        /// 重置生成器
+        /// </summary>
         public abstract void Reset();
 
+        /// <summary>
+        /// 获取当前已生成的文本
+        /// </summary>
         public abstract StringBuilder Current { get; }
 
         object IEnumerator.Current => Current;
 
+        /// <summary>
+        /// 释放生成器资源
+        /// </summary>
         public abstract void Dispose();
     }
 }

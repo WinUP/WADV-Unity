@@ -43,10 +43,10 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// <returns></returns>
         public static float TryParse(SerializableValue value) {
             switch (value) {
-                case IIntegerConverter intTarget:
-                    return intTarget.ConvertToInteger();
                 case IFloatConverter floatTarget:
                     return floatTarget.ConvertToFloat();
+                case IIntegerConverter intTarget:
+                    return intTarget.ConvertToInteger();
                 case IStringConverter stringTarget:
                     var stringValue = stringTarget.ConvertToString();
                     if (int.TryParse(stringValue, out var intValue)) return intValue;
