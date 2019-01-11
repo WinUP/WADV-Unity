@@ -63,9 +63,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Game\MathfExtended.cs" />
     <Compile Include="Assets\Game\RuntimeTester.cs" />
     <Compile Include="Assets\Game\UI\ImageShowHideListener.cs" />
+    <Compile Include="Assets\WADV\Easing.cs" />
     <Compile Include="Assets\WADV\Extensions\AwaitExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\DictionaryExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\EnumerableExtensions.cs" />

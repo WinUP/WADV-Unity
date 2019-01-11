@@ -59,7 +59,7 @@ namespace Game.UI {
             var time = 0.0F;
             while (time < fadeTime) {
                 time += Time.deltaTime;
-                _image.color = new Color(color.r, color.g, color.b, MathfExtended.Sinerp(start, end, time / fadeTime));
+                _image.color = new Color(color.r, color.g, color.b, Mathf.Lerp(start, end, Easing.CubicOut(time / fadeTime)));
                 await Dispatcher.NextUpdate();
             }
             return message;
