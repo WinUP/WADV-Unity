@@ -7,7 +7,7 @@ namespace WADV.Thread {
     /// <summary>
     /// Unity协程执行器
     /// </summary>
-    public class CoroutineRunner : MonoBehaviour {
+    public class TaskDelegator : MonoBehaviour {
         /// <summary>
         /// 获取Unity主线程ID
         /// </summary>
@@ -17,7 +17,7 @@ namespace WADV.Thread {
         /// </summary>
         public static SynchronizationContext MainThreadContext { get; private set; }
         
-        private static CoroutineRunner _instance;
+        private static TaskDelegator _instance;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void DetectUnityThreadContext() {
@@ -28,18 +28,19 @@ namespace WADV.Thread {
         /// <summary>
         /// 获取Unity协程执行器实例
         /// </summary>
-        public static CoroutineRunner Instance {
+        public static TaskDelegator Instance {
             get {
                 if (_instance == null) {
-                    _instance = new GameObject($"CoroutineRunner [{Guid.NewGuid().ToString()}]").AddComponent<CoroutineRunner>();
+                    _instance = new GameObject($"CoroutineRunner [{Guid.NewGuid().ToString()}]").AddComponent<TaskDelegator>();
                 }
                 return _instance;
             }
         }
 
         private void Awake() {
-            gameObject.hideFlags = HideFlags.HideAndDontSave;
-            DontDestroyOnLoad(gameObject);
+            var target = gameObject;
+            target.hideFlags = HideFlags.HideAndDontSave;
+            DontDestroyOnLoad(target);
         }
     }
 }

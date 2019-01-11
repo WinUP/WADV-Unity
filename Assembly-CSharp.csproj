@@ -81,8 +81,8 @@
     <Compile Include="Assets\WADV\MessageSystem\IMessenger.cs" />
     <Compile Include="Assets\WADV\MessageSystem\Message.cs" />
     <Compile Include="Assets\WADV\MessageSystem\MessageService.cs" />
-    <Compile Include="Assets\WADV\Thread\CoroutineRunner.cs" />
     <Compile Include="Assets\WADV\Thread\Dispatcher.cs" />
+    <Compile Include="Assets\WADV\Thread\TaskDelegator.cs" />
     <Compile Include="Assets\WADV\Thread\WaitForBackgroundThread.cs" />
     <Compile Include="Assets\WADV\Thread\WaitForUpdate.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\ByteCodeGenerator.cs" />
@@ -182,6 +182,7 @@
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Items\PauseDialogueItem.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Items\TextDialogueItem.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Renderer\DialogueContentRenderer.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Renderer\DialogueShowHideRenderer.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Renderer\TextMeshDialogueContentRenderer.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\TextGenerator\DialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\TextGenerator\EmptyDialogueTextGenerator.cs" />

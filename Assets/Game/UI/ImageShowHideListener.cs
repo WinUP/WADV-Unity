@@ -1,68 +1,45 @@
 using System;
-using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using WADV;
-using WADV.Extensions;
-using WADV.MessageSystem;
-using WADV.Thread;
-using WADV.VisualNovelPlugins.Dialogue;
+using WADV.VisualNovelPlugins.Dialogue.Renderer;
 
 namespace Game.UI {
     [RequireComponent(typeof(Image))]
     [DisallowMultipleComponent]
-    public class ImageShowHideListener : MonoBehaviour, IMessenger {
-        public int Mask { get; } = DialoguePlugin.MessageMask;
-
-        private float _initialAlpha;
+    public class ImageShowHideListener : DialogueShowHideRenderer {
+        public Color defaultVisibleColor = new Color(1.0F, 1.0F, 1.0F, 1.0F);
+        public Color defaultHiddenColor = new Color(1.0F, 1.0F, 1.0F, 0.0F);
+        
+        private Color? _initialColor;
         private Image _image;
         
-        public static LinkedTreeNode<IMessenger> RootMessenger { get; }
-
-        static ImageShowHideListener() {
-            RootMessenger = MessageService.Receivers.CreateChild(new EmptyMessenger());
-        }
-        
-        private void OnEnable() {
-            RootMessenger.CreateChild(this);
-        }
-
-        private void OnDisable() {
-            RootMessenger.RemoveChild(this);
-        }
-
         private void Start() {
             _image = GetComponent<Image>();
             if (_image == null) throw new NotSupportedException($"Unable to create {nameof(ImageShowHideListener)}: no Image component found in current object");
         }
 
-        public async Task<Message> Receive(Message message) {
-            if (message.Tag != DialoguePlugin.HideDialogueBoxMessageTag && message.Tag != DialoguePlugin.ShowDialogueBoxMessageTag) return message;
-            var fadeTime = message is Message<float> floatMessage ? floatMessage.Content : 0.0F;
-            var color = _image.color;
-            if (fadeTime.Equals(0.0F)) {
-                _image.color = new Color(color.r, color.g, color.b, message.Tag == DialoguePlugin.HideDialogueBoxMessageTag ? 0.0F : 1.0F);
-                return message;
+        protected override void PrepareStartHide(float totalTime) {
+            base.PrepareStartHide(totalTime);
+            _initialColor = _image.color;
+        }
+
+        protected override void PrepareStartShow(float totalTime) {
+            base.PrepareStartShow(totalTime);
+            if (_initialColor == null) {
+                _initialColor = defaultVisibleColor;
             }
-            var start = 0.0F;
-            var end = 0.0F;
-            switch (message.Tag) {
-                case DialoguePlugin.HideDialogueBoxMessageTag:
-                    start = _initialAlpha = _image.color.a;
-                    end = 0.0F;
-                    break;
-                case DialoguePlugin.ShowDialogueBoxMessageTag:
-                    start = 0.0F;
-                    end = _initialAlpha;
-                    break;
-            }
-            var time = 0.0F;
-            while (time < fadeTime) {
-                time += Time.deltaTime;
-                _image.color = new Color(color.r, color.g, color.b, Mathf.Lerp(start, end, Easing.CubicOut(time / fadeTime)));
-                await Dispatcher.NextUpdate();
-            }
-            return message;
+        }
+
+        protected override void OnShowFrame(float progress) {
+            var color = _initialColor ?? defaultVisibleColor;
+            _image.color = new Color(color.r, color.g, color.b, Mathf.Lerp(0.0F, color.a, Easing.CubicOut(progress)));
+        }
+
+        protected override void OnHideFrame(float progress) {
+            var color = _initialColor ?? defaultHiddenColor;
+            _image.color = new Color(color.r, color.g, color.b, Mathf.Lerp(color.a, 0.0F, Easing.CubicOut(progress)));
         }
     }
 }

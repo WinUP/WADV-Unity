@@ -11,31 +11,31 @@ namespace WADV.Extensions {
     public static class EnumeratorExtensions {
         public static SimpleCoroutineAwaiter<UnityEngine.Object> GetAwaiter(this ResourceRequest instruction) {
             var awaiter = new SimpleCoroutineAwaiter<UnityEngine.Object>();
-            RunOnUnityScheduler(() => CoroutineRunner.Instance.StartCoroutine(ResourceRequest(awaiter, instruction)));
+            RunOnUnityScheduler(() => TaskDelegator.Instance.StartCoroutine(ResourceRequest(awaiter, instruction)));
             return awaiter;
         }
 
         public static SimpleCoroutineAwaiter<AssetBundle> GetAwaiter(this AssetBundleCreateRequest instruction) {
             var awaiter = new SimpleCoroutineAwaiter<AssetBundle>();
-            RunOnUnityScheduler(() => CoroutineRunner.Instance.StartCoroutine(AssetBundleCreateRequest(awaiter, instruction)));
+            RunOnUnityScheduler(() => TaskDelegator.Instance.StartCoroutine(AssetBundleCreateRequest(awaiter, instruction)));
             return awaiter;
         }
 
         public static SimpleCoroutineAwaiter<UnityEngine.Object> GetAwaiter(this AssetBundleRequest instruction) {
             var awaiter = new SimpleCoroutineAwaiter<UnityEngine.Object>();
-            RunOnUnityScheduler(() => CoroutineRunner.Instance.StartCoroutine(AssetBundleRequest(awaiter, instruction)));
+            RunOnUnityScheduler(() => TaskDelegator.Instance.StartCoroutine(AssetBundleRequest(awaiter, instruction)));
             return awaiter;
         }
 
         public static SimpleCoroutineAwaiter<T> GetAwaiter<T>(this IEnumerator<T> coroutine) {
             var awaiter = new SimpleCoroutineAwaiter<T>();
-            RunOnUnityScheduler(() => CoroutineRunner.Instance.StartCoroutine(new CoroutineWrapper<T>(coroutine, awaiter).Run()));
+            RunOnUnityScheduler(() => TaskDelegator.Instance.StartCoroutine(new CoroutineWrapper<T>(coroutine, awaiter).Run()));
             return awaiter;
         }
 
         public static SimpleCoroutineAwaiter<object> GetAwaiter(this IEnumerator coroutine) {
             var awaiter = new SimpleCoroutineAwaiter<object>();
-            RunOnUnityScheduler(() => CoroutineRunner.Instance.StartCoroutine(new CoroutineWrapper<object>(coroutine, awaiter).Run()));
+            RunOnUnityScheduler(() => TaskDelegator.Instance.StartCoroutine(new CoroutineWrapper<object>(coroutine, awaiter).Run()));
             return awaiter;
         }
         
@@ -79,21 +79,21 @@ namespace WADV.Extensions {
 
         private static SimpleCoroutineAwaiter GetAwaiterReturnVoid(object instruction) {
             var awaiter = new SimpleCoroutineAwaiter();
-            RunOnUnityScheduler(() => CoroutineRunner.Instance.StartCoroutine(ReturnVoid(awaiter, instruction)));
+            RunOnUnityScheduler(() => TaskDelegator.Instance.StartCoroutine(ReturnVoid(awaiter, instruction)));
             return awaiter;
         }
 
         private static SimpleCoroutineAwaiter<T> GetAwaiterReturnSelf<T>(T instruction) {
             var awaiter = new SimpleCoroutineAwaiter<T>();
-            RunOnUnityScheduler(() => CoroutineRunner.Instance.StartCoroutine(ReturnSelf(awaiter, instruction)));
+            RunOnUnityScheduler(() => TaskDelegator.Instance.StartCoroutine(ReturnSelf(awaiter, instruction)));
             return awaiter;
         }
 
         private static void RunOnUnityScheduler(Action action) {
-            if (SynchronizationContext.Current == CoroutineRunner.MainThreadContext) {
+            if (SynchronizationContext.Current == TaskDelegator.MainThreadContext) {
                 action();
             } else {
-                CoroutineRunner.MainThreadContext.Post(_ => action(), null);
+                TaskDelegator.MainThreadContext.Post(_ => action(), null);
             }
         }
 
