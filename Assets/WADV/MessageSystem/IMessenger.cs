@@ -17,5 +17,10 @@ namespace WADV.MessageSystem {
         /// </summary>
         /// <returns></returns>
         int Mask { get; }
+        
+        /// <summary>
+        /// 是否为将此接收器分配至独立执行队列，这将使得消息循环不等其结束便调用下一个消息监听器
+        /// </summary>
+        bool NoWaiting { get; }
     }
 }

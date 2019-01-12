@@ -21,7 +21,6 @@ namespace WADV.Extensions {
             if (task.IsFaulted) {
                 ExceptionDispatchInfo.Capture(task.Exception).Throw();
             }
-
             yield return task.Result;
         }
     }

@@ -7,6 +7,7 @@ using WADV.Thread;
 namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
     public abstract class DialogueShowHideRenderer : MonoBehaviour, IMessenger {
         public int Mask { get; } = DialoguePlugin.MessageMask;
+        public bool NoWaiting { get; } = true;
 
         private float _initialAlpha;
         private bool _hidden;

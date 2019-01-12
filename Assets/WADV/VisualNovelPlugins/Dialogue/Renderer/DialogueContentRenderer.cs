@@ -15,6 +15,7 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
     public abstract class DialogueContentRenderer : MonoBehaviour, IMessenger {
         /// <inheritdoc />
         public int Mask { get; } = DialoguePlugin.MessageMask;
+        public bool NoWaiting { get; } = true;
 
         /// <summary>
         /// 文本生成器
@@ -63,20 +64,9 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
         public async Task<Message> Receive(Message message) {
             if (message.Tag == DialoguePlugin.NewDialogueMessageTag && message is Message<DialogueDescription> dialogueMessage) {
                 await ProcessText(dialogueMessage);
-            } else if (message is Message<float> floatMessage) {
-                switch (message.Tag) {
-                    case DialoguePlugin.ShowDialogueBoxMessageTag:
-                        await ShowHideDialogueBox(floatMessage.Content, true);
-                        break;
-                    case DialoguePlugin.HideDialogueBoxMessageTag:
-                        await ShowHideDialogueBox(floatMessage.Content, false);
-                        break;
-                }
             }
             return message;
         }
-
-        protected abstract Task ShowHideDialogueBox(float time, bool visible);
 
         private async Task ProcessText(Message<DialogueDescription> dialogueMessage) {
             var dialogue = dialogueMessage.Content;

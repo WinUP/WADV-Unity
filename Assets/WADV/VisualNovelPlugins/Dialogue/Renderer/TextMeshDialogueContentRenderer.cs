@@ -72,9 +72,5 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
         protected override void ShowText(StringBuilder previousPart, StringBuilder text) {
             _textMesh.text = $"{previousPart}{_styleStart}{text}{_styleEnd}";
         }
-
-        protected override Task ShowHideDialogueBox(float time, bool visible) {
-            throw new NotImplementedException();
-        }
     }
 }

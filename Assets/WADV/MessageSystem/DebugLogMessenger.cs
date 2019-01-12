@@ -4,8 +4,9 @@ using UnityEngine;
 
 namespace WADV.MessageSystem {
     public class DebugLogMessenger : IMessenger {
-        public int Mask { get; set; }
-        
+        public int Mask { get; }
+        public bool NoWaiting { get; } = false;
+
         public DebugLogMessenger(int mask = int.MaxValue) {
             Mask = mask;
         }

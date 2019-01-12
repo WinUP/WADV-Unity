@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UnityEditor.PackageManager;
 using UnityEngine;
 using WADV.Extensions;
+using WADV.Thread;
 
 namespace WADV.MessageSystem {
     /// <summary>
@@ -24,7 +24,11 @@ namespace WADV.MessageSystem {
                 if ((receiver.Mask & message.Mask) == 0) {
                     continue;
                 }
-                message = await receiver.Receive(message);
+                if (receiver.NoWaiting) {
+                    TaskDelegator.Instance.StartCoroutine(receiver.Receive(message).AsIEnumerator());
+                } else {
+                    message = await receiver.Receive(message);
+                }
             }
             return message;
         }

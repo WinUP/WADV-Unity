@@ -14,6 +14,7 @@ using UnityEngine;
 namespace WADV.VisualNovel.Compiler.Editor {
     public class CompileOptionsWindow : EditorWindow, IMessenger {
         public int Mask { get; } = CoreConstant.Mask;
+        public bool NoWaiting { get; } = false;
 
         private readonly Dictionary<string, ScriptEditorStatus> _isEditorOpened = new Dictionary<string, ScriptEditorStatus>();
         private Vector2 _scriptsScrollPosition = Vector2.zero;

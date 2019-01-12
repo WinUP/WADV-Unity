@@ -7,6 +7,7 @@ namespace WADV.MessageSystem {
     /// </summary>
     public class EmptyMessenger : IMessenger {
         public int Mask { get; set; }
+        public bool NoWaiting { get; } = false;
 
         public EmptyMessenger(int mask = int.MaxValue) {
             Mask = mask;
