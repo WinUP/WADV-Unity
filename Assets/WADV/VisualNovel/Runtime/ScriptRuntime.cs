@@ -389,12 +389,12 @@ namespace WADV.VisualNovel.Runtime {
         private async Task CreatePluginCall() {
             var plugin = FindPlugin();
             var parameterCount = Script.ReadInteger();
-            var parameters = new Dictionary<SerializableValue, SerializableValue>();
+            var context = PluginExecuteContext.Create(this);
             for (var i = -1; ++i < parameterCount;) {
-                parameters.Add(MemoryStack.Pop() ?? new NullValue(), MemoryStack.Pop() ?? new NullValue());
+                context.Parameters.Add(MemoryStack.Pop() ?? new NullValue(), MemoryStack.Pop() ?? new NullValue());
             }
             try {
-                MemoryStack.Push(await plugin.Execute(this, parameters) ?? new NullValue());
+                MemoryStack.Push(await plugin.Execute(context) ?? new NullValue());
             } catch (Exception ex) {
                 throw new RuntimeException(_callStack, ex);
             }
@@ -405,10 +405,10 @@ namespace WADV.VisualNovel.Runtime {
             if (plugin == null) {
                 throw new RuntimeException(_callStack, "Unable to create dialogue: no dialogue plugin registered");
             }
-            MemoryStack.Push(await plugin.Execute(this, new Dictionary<SerializableValue, SerializableValue> {
+            MemoryStack.Push(await plugin.Execute(PluginExecuteContext.Create(this, new Dictionary<SerializableValue, SerializableValue> {
                 {new StringValue {Value = "Character"}, MemoryStack.Pop()},
                 {new StringValue {Value = "Content"}, MemoryStack.Pop()}
-            }) ?? new NullValue());
+            })) ?? new NullValue());
         }
 
         private void CreateToBoolean(bool reverse = false) {

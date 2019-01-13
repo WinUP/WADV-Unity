@@ -18,13 +18,18 @@ namespace WADV.MessageSystem {
 
         private static readonly Dictionary<Func<Message, bool>, MessageAwaiter> WaitingTasks = new Dictionary<Func<Message, bool>, MessageAwaiter>();
         
+        /// <summary>
+        /// 异步处理消息
+        /// </summary>
+        /// <param name="message">要处理的消息</param>
+        /// <returns></returns>
         public static async Task<Message> ProcessAsync(Message message) {
             VerifyWaitingTasks(message);
             foreach (var (_, receiver) in Receivers) {
                 if ((receiver.Mask & message.Mask) == 0) {
                     continue;
                 }
-                if (receiver.NoWaiting) {
+                if (receiver.IsStandaloneMessage) {
                     TaskDelegator.Instance.StartCoroutine(receiver.Receive(message).AsIEnumerator());
                 } else {
                     message = await receiver.Receive(message);
@@ -33,28 +38,36 @@ namespace WADV.MessageSystem {
             return message;
         }
 
+        /// <summary>
+        /// 同步处理消息
+        /// </summary>
+        /// <param name="message">要处理的消息</param>
+        /// <returns></returns>
         public static Message Process(Message message) {
-            VerifyWaitingTasks(message);
-            foreach (var (_, receiver) in Receivers) {
-                if ((receiver.Mask & message.Mask) == 0) {
-                    continue;
-                }
-                // ReSharper disable once AccessToModifiedClosure
-                var task = receiver.Receive(message).WrapErrors();
-                task.Wait();
-                message = task.GetAwaiter().GetResult();
-            }
-            return message;
+            var task = ProcessAsync(message).WrapErrors();
+            task.Wait();
+            return task.GetAwaiter().GetResult();
         }
 
+        /// <summary>
+        /// 等待直到满足条件的消息出现
+        /// </summary>
+        /// <param name="prediction">判断消息是否满足条件的函数</param>
+        /// <returns></returns>
         public static async Task WaitUntil(Func<Message, bool> prediction) {
             var awaiter = new MessageAwaiter();
             WaitingTasks.Add(prediction, awaiter);
             await awaiter.Wait();
         }
 
-        public static async Task WaitUntil(int mask, string tag = null) {
-            await WaitUntil(message => (message.Mask & mask) != 0 && (string.IsNullOrEmpty(tag) || message.Tag == tag));
+        /// <summary>
+        /// 等待直到满足条件的消息出现
+        /// </summary>
+        /// <param name="mask">目标消息的掩码</param>
+        /// <param name="tag">目标消息的标记（不提供或值为null则不作为判断依据）</param>
+        /// <returns></returns>
+        public static Task WaitUntil(int mask, string tag = null) {
+            return WaitUntil(message => (message.Mask & mask) != 0 && (string.IsNullOrEmpty(tag) || message.Tag == tag));
         }
 
         private static void VerifyWaitingTasks(Message message) {

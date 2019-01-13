@@ -18,8 +18,11 @@ namespace WADV.VisualNovel.Plugin {
                 try {
                     var plugin = (VisualNovelPlugin) Activator.CreateInstance(item);
                     plugins.Add(plugin);
+                    if (Application.isEditor) {
+                        Debug.Log($"Plugin manager: auto register for {item.FullName} succeed");
+                    }
                 } catch (MissingMemberException) {
-                    Debug.LogWarning($"Plugin {item.FullName} has no parameterless constructor, developer should register it to PluginManager manually to enable functions");
+                    Debug.LogWarning($"Plugin manager: {item.FullName} register failed");
                 }
             }
             foreach (var plugin in plugins.OrderByDescending(e => e.InitPriority)) {
@@ -39,14 +42,16 @@ namespace WADV.VisualNovel.Plugin {
 
         /// <summary>
         /// 注册一个插件
-        /// <para>相同名称的插件会覆盖之前注册的插件并将在Unity控制台中显示警告，旧有插件的翻译也会被销毁</para>
+        /// <para>相同名称的插件会覆盖之前注册的插件</para>
         /// </summary>
         /// <param name="plugin">要注册的插件</param>
         public static void Register([NotNull] VisualNovelPlugin plugin) {
-            if (Plugins.ContainsKey(plugin.Name)) {
-                Unregister(plugin);
+            if (Plugins.ContainsKey(plugin.Name) && plugin.OnUnregister(true)) {
+                Plugins.Remove(plugin.Name);
             }
-            Plugins.Add(plugin.Name, plugin);
+            if (plugin.OnRegister()) {
+                Plugins.Add(plugin.Name, plugin);
+            }
         }
 
         /// <summary>
@@ -54,10 +59,9 @@ namespace WADV.VisualNovel.Plugin {
         /// </summary>
         /// <param name="plugin">要注销的插件</param>
         public static void Unregister(VisualNovelPlugin plugin) {
-            if (!Plugins.ContainsKey(plugin.Name)) {
-                return;
+            if (Plugins.ContainsKey(plugin.Name) && plugin.OnUnregister(false)) {
+                Plugins.Remove(plugin.Name);
             }
-            Plugins.Remove(plugin.Name);
         }
 
         /// <summary>

@@ -8,37 +8,30 @@ namespace Game.UI {
     [RequireComponent(typeof(TextMeshProUGUI))]
     [DisallowMultipleComponent]
     public class TextMeshShowHideListener : DialogueShowHideRenderer {
-        public Color defaultVisibleColor = new Color(1.0F, 1.0F, 1.0F, 1.0F);
-        public Color defaultHiddenColor = new Color(1.0F, 1.0F, 1.0F, 0.0F);
-        
-        private Color? _initialColor;
+        public Color visibleColor = new Color(1.0F, 1.0F, 1.0F, 1.0F);
+        public Color hiddenColor = new Color(1.0F, 1.0F, 1.0F, 0.0F);
+
         private TextMeshProUGUI _text;
         
         private void Start() {
             _text = GetComponent<TextMeshProUGUI>();
-            if (_text == null) throw new NotSupportedException($"Unable to create {nameof(ImageShowHideListener)}: no Image component found in current object");
-        }
-
-        protected override void PrepareStartHide(float totalTime) {
-            base.PrepareStartHide(totalTime);
-            _initialColor = _text.color;
-        }
-
-        protected override void PrepareStartShow(float totalTime) {
-            base.PrepareStartShow(totalTime);
-            if (_initialColor == null) {
-                _initialColor = defaultVisibleColor;
-            }
+            if (_text == null) throw new NotSupportedException($"Unable to create {nameof(MainWindowShowHideListener)}: no Image component found in current object");
         }
 
         protected override void OnShowFrame(float progress) {
-            var color = _initialColor ?? defaultVisibleColor;
-            _text.color = new Color(color.r, color.g, color.b, Mathf.Lerp(0.0F, color.a, Easing.CubicOut(progress)));
+            ApplyColor(ref hiddenColor, ref visibleColor, Easing.CubicOut(progress));
         }
 
         protected override void OnHideFrame(float progress) {
-            var color = _initialColor ?? defaultHiddenColor;
-            _text.color = new Color(color.r, color.g, color.b, Mathf.Lerp(color.a, 0.0F, Easing.CubicOut(progress)));
+            ApplyColor(ref visibleColor, ref hiddenColor, Easing.CubicOut(progress));
+        }
+
+        private void ApplyColor(ref Color from, ref Color to, float progress) {
+            _text.color = new Color(
+                Mathf.Lerp(from.r, to.r, progress),
+                Mathf.Lerp(from.g, to.g, progress),
+                Mathf.Lerp(from.b, to.b, progress),
+                Mathf.Lerp(from.a, to.a, progress));
         }
     }
 }

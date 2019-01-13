@@ -27,7 +27,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
             if (File.Exists(selectPath)) {
                 selectPath = Path.GetDirectoryName(selectPath) ?? selectPath;
             }
-            ProjectWindowUtil.CreateAssetWithContent(Path.Combine(selectPath, "NewScript.vns"), "// Write your script here\n\n", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Gizmos/VNS Icon.png"));
+            ProjectWindowUtil.CreateAssetWithContent(Path.Combine(selectPath, "NewScript.vns"), "// Write your script here\n\n", EditorGUIUtility.Load("File Icon/VNS Icon.png") as Texture2D);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }

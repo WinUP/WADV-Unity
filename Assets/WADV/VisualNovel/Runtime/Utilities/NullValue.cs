@@ -20,7 +20,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// </summary>
     [Serializable]
     public class NullValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                                   IEqualOperator{
+                             IEqualOperator {
         /// <inheritdoc />
         public override SerializableValue Duplicate() {
             return new NullValue();

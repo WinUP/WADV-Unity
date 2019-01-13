@@ -9,7 +9,7 @@ namespace WADV.VisualNovelPlugins {
     public class SoundPlugin : VisualNovelPlugin {
         public SoundPlugin() : base("Sound") { }
 
-        public override Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters) {
+        public override Task<SerializableValue> Execute(PluginExecuteContext context) {
             throw new NotImplementedException();
         }
     }

@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using WADV.Extensions;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
-using WADV.VisualNovel.Runtime;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -16,12 +14,12 @@ namespace WADV.VisualNovelPlugins.Dialogue {
     public class CharacterPlugin : VisualNovelPlugin {
         public CharacterPlugin() : base("Character") { }
         
-        public override Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters) {
+        public override Task<SerializableValue> Execute(PluginExecuteContext context) {
             var character = new CharacterValue();
-            foreach (var (key, value) in parameters) {
+            foreach (var (key, value) in context.Parameters) {
                 string parameterName;
                 if (key is IStringConverter stringKey) {
-                    parameterName = stringKey.ConvertToString(context.ActiveLanguage);
+                    parameterName = stringKey.ConvertToString(context.Runtime.ActiveLanguage);
                 } else {
                     continue;
                 }

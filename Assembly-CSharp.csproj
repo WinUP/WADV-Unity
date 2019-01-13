@@ -58,7 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Game\RuntimeTester.cs" />
-    <Compile Include="Assets\Game\UI\ImageShowHideListener.cs" />
+    <Compile Include="Assets\Game\UI\MainWindowShowHideListener.cs" />
     <Compile Include="Assets\Game\UI\TextMeshShowHideListener.cs" />
     <Compile Include="Assets\WADV\Easing.cs" />
     <Compile Include="Assets\WADV\Extensions\AwaitExtensions.cs" />
@@ -141,8 +141,7 @@
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\IStringConverter.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\ISubtractOperator.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\SerializableValue.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginDescription.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginIdentifier.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginExecuteContext.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Plugin\VisualNovelPlugin.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\CallStack.cs" />
@@ -176,10 +175,13 @@
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Items\IDialogueItem.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Items\PauseDialogueItem.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Items\TextDialogueItem.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Renderer\CharacterContentRenderer.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Renderer\DialogueContentRenderer.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Renderer\DialogueShowHideRenderer.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Renderer\TextMeshCharacterContentRenderer.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\Renderer\TextMeshDialogueContentRenderer.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\TextGenerator\DialogueTextGenerator.cs" />
+    <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\TextGenerator\DialogueTextGeneratorType.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\TextGenerator\EmptyDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\Dialogue\TextGenerator\SimpleDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\VisualNovelPlugins\SoundPlugin.cs" />

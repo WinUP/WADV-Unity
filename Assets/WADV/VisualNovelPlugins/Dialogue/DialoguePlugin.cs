@@ -17,12 +17,12 @@ using WADV.VisualNovelPlugins.Dialogue.Items;
 // ! CJK+ASCII Range+JP: 0020-007E,3000-30FF,31D0-31FF,4E00-9FEF,FF00-FFEF
 
 namespace WADV.VisualNovelPlugins.Dialogue {
-    /// <inheritdoc />
+    /// <inheritdoc cref="VisualNovelPlugin" />
     /// <summary>
     /// 对话解析插件
     /// </summary>
     [UsedImplicitly]
-    public class DialoguePlugin : VisualNovelPlugin {
+    public class DialoguePlugin : VisualNovelPlugin, IMessenger {
         /// <summary>
         /// 插件使用的消息掩码
         /// </summary>
@@ -33,11 +33,24 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         /// </summary>
         public const string NewDialogueMessageTag = "NEW_DIALOGUE";
 
+        /// <summary>
+        /// 表示显示对话框的消息标记
+        /// </summary>
         public const string ShowDialogueBoxMessageTag = "SHOW_DIALOGUE_TEXT";
         
+        /// <summary>
+        /// 表示隐藏对话框的消息标记
+        /// </summary>
         public const string HideDialogueBoxMessageTag = "HIDE_DIALOGUE_TEXT";
+
+        /// <inheritdoc />
+        public int Mask { get; } = CoreConstant.Mask;
+        
+        /// <inheritdoc />
+        public bool IsStandaloneMessage { get; } = false;
         
         private static Regex CommandTester { get; } = new Regex(@"\s*([^=]+)\s*=\s*(([\d.]+))\s*$");
+        private readonly Cache _cache = new Cache();
         
         public DialoguePlugin() : base("Dialogue") { }
 
@@ -45,10 +58,9 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         /// 分析对话内容
         /// </summary>
         /// <param name="runtime">脚本运行环境</param>
-        /// <param name="raw">原始对话内容</param>
+        /// <param name="data">原始对话内容</param>
         /// <returns></returns>
-        public static (List<IDialogueItem> Content, bool NoWait, bool NoClear) ProcessDialogueContent(ScriptRuntime runtime, IStringConverter raw) {
-            var data = raw.ConvertToString();
+        public static (List<IDialogueItem> Content, bool NoWait, bool NoClear) ProcessDialogueContent(ScriptRuntime runtime, string data) {
             var result = new List<IDialogueItem>();
             var content = new StringBuilder();
             var style = new StyleList();
@@ -199,55 +211,75 @@ namespace WADV.VisualNovelPlugins.Dialogue {
             return (result, noWait, noClear);
         }
         
-        public override async Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters) {
+        public Task<Message> Receive(Message message) {
+            throw new NotImplementedException();
+        }
+
+        private static async Task ShowWindow(SerializableValue time) {
+            float showValue;
+            try {
+                showValue = FloatValue.TryParse(time);
+            } catch {
+                showValue = 0.0F;
+            }
+            await MessageService.ProcessAsync(new Message<float>(showValue) {Mask = MessageMask, Tag = ShowDialogueBoxMessageTag});
+        }
+        
+        private static async Task HideWindow(SerializableValue time) {
+            float hideValue;
+            try {
+                hideValue = FloatValue.TryParse(time);
+            } catch {
+                hideValue = 0.0F;
+            }
+            await MessageService.ProcessAsync(new Message<float>(hideValue) {Mask = MessageMask, Tag = HideDialogueBoxMessageTag});
+        }
+
+        [CanBeNull]
+        private static CharacterValue CreateCharacter(ScriptRuntime context, SerializableValue value) {
+            switch (value) {
+                case CharacterValue characterValue:
+                    return characterValue;
+                case NullValue _:
+                    return null;
+                case IStringConverter stringCharacter:
+                    var variable = context.ActiveScope?.FindVariableValue<CharacterValue>(stringCharacter.ConvertToString(), true, VariableSearchMode.All);
+                    if (variable == null) {
+                        throw new ArgumentException($"Unable to create dialogue: no variable with name {stringCharacter} can be found to use as character");
+                    }
+                    return variable;
+                default:
+                    throw new ArgumentException($"Unable to create dialogue: unsupported character type {value}");
+            }
+        }
+        
+        public override async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var dialogue = new DialogueDescription();
-            foreach (var (name, value) in parameters) {
+            foreach (var (name, value) in context.Parameters) {
                 if (!(name is IStringConverter stringConverter)) continue;
                 var option = stringConverter.ConvertToString();
                 switch (option) {
+                    case "Show":
+                        await ShowWindow(value);
+                        break;
+                    case "Hide":
+                        await HideWindow(value);
+                        break;
                     case "Character":
-                        switch (value) {
-                            case CharacterValue characterValue:
-                                dialogue.Character = characterValue;
-                                break;
-                            case IStringConverter stringCharacter:
-                                var variable = context.ActiveScope?.FindVariableValue<CharacterValue>(stringCharacter.ConvertToString(), true, VariableSearchMode.All);
-                                if (variable == null) {
-                                    throw new ArgumentException($"Unable to create dialogue: no variable with name {stringCharacter} can be found to use as character");
-                                }
-                                dialogue.Character = variable;
-                                break;
-                            default:
-                                throw new ArgumentException($"Unable to create dialogue: unsupported character type {value}");
-                        }
+                        dialogue.Character = CreateCharacter(context.Runtime, value);
+                        _cache.Character = value;
                         break;
                     case "Content":
                         if (value is IStringConverter stringContent) {
-                            (dialogue.Content, dialogue.NoWait, dialogue.NoClear) = ProcessDialogueContent(context, stringContent);
+                            _cache.Content = stringContent;
+                            (dialogue.Content, dialogue.NoWait, dialogue.NoClear) = ProcessDialogueContent(context.Runtime, stringContent.ConvertToString(context.Runtime.ActiveLanguage));
                         } else {
                             throw new ArgumentException($"Unable to create dialogue: unsupported content type {value}");
                         }
                         break;
-                    case "Show":
-                        float showValue;
-                        try {
-                            showValue = FloatValue.TryParse(value);
-                        } catch {
-                            showValue = 0.0F;
-                        }
-                        await MessageService.ProcessAsync(new Message<float>(showValue) {Mask = MessageMask, Tag = ShowDialogueBoxMessageTag});
-                        break;
-                    case "Hide":
-                        float hideValue;
-                        try {
-                            hideValue = FloatValue.TryParse(value);
-                        } catch {
-                            hideValue = 0.0F;
-                        }
-                        await MessageService.ProcessAsync(new Message<float>(hideValue) {Mask = MessageMask, Tag = HideDialogueBoxMessageTag});
-                        break;
                 }
             }
+            dialogue.Language = context.Runtime.ActiveLanguage;
             await MessageService.ProcessAsync(new Message<DialogueDescription>(dialogue){Mask = MessageMask, Tag = NewDialogueMessageTag});
             return new NullValue();
         }
@@ -258,9 +290,14 @@ namespace WADV.VisualNovelPlugins.Dialogue {
             return (match.Groups[1].Value, match.Groups[2].Value);
         }
 
+        private class Cache {
+            public SerializableValue Character;
+            public IStringConverter Content;
+        }
+
         private class StyleList {
-            public LinkedList<(int Value, bool Relative)> Size { get; set; }
-            public LinkedList<string> Color { get; set; }
+            public LinkedList<(int Value, bool Relative)> Size { get; } = new LinkedList<(int Value, bool Relative)>();
+            public LinkedList<string> Color { get; } = new LinkedList<string>();
             public bool Bold { get; set; }
             public bool Italic { get; set; }
             public bool Strikethrough { get; set; }

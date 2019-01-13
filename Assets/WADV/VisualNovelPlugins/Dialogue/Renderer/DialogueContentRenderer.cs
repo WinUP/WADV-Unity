@@ -15,12 +15,12 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
     public abstract class DialogueContentRenderer : MonoBehaviour, IMessenger {
         /// <inheritdoc />
         public int Mask { get; } = DialoguePlugin.MessageMask;
-        public bool NoWaiting { get; } = true;
+        public bool IsStandaloneMessage { get; } = true;
 
         /// <summary>
         /// 文本生成器
         /// </summary>
-        public DialogueTextGenerator generator;
+        public DialogueTextGeneratorType textGenerator = DialogueTextGeneratorType.Simple;
         
         /// <summary>
         /// 每两次生成的帧间隔
@@ -32,6 +32,8 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
         /// 获取当前显示的文本（用于多段生成时缓存之前文本段的内容）
         /// </summary>
         protected abstract string CurrentText { get; }
+
+        private DialogueTextGenerator _generator;
         
         private void OnEnable() {
             MessageService.Receivers.CreateChild(this);
@@ -39,6 +41,10 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
 
         private void OnDisable() {
             MessageService.Receivers.RemoveChild(this);
+        }
+
+        private void Start() {
+            _generator = DialogueTextGenerator.Create(textGenerator);
         }
 
         /// <summary>
@@ -71,8 +77,8 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
         private async Task ProcessText(Message<DialogueDescription> dialogueMessage) {
             var dialogue = dialogueMessage.Content;
             var history = dialogue.NoClear ? new StringBuilder(CurrentText) : new StringBuilder();
-            if (generator == null) {
-                generator = new EmptyDialogueTextGenerator();
+            if (_generator == null) {
+                _generator = new EmptyDialogueTextGenerator();
             }
             foreach (var item in dialogue.Content) {
                 switch (item) {
@@ -89,10 +95,10 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
                         break;
                     case TextDialogueItem textDialogueItem:
                         PrepareStyle(textDialogueItem);
-                        generator.Text = textDialogueItem.Text;
-                        generator.Reset();
-                        while (generator.MoveNext()) {
-                            ShowText(history, generator.Current);
+                        _generator.Text = textDialogueItem.Text;
+                        _generator.Reset();
+                        while (_generator.MoveNext()) {
+                            ShowText(history, _generator.Current);
                             for (var j = -1; ++j < frameSpan;) {
                                 await Dispatcher.NextUpdate();
                             }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WADV.VisualNovel.Interoperation;
@@ -17,7 +16,7 @@ namespace WADV.VisualNovel.Plugin {
         /// <summary>
         /// 加载优先级
         /// </summary>
-        internal int InitPriority { get; set; }
+        internal int InitPriority { get; }
 
         /// <summary>
         /// 创建一个WADV插件
@@ -26,22 +25,29 @@ namespace WADV.VisualNovel.Plugin {
         /// <param name="priority">加载优先级</param>
         protected VisualNovelPlugin(string name, int priority = 0) {
             Name = name;
+            InitPriority = priority;
         }
 
         /// <summary>
         /// 执行当前插件
         /// </summary>
         /// <param name="context">执行上下文</param>
-        /// <param name="parameters">参数列表</param>
         /// <returns></returns>
-        public abstract Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters);
+        public abstract Task<SerializableValue> Execute(PluginExecuteContext context);
 
         /// <summary>
-        /// 将此插件的数据转换为内存堆栈值
+        /// 检查是否允许插件被注册
         /// </summary>
-        /// <returns></returns>
-        public virtual SerializableValue GetValue() {
-            throw new NotSupportedException($"Unable to convert plugin {GetType().FullName} to SerializableValue: unsupported operation");
+        public virtual bool OnRegister() {
+            return true;
+        }
+
+        /// <summary>
+        /// 检查是否允许插件被注销
+        /// </summary>
+        /// <param name="isReplace">是否由于同名插件注册使得此插件被注销</param>
+        public virtual bool OnUnregister(bool isReplace) {
+            return true;
         }
     }
 }

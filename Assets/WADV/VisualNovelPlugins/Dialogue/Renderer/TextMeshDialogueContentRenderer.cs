@@ -7,7 +7,7 @@ using WADV.MessageSystem;
 using WADV.VisualNovelPlugins.Dialogue.Items;
 
 namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
-    /// <inheritdoc cref="IMessenger" />
+    /// <inheritdoc cref="DialogueContentRenderer" />
     /// <summary>
     /// 表示一个使用TextMesh渲染的对话框插件
     /// </summary>

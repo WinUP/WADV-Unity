@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using WADV.VisualNovelPlugins.Dialogue.Items;
 
 namespace WADV.VisualNovelPlugins.Dialogue {
@@ -9,6 +10,7 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         /// <summary>
         /// 对话角色
         /// </summary>
+        [CanBeNull]
         public CharacterValue Character { get; set; }
         /// <summary>
         /// 对话内容
@@ -22,5 +24,9 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         /// 是否为附加对话
         /// </summary>
         public bool NoClear { get; set; }
+        /// <summary>
+        /// 当前语言
+        /// </summary>
+        public string Language { get; set; }
     }
 }

@@ -16,9 +16,9 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     public class ObjectPlugin : VisualNovelPlugin {
         public ObjectPlugin() : base("Object") { }
         
-        public override Task<SerializableValue> Execute(ScriptRuntime context, IDictionary<SerializableValue, SerializableValue> parameters) {
+        public override Task<SerializableValue> Execute(PluginExecuteContext context) {
             var result = new ObjectValue();
-            foreach (var (key, value) in parameters) {
+            foreach (var (key, value) in context.Parameters) {
                 result.Add(key, value);
             }
             return Task.FromResult<SerializableValue>(result);

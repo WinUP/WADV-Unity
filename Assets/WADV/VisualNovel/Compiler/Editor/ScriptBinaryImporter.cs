@@ -21,7 +21,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
             if (string.IsNullOrEmpty(script.id)) {
                 throw new NotSupportedException($"Unable to import visual novel binary {ctx.assetPath}: script id recognize failed");
             }
-            ctx.AddObjectToAsset($"VNBinary:{ctx.assetPath}", script, AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Gizmos/VNB Icon.png"));
+            ctx.AddObjectToAsset($"VNBinary:{ctx.assetPath}", script, EditorGUIUtility.Load("File Icon/VNB Icon.png") as Texture2D);
             ctx.SetMainObject(script);
         }
     }

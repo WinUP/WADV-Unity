@@ -47,8 +47,6 @@ namespace WADV {
     /// 缓动函数库
     /// </summary>
     public static class Easing {
-        private const float NaturalLogOf2 = 0.693147181F;
-
         /// <summary>
         /// 使用函数y = x计算过渡进度
         /// </summary>

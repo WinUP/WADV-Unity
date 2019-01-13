@@ -14,7 +14,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
     [CustomEditor(typeof(ScriptImporter))]
     public class ScriptImporterEditor : ScriptedImporterEditor, IMessenger {
         public int Mask { get; } = CoreConstant.Mask;
-        public bool NoWaiting { get; } = false;
+        public bool IsStandaloneMessage { get; } = false;
         
         private string _newLanguage;
         private LinkedTreeNode<IMessenger> _node;

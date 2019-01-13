@@ -14,7 +14,7 @@ using UnityEngine;
 namespace WADV.VisualNovel.Compiler.Editor {
     public class CompileOptionsWindow : EditorWindow, IMessenger {
         public int Mask { get; } = CoreConstant.Mask;
-        public bool NoWaiting { get; } = false;
+        public bool IsStandaloneMessage { get; } = false;
 
         private readonly Dictionary<string, ScriptEditorStatus> _isEditorOpened = new Dictionary<string, ScriptEditorStatus>();
         private Vector2 _scriptsScrollPosition = Vector2.zero;
@@ -56,7 +56,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
         }
 
         private void OnEnable() {
-            titleContent.image = EditorGUIUtility.Load("Assets/Gizmos/Core/VisualNovel/Script/Editor/CompileOptionsWindow Icon.png") as Texture2D;
+            titleContent.image = EditorGUIUtility.Load("Script Editor/CompileOptionsWindow Icon.png") as Texture2D;
             _node = MessageService.Receivers.CreateChild(this);
         }
         
@@ -80,12 +80,12 @@ namespace WADV.VisualNovel.Compiler.Editor {
                     : $"  {target.SourceResource} (default)");
                 if (option.BinaryHash.HasValue) {
                     if (option.BinaryHash == option.SourceHash) {
-                        content.image = EditorGUIUtility.Load("Assets/Gizmos/Core/VisualNovel/Script/Editor/Compiled.png") as Texture2D;
+                        content.image = EditorGUIUtility.Load("Script Editor/Compiled.png") as Texture2D;
                     } else {
-                        content.image = EditorGUIUtility.Load("Assets/Gizmos/Core/VisualNovel/Script/Editor/Outdated.png") as Texture2D;
+                        content.image = EditorGUIUtility.Load("Script Editor/Outdated.png") as Texture2D;
                     }
                 } else {
-                    content.image = EditorGUIUtility.Load("Assets/Gizmos/Core/VisualNovel/Script/Editor/NotCompile.png") as Texture2D;
+                    content.image = EditorGUIUtility.Load("Script Editor/NotCompile.png") as Texture2D;
                 }
                 if (!_isEditorOpened.ContainsKey(target.SourceResource)) {
                     _isEditorOpened.Add(target.SourceResource, new ScriptEditorStatus());
