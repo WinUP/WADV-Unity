@@ -32,9 +32,10 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
 
         /// <inheritdoc />
         public async Task<Message> Receive(Message message) {
-            if (message.Tag == DialoguePlugin.NewDialogueMessageTag && message is Message<DialogueDescription> dialogueMessage) {
-                await ShowText(dialogueMessage.Content.Character, dialogueMessage.Content.Language);
-            }
+            if (message.Tag != DialoguePlugin.NewDialogueMessageTag || !(message is Message<DialogueDescription> dialogueMessage)) return message;
+            var placeholder = message.CreatePlaceholder();
+            await ShowText(dialogueMessage.Content.Character, dialogueMessage.Content.Language);
+            placeholder.Complete();
             return message;
         }
     }

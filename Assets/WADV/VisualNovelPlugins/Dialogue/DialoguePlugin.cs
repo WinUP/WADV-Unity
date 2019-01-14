@@ -22,7 +22,7 @@ namespace WADV.VisualNovelPlugins.Dialogue {
     /// 对话解析插件
     /// </summary>
     [UsedImplicitly]
-    public class DialoguePlugin : VisualNovelPlugin, IMessenger {
+    public class DialoguePlugin : VisualNovelPlugin {
         /// <summary>
         /// 插件使用的消息掩码
         /// </summary>
@@ -43,12 +43,6 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         /// </summary>
         public const string HideDialogueBoxMessageTag = "HIDE_DIALOGUE_TEXT";
 
-        /// <inheritdoc />
-        public int Mask { get; } = CoreConstant.Mask;
-        
-        /// <inheritdoc />
-        public bool IsStandaloneMessage { get; } = false;
-        
         private static Regex CommandTester { get; } = new Regex(@"\s*([^=]+)\s*=\s*(([\d.]+))\s*$");
         private readonly Cache _cache = new Cache();
         
@@ -210,10 +204,6 @@ namespace WADV.VisualNovelPlugins.Dialogue {
             }
             return (result, noWait, noClear);
         }
-        
-        public Task<Message> Receive(Message message) {
-            throw new NotImplementedException();
-        }
 
         private static async Task ShowWindow(SerializableValue time) {
             float showValue;
@@ -255,16 +245,14 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         
         public override async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var dialogue = new DialogueDescription();
-            foreach (var (name, value) in context.Parameters) {
-                if (!(name is IStringConverter stringConverter)) continue;
-                var option = stringConverter.ConvertToString();
-                switch (option) {
+            foreach (var (name, value) in context.StringParameters) {
+                switch (name.ConvertToString()) {
                     case "Show":
                         await ShowWindow(value);
-                        break;
+                        return new NullValue();
                     case "Hide":
                         await HideWindow(value);
-                        break;
+                        return new NullValue();
                     case "Character":
                         dialogue.Character = CreateCharacter(context.Runtime, value);
                         _cache.Character = value;

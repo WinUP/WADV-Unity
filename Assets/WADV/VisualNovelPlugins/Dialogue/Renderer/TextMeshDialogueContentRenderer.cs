@@ -1,9 +1,7 @@
 using System;
 using System.Text;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using WADV.MessageSystem;
 using WADV.VisualNovelPlugins.Dialogue.Items;
 
 namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
