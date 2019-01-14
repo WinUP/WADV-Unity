@@ -63,7 +63,7 @@ namespace WADV.VisualNovel.Runtime {
         ///     <item><description>当二进制文件存在时使用该文件内容（如果此时源文件存在且过期会得到警告）</description></item>
         ///     <item><description>使用源文件的即时编译结果</description></item>
         /// </list>
-        /// <para>不论采用何种方式，所有可用的翻译文件都会被尽可能载入</para>
+        /// <para>不论采用何种方式，所有可用的翻译文件都会在第一次被加载时悉数载入</para>
         /// </summary>
         /// <param name="id">脚本ID</param>
         /// <param name="source">用于覆盖原有脚本的可执行内容（该参数仅覆盖内存实现，不会修改本地文件）</param>

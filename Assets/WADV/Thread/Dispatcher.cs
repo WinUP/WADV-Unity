@@ -50,5 +50,13 @@ namespace WADV.Thread {
         public static WaitForSeconds WaitForSeconds(TimeSpan timespan) {
             return new WaitForSeconds((float) timespan.TotalSeconds);
         }
+
+        /// <summary>
+        /// 生成一个新的主线程占位符
+        /// </summary>
+        /// <returns></returns>
+        public static MainThreadPlaceholder CreatePlaceholder() {
+            return new MainThreadPlaceholder();
+        }
     }
 }

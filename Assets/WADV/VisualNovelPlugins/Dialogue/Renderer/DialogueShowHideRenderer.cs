@@ -49,6 +49,7 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
                 }
                 return message;
             }
+            var placeholder = message.CreatePlaceholder();
             if (message.Tag == DialoguePlugin.ShowDialogueBoxMessageTag) {
                 PrepareStartShow(fadeTime);
             } else {
@@ -64,6 +65,7 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
                 }
                 await Dispatcher.NextUpdate();
             }
+            placeholder.Complete();
             return message;
         }
     }

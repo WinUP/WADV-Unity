@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using WADV.Extensions;
@@ -16,7 +16,7 @@ namespace WADV.MessageSystem {
         /// </summary>
         public static readonly LinkedTreeNode<IMessenger> Receivers = new LinkedTreeNode<IMessenger>(Application.isEditor ? (IMessenger) new DebugLogMessenger() : new EmptyMessenger());
 
-        private static readonly Dictionary<Func<Message, bool>, MessageAwaiter> WaitingTasks = new Dictionary<Func<Message, bool>, MessageAwaiter>();
+        private static readonly Dictionary<Func<Message, bool>, MainThreadPlaceholder> WaitingTasks = new Dictionary<Func<Message, bool>, MainThreadPlaceholder>();
         
         /// <summary>
         /// 异步处理消息
@@ -34,6 +34,9 @@ namespace WADV.MessageSystem {
                 } else {
                     message = await receiver.Receive(message);
                 }
+            }
+            while (message.Placeholders.Any(e => e.keepWaiting)) {
+                await Dispatcher.NextUpdate();
             }
             return message;
         }
@@ -55,9 +58,9 @@ namespace WADV.MessageSystem {
         /// <param name="prediction">判断消息是否满足条件的函数</param>
         /// <returns></returns>
         public static async Task WaitUntil(Func<Message, bool> prediction) {
-            var awaiter = new MessageAwaiter();
+            var awaiter = new MainThreadPlaceholder();
             WaitingTasks.Add(prediction, awaiter);
-            await awaiter.Wait();
+            await awaiter;
         }
 
         /// <summary>
@@ -75,20 +78,10 @@ namespace WADV.MessageSystem {
             foreach (var (prediction, awaiter) in WaitingTasks) {
                 if (!prediction.Invoke(message)) continue;
                 needRemove.Add(prediction);
-                awaiter.Completed = true;
+                awaiter.Complete();
             }
             foreach (var item in needRemove) {
                 WaitingTasks.Remove(item);
-            }
-        }
-
-        private class MessageAwaiter {
-            public bool Completed { get; set; }
-
-            public IEnumerator Wait() {
-                while (true) {
-                    if (Completed) yield break;
-                }
             }
         }
     }

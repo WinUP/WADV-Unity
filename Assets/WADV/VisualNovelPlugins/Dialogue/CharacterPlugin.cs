@@ -16,15 +16,9 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         
         public override Task<SerializableValue> Execute(PluginExecuteContext context) {
             var character = new CharacterValue();
-            foreach (var (key, value) in context.Parameters) {
-                string parameterName;
-                if (key is IStringConverter stringKey) {
-                    parameterName = stringKey.ConvertToString(context.Runtime.ActiveLanguage);
-                } else {
-                    continue;
-                }
+            foreach (var (key, value) in context.StringParameters) {
                 var stringValue = value as IStringConverter;
-                switch (parameterName) {
+                switch (key.ConvertToString(context.Runtime.ActiveLanguage)) {
                     case "Name":
                         if (stringValue == null) {
                             Debug.LogWarning($"Skip parameter Name when creating Character: {value} is not string value");

@@ -30,8 +30,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         /// <inheritdoc />
         public string ConvertToString() {
-            var defaultTranslation = ScriptHeader.LoadAsset(ScriptId).Header.GetTranslation(TranslationManager.DefaultLanguage, TranslationId);
-            return $"TranslatableValue {{ScriptId = {ScriptId}, TranslationId = {TranslationId}, Default = {defaultTranslation}}}";
+            return ConvertToString(TranslationManager.DefaultLanguage);
         }
         
         /// <inheritdoc />
