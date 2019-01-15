@@ -96,7 +96,7 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
 
         private async Task ProcessText(string language) {
             if (_currentDialogue == null) return;
-            var (content, noWait, noClear) = DialoguePlugin.ProcessDialogueContent(_currentDialogue.Context.Runtime, _currentDialogue.RawContent.ConvertToString(language));
+            var (content, noWait, noClear) = DialoguePlugin.ProcessDialogueContent(_currentDialogue.Context.Runtime, _currentDialogue.RawContent, language);
             var history = noClear ? new StringBuilder(CurrentText) : new StringBuilder();
             if (_generator == null) {
                 ResetGenerator(textGenerator);

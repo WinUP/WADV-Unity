@@ -331,9 +331,20 @@ namespace WADV.VisualNovel.Runtime {
 
         private void CreateFunctionCall() {
             var functionName = MemoryStack.Pop();
-            if (!(functionName is IStringConverter stringConverter)) throw new RuntimeException(_callStack, $"Unable to call scene: name {functionName} is not string value");
-            var function = ActiveScope?.FindVariable(stringConverter.ConvertToString(), true, VariableSearchMode.All);
-            if (function == null || !(function.Value is ScopeValue functionBody)) throw new RuntimeException(_callStack, $"Unable to call function: expected function {stringConverter.ConvertToString()} not existed in current scope");
+            while (functionName is ReferenceValue referenceFunction) {
+                functionName = referenceFunction.Value;
+            }
+            ScopeValue functionBody;
+            if (functionName is ScopeValue directBody) {
+                functionBody = directBody;
+            } else {
+                if (!(functionName is IStringConverter stringConverter)) throw new RuntimeException(_callStack, $"Unable to call scene: name {functionName} is not string value");
+                var function = ActiveScope?.FindVariable(stringConverter.ConvertToString(), true, VariableSearchMode.All);
+                if (function == null || !(function.Value is ScopeValue scopeValue)) {
+                    throw new RuntimeException(_callStack, $"Unable to call function: expected function {stringConverter.ConvertToString()} not existed in current scope");
+                }
+                functionBody = scopeValue;
+            }
             // 生成形参
             var paramCount = ((IntegerValue) MemoryStack.Pop()).Value;
             for (var i = -1; ++i < paramCount;) {
@@ -342,12 +353,12 @@ namespace WADV.VisualNovel.Runtime {
                 functionBody.LocalVariables.Add(paramName, new ReferenceValue {Value = MemoryStack.Pop()});
             }
             // 切换作用域
+            _historyScope.Push(ActiveScope);
             ActiveScope = functionBody;
             // 重定向执行位置
-            Script = ScriptFile.Load(functionBody.ScriptId);
-            Script.MoveTo(functionBody.Entrance);
+            Script = ScriptFile.Load(ActiveScope.ScriptId);
+            Script.MoveTo(ActiveScope.Entrance);
             _callStack.Push(Script);
-            _historyScope.Push(ActiveScope);
         }
 
         private void LeaveScope() {
@@ -365,6 +376,8 @@ namespace WADV.VisualNovel.Runtime {
             var pointer = _callStack.Last;
             Script = ScriptFile.Load(pointer.ScriptId);
             Script.MoveTo(pointer.Offset);
+            // 跳过刚刚执行完的跳转指令
+            Script.ReadOperationCode();
         }
         
         private VisualNovelPlugin FindPlugin() {
@@ -414,8 +427,8 @@ namespace WADV.VisualNovel.Runtime {
         }
 
         private void CreateBinaryOperation(OperatorType operatorType) {
-            var valueRight = MemoryStack.Pop();
             var valueLeft = MemoryStack.Pop();
+            var valueRight = MemoryStack.Pop();
             switch (operatorType) {
                 case OperatorType.PickChild:
                     if (valueRight is IStringConverter rightStringConverter && rightStringConverter.ConvertToString() == "Duplicate") {

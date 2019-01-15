@@ -29,7 +29,7 @@ namespace WADV.VisualNovel.Runtime {
                 // 写入脚本调用堆栈
                 foreach (var scope in _scope) {
                     var position = ScriptHeader.LoadAsset(scope.ScriptId).Header.Positions[scope.Offset];
-                    result.AppendLine($"   at {scope.ScriptId}: Line {position.Line}, Column {position.Column}");
+                    result.AppendLine($"   at {scope.ScriptId}: Line {position.Line + 1}, Column {position.Column + 1}");
                 }
                 return result.ToString();
             }

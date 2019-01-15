@@ -53,15 +53,18 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         /// 分析对话内容
         /// </summary>
         /// <param name="runtime">脚本运行环境</param>
-        /// <param name="data">原始对话内容</param>
+        /// <param name="raw">原始对话内容</param>
+        /// <param name="language">语言（不提供则使用脚本运行环境的语言）</param>
         /// <returns></returns>
-        public static (List<IDialogueItem> Content, bool NoWait, bool NoClear) ProcessDialogueContent(ScriptRuntime runtime, string data) {
+        public static (List<IDialogueItem> Content, bool NoWait, bool NoClear) ProcessDialogueContent(ScriptRuntime runtime, IStringConverter raw, string language = null) {
             var result = new List<IDialogueItem>();
             var content = new StringBuilder();
             var style = new StyleList();
             var noWait = false;
             var noClear = false;
             var i = -1;
+            language = language ?? runtime.ActiveLanguage;
+            var data = raw.ConvertToString(language);
             if (data.StartsWith("[noclear]", StringComparison.OrdinalIgnoreCase)) {
                 noClear = true;
                 i = 8;
@@ -202,6 +205,9 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                         content.Append(data[i]);
                         break;
                 }
+            }
+            if (content.Length > 0) {
+                result.Add(style.Combine(content.ToString()));
             }
             return (result, noWait, noClear);
         }

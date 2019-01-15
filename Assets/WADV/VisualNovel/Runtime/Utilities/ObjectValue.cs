@@ -152,7 +152,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                         result = _stringValues.ContainsKey(defaultStringValue) ? _stringValues[defaultStringValue] : null;
                         break;
                 }
-                return result ?? Add(name, new NullValue());
+                return result ?? new NullValue();
             }
 
             public string ConvertToString() {
