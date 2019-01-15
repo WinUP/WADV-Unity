@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -16,12 +15,10 @@ namespace WADV.VisualNovelPlugins.Dialogue.TextGenerator {
         /// <returns></returns>
         public static DialogueTextGenerator Create(DialogueTextGeneratorType type) {
             switch (type) {
-                case DialogueTextGeneratorType.None:
-                    return new EmptyDialogueTextGenerator();
                 case DialogueTextGeneratorType.Simple:
                     return new SimpleDialogueTextGenerator();
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, $"Unable to create dialogue text generator: unknown type {type}");
+                    return new EmptyDialogueTextGenerator();
             }
         }
         

@@ -18,15 +18,27 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
             if (_textMesh == null) throw new NotSupportedException("Unable to create TextMeshCharacter: no TextMeshProUGUI component found in current object");
         }
         
-        protected override async Task ShowText(CharacterValue text, string language) {
+        /// <inheritdoc />
+        protected override async Task ShowText(string text) {
             var color = _textMesh.color;
             var time = 0.0F;
-            while (time < 0.2F) {
+            while (time < 0.1F) {
                 time += Time.deltaTime;
-                _textMesh.color = new Color(color.r, color.g, color.b, Mathf.Lerp(color.a, 0.0F, time / 0.2F));
+                _textMesh.color = new Color(color.r, color.g, color.b, Mathf.Lerp(color.a, 0.0F, time / 0.1F));
                 await Dispatcher.NextUpdate();
             }
-            _textMesh.text = text.ConvertToString(language);
+            _textMesh.text = text;
+            time = 0.0F;
+            while (time < 0.1F) {
+                time += Time.deltaTime;
+                _textMesh.color = new Color(color.r, color.g, color.b, Mathf.Lerp(0.0F, color.a, time / 0.1F));
+                await Dispatcher.NextUpdate();
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void ReplaceText(string text) {
+            _textMesh.text = text;
         }
     }
 }

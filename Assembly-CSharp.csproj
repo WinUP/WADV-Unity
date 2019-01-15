@@ -148,6 +148,7 @@
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\IStringConverter.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\ISubtractOperator.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\SerializableValue.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Plugin\ContextMessageTemplate.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginExecuteContext.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Plugin\VisualNovelPlugin.cs" />

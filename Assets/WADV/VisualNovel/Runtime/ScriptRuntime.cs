@@ -9,8 +9,7 @@ using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
 using JetBrains.Annotations;
-using UnityEditor;
-using UnityEngine;
+using WADV.VisualNovel.Translation;
 
 // ! 为求效率，VNB运行环境在文件头正确的情况下假设文件格式绝对正确，只会做运行时数据检查，不会进行任何格式检查
 
@@ -19,16 +18,6 @@ namespace WADV.VisualNovel.Runtime {
     /// 脚本运行环境
     /// </summary>
     public class ScriptRuntime {
-        [MenuItem("Test/Test Runtime")]
-        public static void Test() {
-            var runtime = new ScriptRuntime("Logic/Entrance");
-            var task = runtime.ExecuteScript();
-            task.Wait();
-            foreach (var (name, value) in runtime.Exported) {
-                Debug.Log($"Export {name}: {value}");
-            }
-        }
-        
         /// <summary>
         /// 获取正在执行的脚本文件
         /// </summary>
@@ -58,7 +47,7 @@ namespace WADV.VisualNovel.Runtime {
             get => _activeLanguage;
             set {
                 if (_activeLanguage == value) return;
-                var message = MessageService.Process(new Message<string>(value));
+                var message = MessageService.Process(new Message<string>(value, CoreConstant.Mask, CoreConstant.LanguageChange));
                 switch (message) {
                     case Message<string> stringMessage:
                         _activeLanguage = stringMessage.Content;
@@ -69,7 +58,7 @@ namespace WADV.VisualNovel.Runtime {
             }
         }
         
-        private string _activeLanguage;
+        private string _activeLanguage = TranslationManager.DefaultLanguage;
         private readonly CallStack _callStack = new CallStack();
         private readonly Stack<ScopeValue> _historyScope = new Stack<ScopeValue>();
 

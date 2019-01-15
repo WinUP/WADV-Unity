@@ -1,32 +1,25 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using WADV.VisualNovel.Interoperation;
+using WADV.VisualNovel.Plugin;
 using WADV.VisualNovelPlugins.Dialogue.Items;
 
 namespace WADV.VisualNovelPlugins.Dialogue {
+    /// <inheritdoc />
     /// <summary>
     /// 对话框内容消息
     /// </summary>
-    public class DialogueDescription {
+    public class DialogueDescription : ContextMessageTemplate {
         /// <summary>
-        /// 对话角色
+        /// 原始对话角色
         /// </summary>
-        [CanBeNull]
-        public CharacterValue Character { get; set; }
+        public SerializableValue RawCharacter { get; set; }
+        
         /// <summary>
-        /// 对话内容
+        /// 原始对话内容
         /// </summary>
-        public List<IDialogueItem> Content { get; set; }
-        /// <summary>
-        /// 是否为无等待对话
-        /// </summary>
-        public bool NoWait { get; set; }
-        /// <summary>
-        /// 是否为附加对话
-        /// </summary>
-        public bool NoClear { get; set; }
-        /// <summary>
-        /// 当前语言
-        /// </summary>
-        public string Language { get; set; }
+        public IStringConverter RawContent { get; set; }
+
+        public DialogueDescription(PluginExecuteContext context) : base(context) { }
     }
 }
