@@ -42,7 +42,7 @@ namespace WADV.MessageSystem {
         /// </summary>
         /// <returns></returns>
         public MainThreadPlaceholder CreatePlaceholder() {
-            var result = new MainThreadPlaceholder();
+            var result = Dispatcher.CreatePlaceholder();
             Placeholders.Add(result);
             return result;
         }

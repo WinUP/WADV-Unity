@@ -21,6 +21,7 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
 
         [CanBeNull] private DialogueDescription _currentDescription;
         [CanBeNull] private MainThreadPlaceholder _currentPlaceholder;
+        [CanBeNull] private string _showingText;
 
         private void OnEnable() {
             MessageService.Receivers.CreateChild(this);
@@ -47,16 +48,24 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
         public async Task<Message> Receive(Message message) {
             if (message.Tag == DialoguePlugin.NewDialogueMessageTag && message is Message<DialogueDescription> dialogueMessage) {
                 var dialogue = _currentDescription = dialogueMessage.Content;
-                _currentPlaceholder = message.CreatePlaceholder();
-                await ShowText(CreateCharacterText(dialogue.RawCharacter, dialogue.Context.Runtime, dialogue.Context.Runtime.ActiveLanguage));
-                if (_currentPlaceholder == null) return message;
-                _currentPlaceholder.Complete();
-                _currentPlaceholder = null;
+                var text = CreateCharacterText(dialogue.RawCharacter, dialogue.Context.Runtime, dialogue.Context.Runtime.ActiveLanguage);
+                if (text != _showingText) {
+                    _currentPlaceholder = message.CreatePlaceholder();
+                    _showingText = text;
+                    await ShowText(text);
+                    if (_currentPlaceholder == null) return message;
+                    _currentPlaceholder.Complete();
+                    _currentPlaceholder = null;
+                }
             } else if (_currentDescription != null && message.Tag == CoreConstant.LanguageChange && message is Message<string> languageMessage) {
                 if (_currentPlaceholder != null) {
                     await _currentPlaceholder;
                 }
-                ReplaceText(CreateCharacterText(_currentDescription.RawCharacter, _currentDescription.Context.Runtime, languageMessage.Content));
+                var text = CreateCharacterText(_currentDescription.RawCharacter, _currentDescription.Context.Runtime, _currentDescription.Context.Runtime.ActiveLanguage);
+                if (text != _showingText) {
+                    ReplaceText(CreateCharacterText(_currentDescription.RawCharacter, _currentDescription.Context.Runtime, languageMessage.Content));
+                    _showingText = text;
+                }
             }
             return message;
         }

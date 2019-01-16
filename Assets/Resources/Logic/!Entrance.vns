@@ -24,14 +24,10 @@
 
 #测试2 [NoClear]变量的值应该为字符串true：[@temp3]
 
-@true = @#false
-
-#测试2 因为变量表里存在@true值为false，此时单纯的变量引用将得到false: [@true]，不过常量引用仍然是true: [@#true]
-
-@temp3 = @TEMP = @temp= @true = @#null
+@temp3 = @TEMP = @temp = @#null
 
 [Dialogue Character=测试2 Content=("这里测试可翻译的复杂对话，(1 + 2) * 3 = " + ((1 + 2) * 3))]
-[Dialogue Character=测试2 Content=('这里测试不可翻译的复杂对话，(1 + 2) / 2.0 = ' + ((1 + 2) / 2.0))]
+[Dialogue Character=测试2 Content=('这里测试不可翻译的复杂对话，(1.0 + 2) / 2 = ' + ((1.0 + 2) / 2))]
 [Dialogue Character=(@#测试3 = [Character Name="第三个测试"]) Content=[Format "这里测试复合指令，这句话应该是由{角色}说的" 角色=@#测试3]]
 
 @temp = !!@#测试3

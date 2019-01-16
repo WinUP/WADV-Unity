@@ -27,7 +27,7 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
         /// <summary>
         /// 每两次生成的帧间隔
         /// </summary>
-        [Range(0.0F, 2.0F)]
+        [Range(0.0F, 0.5F)]
         public float timeSpan;
         
         /// <summary>
@@ -64,7 +64,7 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
         /// <param name="previousPart">之前所有文本段已实际显示（或格式化）的文本</param>
         /// <param name="text">当前段已经生成的文本</param>
         /// <returns></returns>
-        protected abstract void ShowText(StringBuilder previousPart, StringBuilder text);
+        protected abstract void ShowText([CanBeNull] string previousPart, StringBuilder text);
 
         public void ResetGenerator(DialogueTextGeneratorType type) {
             textGenerator = type;
@@ -97,7 +97,7 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
         private async Task ProcessText(string language) {
             if (_currentDialogue == null) return;
             var (content, noWait, noClear) = DialoguePlugin.ProcessDialogueContent(_currentDialogue.Context.Runtime, _currentDialogue.RawContent, language);
-            var history = noClear ? new StringBuilder(CurrentText) : new StringBuilder();
+            var history = noClear ? CurrentText : null;
             if (_generator == null) {
                 ResetGenerator(textGenerator);
             }
@@ -106,13 +106,13 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
                     switch (item) {
                         case ClearDialogueItem _:
                             ClearText();
-                            history.Clear();
+                            history = null;
                             break;
                         case PauseDialogueItem pauseDialogueItem:
                             if (pauseDialogueItem.Time.HasValue) {
                                 await Dispatcher.WaitForSeconds(pauseDialogueItem.Time.Value);
                             } else {
-                                await MessageService.WaitUntil(CoreConstant.Mask, CoreConstant.ScreenClicked);
+                                await MessageService.WaitUntil(DialoguePlugin.MessageMask, DialoguePlugin.FinishContentWaiting);
                             }
                             break;
                         case TextDialogueItem textDialogueItem:
@@ -128,7 +128,7 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
                                     await Dispatcher.NextUpdate();
                                 }
                             }
-                            history.Append(CurrentText);
+                            history = CurrentText;
                             break;
                     }
                 }
@@ -136,7 +136,7 @@ namespace WADV.VisualNovelPlugins.Dialogue.Renderer {
                 ShowText(history, new StringBuilder());
             }
             if (!noWait) {
-                await MessageService.WaitUntil(CoreConstant.Mask, CoreConstant.ScreenClicked);
+                await MessageService.WaitUntil(DialoguePlugin.MessageMask, DialoguePlugin.FinishContentWaiting);
             }
         }
     }

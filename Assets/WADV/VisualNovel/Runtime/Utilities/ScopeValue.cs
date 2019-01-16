@@ -107,7 +107,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         [CanBeNull]
         public T FindVariableValue<T>(string name, bool includeParent, VariableSearchMode mode) where T : SerializableValue {
             var variable = FindVariable(name, includeParent, mode);
-            if (variable == null || !(variable.Value.GetType() != typeof(T))) return null;
+            if (variable == null || variable.Value.GetType() != typeof(T)) return null;
             return (T) variable.Value;
         }
     }

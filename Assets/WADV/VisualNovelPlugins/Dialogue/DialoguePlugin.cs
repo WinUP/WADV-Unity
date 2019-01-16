@@ -45,7 +45,12 @@ namespace WADV.VisualNovelPlugins.Dialogue {
         /// </summary>
         public const string HideDialogueBoxMessageTag = "HIDE_DIALOGUE_TEXT";
 
-        private static Regex CommandTester { get; } = new Regex(@"\s*([^=]+)\s*=\s*(([\d.]+))\s*$");
+        /// <summary>
+        /// 表示对话框内容显示等待完成的消息标记
+        /// </summary>
+        public const string FinishContentWaiting = "FINISH_CONTENT_WAITING";
+
+        private static Regex CommandTester { get; } = new Regex(@"\s*([^=]+)\s*=\s*(\S+)\s*$");
         
         public DialoguePlugin() : base("Dialogue") { }
 
@@ -69,8 +74,19 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                 noClear = true;
                 i = 8;
             }
+            
+            void FlushCache() {
+                result.Add(style.Combine(content.ToString()));
+                content.Clear();
+            }
+
+            void ApplyDefault(string command) {
+                content.Append($"[{command}]");
+            }
+            
             for (; ++i < data.Length;) {
                 switch (data[i]) {
+                    // 转义字符
                     case '\\' when i < data.Length - 1:
                         switch (data[i + 1]) {
                             case 'n':
@@ -88,15 +104,19 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                         }
                         ++i;
                         break;
+                    // 最后一个字符是[时的容错处理
                     case '[' when i == data.Length - 1:
                         content.Append('[');
                         break;
+                    // 指令
                     case '[':
                         var endIndex = data.IndexOf(']', i + 1);
-                        if (endIndex <= i) throw new ArgumentException($"Unable to create dialogue command: missing end bracket for {i}");
+                        if (endIndex <= i) { // 容错处理
+                            content.Append('[');
+                            break;
+                        }
                         var command = data.Substring(i + 1, endIndex - i - 1);
                         i = endIndex;
-                        var analyseFailed = false;
                         if (string.IsNullOrEmpty(command)) { // 空指令不处理
                             content.Append("[]");
                         } else if (command.StartsWith("@#")) { // 常量
@@ -104,7 +124,7 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                             if (string.IsNullOrEmpty(constantName)) throw new ArgumentException($"Unable to create dialog command: missing constant name at {i}");
                             var constant = runtime.ActiveScope?.FindVariable(constantName, true, VariableSearchMode.OnlyConstant);
                             if (constant == null) {
-                                analyseFailed = true;
+                                ApplyDefault(command);
                             } else {
                                 content.Append(constant.Value is IStringConverter stringConverter ? stringConverter.ConvertToString() : constant.Value.ToString());
                             }
@@ -113,7 +133,7 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                             if (string.IsNullOrEmpty(variableName)) throw new ArgumentException($"Unable to create dialog command: missing variable name at {i}");
                             var variable = runtime.ActiveScope?.FindVariable(variableName, true, VariableSearchMode.All);
                             if (variable == null) {
-                                analyseFailed = true;
+                                ApplyDefault(command);
                             } else {
                                 content.Append(variable.Value is IStringConverter stringConverter ? stringConverter.ConvertToString() : variable.Value.ToString());
                             }
@@ -123,82 +143,96 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                                 var parameter = ExtractParameter(commandContent);
                                 var relative = parameter.Value.Value.StartsWith("+") || parameter.Value.Value.StartsWith("-");
                                 if (parameter.HasValue && float.TryParse(parameter.Value.Value, out var number)) {
+                                    FlushCache();
                                     style.Size.AddLast((Mathf.RoundToInt(number), relative));
                                 } else {
-                                    analyseFailed = true;
+                                    ApplyDefault(command);
                                 }
                             } else if (commandContent == "/size") { // 取消字号
                                 if (style.Size.Any()) {
+                                    FlushCache();
                                     style.Size.RemoveLast();
                                 } else {
-                                    analyseFailed = true;
+                                    ApplyDefault(command);
                                 }
                             } else if (commandContent.StartsWith("color")) { // 颜色
                                 var parameter = ExtractParameter(commandContent);
                                 if (parameter.HasValue) {
+                                    FlushCache();
                                     style.Color.AddLast(parameter.Value.Value);
                                 } else {
-                                    analyseFailed = true;
+                                    ApplyDefault(command);
                                 }
                             } else if (commandContent == "/color") { // 取消颜色
                                 if (style.Color.Any()) {
+                                    FlushCache();
                                     style.Color.RemoveLast();
                                 } else {
-                                    analyseFailed = true;
+                                    ApplyDefault(command);
                                 }
                             } else if (commandContent.StartsWith("pause")) { // 暂停
                                 if (commandContent == "pause") {
+                                    FlushCache();
                                     result.Add(new PauseDialogueItem {Time = null});
                                 } else {
                                     var parameter = ExtractParameter(commandContent);
                                     if (parameter.HasValue && float.TryParse(parameter.Value.Value, out var number)) {
+                                        FlushCache();
                                         result.Add(new PauseDialogueItem {Time = number});
-                                    } else {
-                                        analyseFailed = true;
+                                        break;
                                     }
+                                    ApplyDefault(command);
                                 }
-                            } else if (commandContent == "clear") { // 清空
-                                result.Add(new ClearDialogueItem());
-                            } else if (commandContent == "nowait") {
-                                if (i == data.Length - 1) {
-                                    noWait = true;
-                                }
-                            } else switch (command) {
-                                case "b": // 粗体
-                                    style.Bold = true;
+                            } else switch (commandContent) {
+                                case "clear": // 清空
+                                    FlushCache();
+                                    result.Add(new ClearDialogueItem());
                                     break;
-                                case "/b": // 取消粗体
-                                    style.Bold = false;
-                                    break;
-                                case "i": // 斜体
-                                    style.Italic = true;
-                                    break;
-                                case "/i": // 取消斜体
-                                    style.Italic = false;
-                                    break;
-                                case "s": // 删除线
-                                    style.Strikethrough = true;
-                                    break;
-                                case "/s": // 取消删除线
-                                    style.Strikethrough = false;
-                                    break;
-                                case "u": // 下划线
-                                    style.Underline = true;
-                                    break;
-                                case "/u": // 取消下划线
-                                    style.Underline = false;
+                                case "nowait":
+                                    if (i == data.Length - 1) {
+                                        noWait = true;
+                                    }
                                     break;
                                 default:
-                                    analyseFailed = true;
+                                    switch (command) {
+                                        case "b": // 粗体
+                                            FlushCache();
+                                            style.Bold = true;
+                                            break;
+                                        case "/b": // 取消粗体
+                                            FlushCache();
+                                            style.Bold = false;
+                                            break;
+                                        case "i": // 斜体
+                                            FlushCache();
+                                            style.Italic = true;
+                                            break;
+                                        case "/i": // 取消斜体
+                                            FlushCache();
+                                            style.Italic = false;
+                                            break;
+                                        case "s": // 删除线
+                                            FlushCache();
+                                            style.Strikethrough = true;
+                                            break;
+                                        case "/s": // 取消删除线
+                                            FlushCache();
+                                            style.Strikethrough = false;
+                                            break;
+                                        case "u": // 下划线
+                                            FlushCache();
+                                            style.Underline = true;
+                                            break;
+                                        case "/u": // 取消下划线
+                                            FlushCache();
+                                            style.Underline = false;
+                                            break;
+                                        default:
+                                            ApplyDefault(command);
+                                            break;
+                                    }
                                     break;
                             }
-                            if (!analyseFailed && !commandContent.StartsWith("pause")) {
-                                result.Add(style.Combine(content.ToString()));
-                                content.Clear();
-                            }
-                        }
-                        if (analyseFailed) {
-                            content.Append($"[{command}]");
                         }
                         break;
                     default:
@@ -284,7 +318,7 @@ namespace WADV.VisualNovelPlugins.Dialogue {
 
         private static (string Name, string Value)? ExtractParameter(string source) {
             var match = CommandTester.Match(source);
-            if (match.Groups.Count < 4) return null;
+            if (match.Groups.Count < 3) return null;
             return (match.Groups[1].Value, match.Groups[2].Value);
         }
 

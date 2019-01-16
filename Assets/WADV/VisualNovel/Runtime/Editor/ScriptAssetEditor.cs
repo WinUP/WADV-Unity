@@ -25,9 +25,9 @@ namespace WADV.VisualNovel.Runtime.Editor {
             }
             if (string.IsNullOrEmpty(_assemblyCode)) {
                 var assemblyContent = new AssemblyContent();
-                assemblyContent.AppendLine("; VisualNovelScript Version 1, assembly format");
-                assemblyContent.AppendLine($"; ID {scriptAsset.id}");
-                assemblyContent.AppendLine("");
+                assemblyContent.AppendLine(null, "; VisualNovelScript Version 1, assembly format");
+                assemblyContent.AppendLine(null, $"; ID {scriptAsset.id}");
+                assemblyContent.AppendLine(null, "");
                 var script = ScriptHeader.ReloadAsset(scriptAsset.id, scriptAsset.content).Header.CreateRuntimeFile();
                 OperationCode? code;
                 do {
@@ -37,9 +37,15 @@ namespace WADV.VisualNovel.Runtime.Editor {
                             assemblyContent.Content.AppendLine($".label {pointer.Key}");
                         }
                     }
+                    SourcePosition? position;
+                    try {
+                        position = script.Header.Positions[script.CurrentPosition];
+                    } catch {
+                        position = null;
+                    }
                     code = script.ReadOperationCode();
                     if (code != null) {
-                        DrawOperationCode(code.Value, script, assemblyContent);
+                        DrawOperationCode(position, code.Value, script, assemblyContent);
                     }
                 } while (code != null);
                 _assemblyCode = assemblyContent.ToString();
@@ -51,221 +57,221 @@ namespace WADV.VisualNovel.Runtime.Editor {
             GUI.Box(rect, _assemblyCode, _scriptStyle);
         }
 
-        private void DrawOperationCode(OperationCode code, ScriptFile file, AssemblyContent assemblyContent) {
+        private void DrawOperationCode(SourcePosition? position, OperationCode code, ScriptFile file, AssemblyContent assemblyContent) {
             switch (code) {
                 case OperationCode.LDC_I4_0:
-                    assemblyContent.AppendLine("ldc.i4.0");
+                    assemblyContent.AppendLine(position, "ldc.i4.0");
                     break;
                 case OperationCode.LDC_I4_1:
-                    assemblyContent.AppendLine("ldc.i4.1");
+                    assemblyContent.AppendLine(position, "ldc.i4.1");
                     break;
                 case OperationCode.LDC_I4_2:
-                    assemblyContent.AppendLine("ldc.i4.2");
+                    assemblyContent.AppendLine(position, "ldc.i4.2");
                     break;
                 case OperationCode.LDC_I4_3:
-                    assemblyContent.AppendLine("ldc.i4.3");
+                    assemblyContent.AppendLine(position, "ldc.i4.3");
                     break;
                 case OperationCode.LDC_I4_4:
-                    assemblyContent.AppendLine("ldc.i4.4");
+                    assemblyContent.AppendLine(position, "ldc.i4.4");
                     break;
                 case OperationCode.LDC_I4_5:
-                    assemblyContent.AppendLine("ldc.i4.5");
+                    assemblyContent.AppendLine(position, "ldc.i4.5");
                     break;
                 case OperationCode.LDC_I4_6:
-                    assemblyContent.AppendLine("ldc.i4.6");
+                    assemblyContent.AppendLine(position, "ldc.i4.6");
                     break;
                 case OperationCode.LDC_I4_7:
-                    assemblyContent.AppendLine("ldc.i4.7");
+                    assemblyContent.AppendLine(position, "ldc.i4.7");
                     break;
                 case OperationCode.LDC_I4_8:
-                    assemblyContent.AppendLine("ldc.i4.8");
+                    assemblyContent.AppendLine(position, "ldc.i4.8");
                     break;
                 case OperationCode.LDC_I4:
-                    assemblyContent.AppendLine($"ldc.i4 {file.ReadInteger()}");
+                    assemblyContent.AppendLine(position, $"ldc.i4 {file.ReadInteger()}");
                     break;
                 case OperationCode.LDC_R4_0:
-                    assemblyContent.AppendLine("ldc.r4.0");
+                    assemblyContent.AppendLine(position, "ldc.r4.0");
                     break;
                 case OperationCode.LDC_R4_025:
-                    assemblyContent.AppendLine("ldc.r4.025");
+                    assemblyContent.AppendLine(position, "ldc.r4.025");
                     break;
                 case OperationCode.LDC_R4_05:
-                    assemblyContent.AppendLine("ldc.r4.05");
+                    assemblyContent.AppendLine(position, "ldc.r4.05");
                     break;
                 case OperationCode.LDC_R4_075:
-                    assemblyContent.AppendLine("ldc.r4.075");
+                    assemblyContent.AppendLine(position, "ldc.r4.075");
                     break;
                 case OperationCode.LDC_R4_1:
-                    assemblyContent.AppendLine("ldc.r4.1");
+                    assemblyContent.AppendLine(position, "ldc.r4.1");
                     break;
                 case OperationCode.LDC_R4_125:
-                    assemblyContent.AppendLine("ldc.r4.125");
+                    assemblyContent.AppendLine(position, "ldc.r4.125");
                     break;
                 case OperationCode.LDC_R4_15:
-                    assemblyContent.AppendLine("ldc.r4.15");
+                    assemblyContent.AppendLine(position, "ldc.r4.15");
                     break;
                 case OperationCode.LDC_R4_175:
-                    assemblyContent.AppendLine("ldc.r4.175");
+                    assemblyContent.AppendLine(position, "ldc.r4.175");
                     break;
                 case OperationCode.LDC_R4_2:
-                    assemblyContent.AppendLine("ldc.r4.2");
+                    assemblyContent.AppendLine(position, "ldc.r4.2");
                     break;
                 case OperationCode.LDC_R4_225:
-                    assemblyContent.AppendLine("ldc.r4.225");
+                    assemblyContent.AppendLine(position, "ldc.r4.225");
                     break;
                 case OperationCode.LDC_R4_25:
-                    assemblyContent.AppendLine("ldc.r4.25");
+                    assemblyContent.AppendLine(position, "ldc.r4.25");
                     break;
                 case OperationCode.LDC_R4_275:
-                    assemblyContent.AppendLine("ldc.r4.275");
+                    assemblyContent.AppendLine(position, "ldc.r4.275");
                     break;
                 case OperationCode.LDC_R4_3:
-                    assemblyContent.AppendLine("ldc.r4.3");
+                    assemblyContent.AppendLine(position, "ldc.r4.3");
                     break;
                 case OperationCode.LDC_R4_325:
-                    assemblyContent.AppendLine("ldc.r4.325");
+                    assemblyContent.AppendLine(position, "ldc.r4.325");
                     break;
                 case OperationCode.LDC_R4_35:
-                    assemblyContent.AppendLine("ldc.r4.35");
+                    assemblyContent.AppendLine(position, "ldc.r4.35");
                     break;
                 case OperationCode.LDC_R4_375:
-                    assemblyContent.AppendLine("ldc.r4.375");
+                    assemblyContent.AppendLine(position, "ldc.r4.375");
                     break;
                 case OperationCode.LDC_R4_4:
-                    assemblyContent.AppendLine("ldc.r4.4");
+                    assemblyContent.AppendLine(position, "ldc.r4.4");
                     break;
                 case OperationCode.LDC_R4_425:
-                    assemblyContent.AppendLine("ldc.r4.425");
+                    assemblyContent.AppendLine(position, "ldc.r4.425");
                     break;
                 case OperationCode.LDC_R4_45:
-                    assemblyContent.AppendLine("ldc.r4.45");
+                    assemblyContent.AppendLine(position, "ldc.r4.45");
                     break;
                 case OperationCode.LDC_R4_475:
-                    assemblyContent.AppendLine("ldc.r4.475");
+                    assemblyContent.AppendLine(position, "ldc.r4.475");
                     break;
                 case OperationCode.LDC_R4_5:
-                    assemblyContent.AppendLine("ldc.r4.5");
+                    assemblyContent.AppendLine(position, "ldc.r4.5");
                     break;
                 case OperationCode.LDC_R4_525:
-                    assemblyContent.AppendLine("ldc.r4.525");
+                    assemblyContent.AppendLine(position, "ldc.r4.525");
                     break;
                 case OperationCode.LDC_R4_55:
-                    assemblyContent.AppendLine("ldc.r4.55");
+                    assemblyContent.AppendLine(position, "ldc.r4.55");
                     break;
                 case OperationCode.LDC_R4_575:
-                    assemblyContent.AppendLine("ldc.r4.575");
+                    assemblyContent.AppendLine(position, "ldc.r4.575");
                     break;
                 case OperationCode.LDC_R4:
-                    assemblyContent.AppendLine($"ldc.r4 {file.ReadFloat()}");
+                    assemblyContent.AppendLine(position, $"ldc.r4 {file.ReadFloat()}");
                     break;
                 case OperationCode.LDSTR:
                     var stringIndex = file.Read7BitEncodedInt();
-                    assemblyContent.AppendLine($"ldstr {file.Header.Strings[stringIndex]}");
+                    assemblyContent.AppendLine(position, $"ldstr {file.Header.Strings[stringIndex]}");
                     break;
                 case OperationCode.LDENTRY:
                     var addressLabelIndex = file.Read7BitEncodedInt();
-                    assemblyContent.AppendLine($"ldentry {addressLabelIndex}");
+                    assemblyContent.AppendLine(position, $"ldentry {addressLabelIndex}");
                     break;
                 case OperationCode.LDSTT:
                     var translatedStringId = file.ReadUInt32();
-                    assemblyContent.AppendLine($"ldstt {Convert.ToString(translatedStringId, 16).PadLeft(8, '0')} ({file.ActiveTranslation.GetTranslation(translatedStringId)})");
+                    assemblyContent.AppendLine(position, $"ldstt {Convert.ToString(translatedStringId, 16).PadLeft(8, '0')} ({file.ActiveTranslation.GetTranslation(translatedStringId)})");
                     break;
                 case OperationCode.LDNUL:
-                    assemblyContent.AppendLine("ldnul");
+                    assemblyContent.AppendLine(position, "ldnul");
                     break;
                 case OperationCode.LDLOC:
-                    assemblyContent.AppendLine("ldloc");
+                    assemblyContent.AppendLine(position, "ldloc");
                     break;
                 case OperationCode.LDCON:
-                    assemblyContent.AppendLine("ldcon");
+                    assemblyContent.AppendLine(position, "ldcon");
                     break;
                 case OperationCode.LDT:
-                    assemblyContent.AppendLine("ldt");
+                    assemblyContent.AppendLine(position, "ldt");
                     break;
                 case OperationCode.LDF:
-                    assemblyContent.AppendLine("ldf");
+                    assemblyContent.AppendLine(position, "ldf");
                     break;
                 case OperationCode.CALL:
-                    assemblyContent.AppendLine("call");
+                    assemblyContent.AppendLine(position, "call");
                     break;
                 case OperationCode.POP:
-                    assemblyContent.AppendLine("pop");
+                    assemblyContent.AppendLine(position, "pop");
                     break;
                 case OperationCode.DIALOGUE:
-                    assemblyContent.AppendLine("dialogue");
+                    assemblyContent.AppendLine(position, "dialogue");
                     break;
                 case OperationCode.BVAL:
-                    assemblyContent.AppendLine("bval");
+                    assemblyContent.AppendLine(position, "bval");
                     break;
                 case OperationCode.ADD:
-                    assemblyContent.AppendLine("add");
+                    assemblyContent.AppendLine(position, "add");
                     break;
                 case OperationCode.SUB:
-                    assemblyContent.AppendLine("sub");
+                    assemblyContent.AppendLine(position, "sub");
                     break;
                 case OperationCode.MUL:
-                    assemblyContent.AppendLine("mul");
+                    assemblyContent.AppendLine(position, "mul");
                     break;
                 case OperationCode.DIV:
-                    assemblyContent.AppendLine("div");
+                    assemblyContent.AppendLine(position, "div");
                     break;
                 case OperationCode.NOT:
-                    assemblyContent.AppendLine("not");
+                    assemblyContent.AppendLine(position, "not");
                     break;
                 case OperationCode.EQL:
-                    assemblyContent.AppendLine("eql");
+                    assemblyContent.AppendLine(position, "eql");
                     break;
                 case OperationCode.CGE:
-                    assemblyContent.AppendLine("cge");
+                    assemblyContent.AppendLine(position, "cge");
                     break;
                 case OperationCode.CGT:
-                    assemblyContent.AppendLine("cgt");
+                    assemblyContent.AppendLine(position, "cgt");
                     break;
                 case OperationCode.CLE:
-                    assemblyContent.AppendLine("cle");
+                    assemblyContent.AppendLine(position, "cle");
                     break;
                 case OperationCode.CLT:
-                    assemblyContent.AppendLine("clt");
+                    assemblyContent.AppendLine(position, "clt");
                     break;
                 case OperationCode.STLOC:
-                    assemblyContent.AppendLine("stloc");
+                    assemblyContent.AppendLine(position, "stloc");
                     break;
                 case OperationCode.STCON:
-                    assemblyContent.AppendLine("stcon");
+                    assemblyContent.AppendLine(position, "stcon");
                     break;
                 case OperationCode.STMEM:
-                    assemblyContent.AppendLine("stmem");
+                    assemblyContent.AppendLine(position, "stmem");
                     break;
                 case OperationCode.PICK:
-                    assemblyContent.AppendLine("pick");
+                    assemblyContent.AppendLine(position, "pick");
                     break;
                 case OperationCode.SCOPE:
-                    assemblyContent.AppendLine("scope");
+                    assemblyContent.AppendLine(position, "scope");
                     assemblyContent.Indent += 4;
                     break;
                 case OperationCode.LEAVE:
-                    assemblyContent.AppendLine("leave");
+                    assemblyContent.AppendLine(position, "leave");
                     assemblyContent.Indent -= 4;
                     break;
                 case OperationCode.RET:
-                    assemblyContent.AppendLine("ret");
+                    assemblyContent.AppendLine(position, "ret");
                     break;
                 case OperationCode.FUNC:
-                    assemblyContent.AppendLine("func");
+                    assemblyContent.AppendLine(position, "func");
                     break;
                 case OperationCode.BF:
                     var jumpIfFalseLabelIndex = file.Read7BitEncodedInt();
-                    assemblyContent.AppendLine($"bf.s {jumpIfFalseLabelIndex}");
+                    assemblyContent.AppendLine(position, $"bf.s {jumpIfFalseLabelIndex}");
                     break;
                 case OperationCode.BR:
                     var jumpLabelIndex = file.Read7BitEncodedInt();
-                    assemblyContent.AppendLine($"br.s {jumpLabelIndex}");
+                    assemblyContent.AppendLine(position, $"br.s {jumpLabelIndex}");
                     break;
                 case OperationCode.LOAD:
-                    assemblyContent.AppendLine("load");
+                    assemblyContent.AppendLine(position, "load");
                     break;
                 case OperationCode.EXP:
-                    assemblyContent.AppendLine("exp");
+                    assemblyContent.AppendLine(position, "exp");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(code), code, null);
@@ -276,8 +282,9 @@ namespace WADV.VisualNovel.Runtime.Editor {
             public StringBuilder Content { get; } = new StringBuilder();
             public int Indent { get; set; }
 
-            public void AppendLine(string content) {
-                Content.AppendLine($"{"".PadLeft(Indent, ' ')} {content}");
+            public void AppendLine(SourcePosition? position, string content) {
+                var positionString = position.HasValue ? $"({position.Value.Line + 1}, {position.Value.Column + 1}) " : "";
+                Content.AppendLine($"{positionString}\t{"".PadLeft(Indent, ' ')} {content}");
             }
 
             public override string ToString() {

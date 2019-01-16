@@ -42,12 +42,12 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         /// <inheritdoc />
         public string ConvertToString() {
-            return Value is IStringConverter stringConverter ? stringConverter.ConvertToString() : $"VariableMemoryValue {{ Value = {Value} }}";
+            return Value is IStringConverter stringConverter ? stringConverter.ConvertToString() : Value.ToString();
         }
         
         /// <inheritdoc />
         public string ConvertToString(string language) {
-            return Value is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : $"VariableMemoryValue {{ Value = {Value} }}";
+            return Value is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : Value.ToString();
         }
 
         /// <inheritdoc />
@@ -61,6 +61,11 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                 default:
                     throw new NotSupportedException($"Unable to get feature in variable: unsupported feature {target}");
             }
+        }
+
+        /// <inheritdoc />
+        public SerializableValue PickChild(SerializableValue target, string language) {
+            return PickChild(target);
         }
     }
 }

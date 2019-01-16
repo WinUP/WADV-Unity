@@ -19,10 +19,15 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     ///     <item><description>除法互操作器</description></item>
     ///     <item><description>真值比较互操作器</description></item>
     /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>子元素/特性支持</description></listheader>
+    ///     <item><description>ToBoolean</description></item>
+    ///     <item><description>ToNumber</description></item>
+    /// </list>
     /// </summary>
     [Serializable]
     public class StringValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                                     IEqualOperator {
+                               IEqualOperator, IPickChildOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
@@ -42,15 +47,30 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public bool ConvertToBoolean(string language) {
+            return ConvertToBoolean();
+        }
+
+        /// <inheritdoc />
         public float ConvertToFloat() {
             if (float.TryParse(Value, out var floatValue)) return floatValue;
             return Value == "" ? 0.0F : 1.0F;
         }
 
         /// <inheritdoc />
+        public float ConvertToFloat(string language) {
+            return ConvertToFloat();
+        }
+
+        /// <inheritdoc />
         public int ConvertToInteger() {
             if (int.TryParse(Value, out var intValue)) return intValue;
             return Value == "" ? 0 : 1;
+        }
+
+        /// <inheritdoc />
+        public int ConvertToInteger(string language) {
+            return ConvertToInteger();
         }
 
         /// <inheritdoc />
@@ -63,8 +83,9 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             return ConvertToString();
         }
 
+        /// <inheritdoc />
         public override string ToString() {
-            return $"StringValue {{Value = {ConvertToString()}}}";
+            return ConvertToString();
         }
 
         /// <inheritdoc />
@@ -78,14 +99,31 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public bool EqualsWith(SerializableValue target, string language) {
+            return EqualsWith(target);
+        }
+
+        /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
             var targetString = target is IStringConverter stringTarget ? stringTarget.ConvertToString() : target.ToString();
             return new StringValue {Value = $"{Value}{targetString}"};
         }
 
         /// <inheritdoc />
+        public SerializableValue AddWith(SerializableValue target, string language) {
+            var targetString = target is IStringConverter stringTarget ? stringTarget.ConvertToString(language) : target.ToString();
+            return new StringValue {Value = $"{Value}{targetString}"};
+        }
+
+        /// <inheritdoc />
         public SerializableValue SubtractWith(SerializableValue target) {
             var targetString = target is IStringConverter stringTarget ? stringTarget.ConvertToString() : target.ToString();
+            return new StringValue {Value = Value.Replace(targetString, "")};
+        }
+
+        /// <inheritdoc />
+        public SerializableValue SubtractWith(SerializableValue target, string language) {
+            var targetString = target is IStringConverter stringTarget ? stringTarget.ConvertToString(language) : target.ToString();
             return new StringValue {Value = Value.Replace(targetString, "")};
         }
 
@@ -106,6 +144,11 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public SerializableValue MultiplyWith(SerializableValue target, string language) {
+            return MultiplyWith(target);
+        }
+
+        /// <inheritdoc />
         public SerializableValue DivideWith(SerializableValue target) {
             switch (target) {
                 case IIntegerConverter intTarget:
@@ -119,6 +162,31 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                 default:
                     throw new NotSupportedException($"Unable to divide string constant with unsupported value {target}");
             }
+        }
+
+        /// <inheritdoc />
+        public SerializableValue DivideWith(SerializableValue target, string language) {
+            return DivideWith(target);
+        }
+        
+        /// <inheritdoc />
+        public SerializableValue PickChild(SerializableValue name) {
+            if (!(name is IStringConverter stringConverter))
+                throw new NotSupportedException($"Unable to get feature in string value with feature id {name}: only string feature name is accepted");
+            var target = stringConverter.ConvertToString();
+            switch (target) {
+                case "ToBoolean":
+                    return new BooleanValue {Value = ConvertToBoolean()};
+                case "ToNumber":
+                    return new IntegerValue {Value = ConvertToInteger()};
+                default:
+                    throw new NotSupportedException($"Unable to get feature in string value: unsupported feature {target}");
+            }
+        }
+        
+        /// <inheritdoc />
+        public SerializableValue PickChild(SerializableValue target, string language) {
+            return PickChild(target);
         }
 
         private static string DivideString(string source, int length) {

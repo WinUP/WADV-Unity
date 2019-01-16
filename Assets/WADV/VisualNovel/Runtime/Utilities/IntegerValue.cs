@@ -29,7 +29,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// </summary>
     [Serializable]
     public class IntegerValue : SerializableValue, IBooleanConverter, IIntegerConverter, IFloatConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                                      ICompareOperator, IEqualOperator, IPickChildOperator {
+                                ICompareOperator, IEqualOperator, IPickChildOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
@@ -69,13 +69,28 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public bool ConvertToBoolean(string language) {
+            return ConvertToBoolean();
+        }
+
+        /// <inheritdoc />
         public int ConvertToInteger() {
             return Value;
         }
 
         /// <inheritdoc />
+        public int ConvertToInteger(string language) {
+            return ConvertToInteger();
+        }
+
+        /// <inheritdoc />
         public float ConvertToFloat() {
             return Value;
+        }
+
+        /// <inheritdoc />
+        public float ConvertToFloat(string language) {
+            return ConvertToFloat();
         }
 
         /// <inheritdoc />
@@ -90,7 +105,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         /// <inheritdoc />
         public override string ToString() {
-            return $"IntegerValue {{Value = {ConvertToString()}}}";
+            return ConvertToString();
         }
 
         /// <inheritdoc />
@@ -113,6 +128,11 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public SerializableValue PickChild(SerializableValue target, string language) {
+            return PickChild(target);
+        }
+
+        /// <inheritdoc />
         public bool EqualsWith(SerializableValue target) {
             try {
                 return Value == TryParse(target);
@@ -122,9 +142,19 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public bool EqualsWith(SerializableValue target, string language) {
+            return EqualsWith(target);
+        }
+
+        /// <inheritdoc />
         public int CompareWith(SerializableValue target) {
             var value = Value - FloatValue.TryParse(target);
             return value.Equals(0.0F) ? 0 : value < 0 ? -1 : 1;
+        }
+
+        /// <inheritdoc />
+        public int CompareWith(SerializableValue target, string language) {
+            return CompareWith(target);
         }
 
         /// <inheritdoc />
@@ -133,8 +163,18 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public SerializableValue AddWith(SerializableValue target, string language) {
+            return AddWith(target);
+        }
+
+        /// <inheritdoc />
         public SerializableValue SubtractWith(SerializableValue target) {
             return new IntegerValue {Value = Value - TryParse(target)};
+        }
+
+        /// <inheritdoc />
+        public SerializableValue SubtractWith(SerializableValue target, string language) {
+            return SubtractWith(target);
         }
 
         /// <inheritdoc />
@@ -143,8 +183,18 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public SerializableValue MultiplyWith(SerializableValue target, string language) {
+            return MultiplyWith(target);
+        }
+
+        /// <inheritdoc />
         public SerializableValue DivideWith(SerializableValue target) {
             return new IntegerValue {Value = Value / TryParse(target)};
+        }
+
+        /// <inheritdoc />
+        public SerializableValue DivideWith(SerializableValue target, string language) {
+            return DivideWith(target);
         }
     }
 }

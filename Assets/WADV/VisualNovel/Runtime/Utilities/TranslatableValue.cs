@@ -12,7 +12,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// </list>
     /// </summary>
     [Serializable]
-    public class TranslatableValue : SerializableValue, IStringConverter {
+    public class TranslatableValue : SerializableValue, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator {
         /// <summary>
         /// 获取或设置翻译所在的脚本ID
         /// </summary>
@@ -40,6 +40,46 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         public override string ToString() {
             return ConvertToString();
+        }
+
+        /// <inheritdoc />
+        public SerializableValue AddWith(SerializableValue target) {
+            return AddWith(target, TranslationManager.DefaultLanguage);
+        }
+
+        /// <inheritdoc />
+        public SerializableValue AddWith(SerializableValue target, string language) {
+            return new StringValue {Value = ConvertToString(language)}.AddWith(target);
+        }
+
+        /// <inheritdoc />
+        public SerializableValue SubtractWith(SerializableValue target) {
+            return SubtractWith(target, TranslationManager.DefaultLanguage);
+        }
+
+        /// <inheritdoc />
+        public SerializableValue SubtractWith(SerializableValue target, string language) {
+            return new StringValue {Value = ConvertToString(language)}.SubtractWith(target);
+        }
+
+        /// <inheritdoc />
+        public SerializableValue MultiplyWith(SerializableValue target) {
+            return MultiplyWith(target, TranslationManager.DefaultLanguage);
+        }
+
+        /// <inheritdoc />
+        public SerializableValue MultiplyWith(SerializableValue target, string language) {
+            return new StringValue {Value = ConvertToString(language)}.MultiplyWith(target);
+        }
+
+        /// <inheritdoc />
+        public SerializableValue DivideWith(SerializableValue target) {
+            return DivideWith(target, TranslationManager.DefaultLanguage);
+        }
+
+        /// <inheritdoc />
+        public SerializableValue DivideWith(SerializableValue target, string language) {
+            return new StringValue {Value = ConvertToString(language)}.DivideWith(target);
         }
     }
 }

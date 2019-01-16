@@ -10,7 +10,7 @@ namespace WADV.VisualNovel.Interoperation {
         string ConvertToString();
 
         /// <summary>
-        /// 获取也定语言下的字符串值
+        /// 在特定语言下获取字符串值
         /// </summary>
         /// <param name="language">目标语言</param>
         /// <returns></returns>

@@ -14,7 +14,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
         
         public override void OnImportAsset(AssetImportContext ctx) {
             var text = new TextAsset(File.ReadAllText(ctx.assetPath, Encoding.UTF8));
-            ctx.AddObjectToAsset($"VNScript:{ctx.assetPath}", text, AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Gizmos/VNS Icon.png"));
+            ctx.AddObjectToAsset($"VNScript:{ctx.assetPath}", text, EditorGUIUtility.Load("File Icon/VNS Icon.png") as Texture2D);
             ctx.SetMainObject(text);
         }
 

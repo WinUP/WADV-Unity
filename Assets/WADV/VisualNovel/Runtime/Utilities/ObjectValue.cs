@@ -152,9 +152,15 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                         result = _stringValues.ContainsKey(defaultStringValue) ? _stringValues[defaultStringValue] : null;
                         break;
                 }
-                return result ?? new NullValue();
+                return result ?? Add(name, new NullValue());
             }
 
+            /// <inheritdoc />
+            public SerializableValue PickChild(SerializableValue target, string language) {
+                return PickChild(target);
+            }
+
+            /// <inheritdoc />
             public string ConvertToString() {
                 var list = _floatValues.Values.ToList();
                 list.AddRange(_integerValues.Values.ToList());

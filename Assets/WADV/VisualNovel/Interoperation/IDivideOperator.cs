@@ -12,5 +12,14 @@ namespace WADV.VisualNovel.Interoperation {
         /// <returns></returns>
         [CanBeNull]
         SerializableValue DivideWith([NotNull] SerializableValue target);
+        
+        /// <summary>
+        /// 在特定语言下与目标值相除
+        /// </summary>
+        /// <param name="target">目标值</param>
+        /// <param name="language">目标语言</param>
+        /// <returns></returns>
+        [CanBeNull]
+        SerializableValue DivideWith([NotNull] SerializableValue target, string language);
     }
 }

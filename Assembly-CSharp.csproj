@@ -111,6 +111,7 @@
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Expressions\IntegerExpression.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Expressions\LogicNotExpression.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Expressions\LoopExpression.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Compiler\Expressions\OperatorAssociativity.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Expressions\OperatorType.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Expressions\ParameterExpression.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Expressions\ReturnExpression.cs" />

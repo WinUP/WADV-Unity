@@ -8,5 +8,12 @@ namespace WADV.VisualNovel.Interoperation {
         /// </summary>
         /// <returns></returns>
         int ConvertToInteger();
+        
+        /// <summary>
+        /// 在特定语言下获取32位整数值
+        /// </summary>
+        /// <param name="language">目标语言</param>
+        /// <returns></returns>
+        int ConvertToInteger(string language);
     }
 }

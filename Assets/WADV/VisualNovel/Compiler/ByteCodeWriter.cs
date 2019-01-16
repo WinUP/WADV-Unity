@@ -24,8 +24,8 @@ namespace WADV.VisualNovel.Compiler {
         /// <param name="code">指令类型</param>
         /// <param name="position">指令在源文件中的位置</param>
         public void OperationCode(OperationCode code, SourcePosition position) {
-            _writer.Write((byte) code);
             _positions.Add(_writer.BaseStream.Position, position);
+            _writer.Write((byte) code);
         }
 
         /// <summary>
@@ -34,14 +34,6 @@ namespace WADV.VisualNovel.Compiler {
         /// <param name="value"></param>
         public void Write7BitEncodedInteger(int value) {
             _writer.Write7BitEncodedInt(value);
-        }
-
-        /// <summary>
-        /// 编写字符串
-        /// </summary>
-        /// <param name="value">目标字符串</param>
-        public void DirectWrite(string value) {
-            _writer.Write(value);
         }
 
         /// <summary>
@@ -64,14 +56,6 @@ namespace WADV.VisualNovel.Compiler {
         /// </summary>
         /// <param name="value">目标数字</param>
         public void DirectWrite(uint value) {
-            _writer.Write(value);
-        }
-
-        /// <summary>
-        /// 编写64位整数
-        /// </summary>
-        /// <param name="value">目标数字</param>
-        public void DirectWrite(long value) {
             _writer.Write(value);
         }
         

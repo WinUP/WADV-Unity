@@ -25,7 +25,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// </summary>
     [Serializable]
     public class BooleanValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, IMultiplyOperator,
-                                      IPickChildOperator, IEqualOperator {
+                                IPickChildOperator, IEqualOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
@@ -65,13 +65,28 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public bool ConvertToBoolean(string language) {
+            return ConvertToBoolean();
+        }
+
+        /// <inheritdoc />
         public float ConvertToFloat() {
             return Value ? 1.0F : 0.0F;
         }
 
         /// <inheritdoc />
+        public float ConvertToFloat(string language) {
+            return ConvertToFloat();
+        }
+
+        /// <inheritdoc />
         public int ConvertToInteger() {
             return Value ? 1 : 0;
+        }
+
+        /// <inheritdoc />
+        public int ConvertToInteger(string language) {
+            return ConvertToInteger();
         }
 
         /// <inheritdoc />
@@ -86,7 +101,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         /// <inheritdoc />
         public override string ToString() {
-            return $"BooleanValue {{Value = {ConvertToString()}}}";
+            return ConvertToString();
         }
 
         /// <inheritdoc />
@@ -96,13 +111,28 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public bool EqualsWith(SerializableValue target, string language) {
+            return EqualsWith(target);
+        }
+
+        /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
             return new BooleanValue {Value = Value || TryParse(target)};
         }
 
         /// <inheritdoc />
+        public SerializableValue AddWith(SerializableValue target, string language) {
+            return AddWith(target);
+        }
+
+        /// <inheritdoc />
         public SerializableValue MultiplyWith(SerializableValue target) {
             return new BooleanValue {Value = Value && TryParse(target)};
+        }
+
+        /// <inheritdoc />
+        public SerializableValue MultiplyWith(SerializableValue target, string language) {
+            return MultiplyWith(target);
         }
 
         /// <inheritdoc />
@@ -120,6 +150,11 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                 default:
                     throw new NotSupportedException($"Unable to get feature in boolean value: unsupported feature {target}");
             }
+        }
+
+        /// <inheritdoc />
+        public SerializableValue PickChild(SerializableValue target, string language) {
+            return PickChild(target);
         }
     }
 }

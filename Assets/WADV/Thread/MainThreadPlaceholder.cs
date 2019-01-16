@@ -7,7 +7,7 @@ namespace WADV.Thread {
     /// </summary>
     public class MainThreadPlaceholder : CustomYieldInstruction {
         /// <inheritdoc />
-        public override bool keepWaiting => _finished;
+        public override bool keepWaiting => !_finished;
 
         private bool _finished;
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using WADV.VisualNovel.Compiler.Expressions;
@@ -308,58 +309,7 @@ namespace WADV.VisualNovel.Compiler {
             }
             var result = new BinaryExpression(Tokens.Current.Position) {Left = left};
             while (true) {
-                switch (Tokens.Current.Type) {
-                    case TokenType.PickChild:
-                        result.Operator = OperatorType.PickChild;
-                        break;
-                    case TokenType.MinusEqual:
-                        result.Operator = OperatorType.MinusBy;
-                        break;
-                    case TokenType.Minus:
-                        result.Operator = OperatorType.Minus;
-                        break;
-                    case TokenType.AddEqual:
-                        result.Operator = OperatorType.AddBy;
-                        break;
-                    case TokenType.Add:
-                        result.Operator = OperatorType.Add;
-                        break;
-                    case TokenType.MultiplyEqual:
-                        result.Operator = OperatorType.MultiplyBy;
-                        break;
-                    case TokenType.Multiply:
-                        result.Operator = OperatorType.Multiply;
-                        break;
-                    case TokenType.DivideEqual:
-                        result.Operator = OperatorType.DivideBy;
-                        break;
-                    case TokenType.Divide:
-                        result.Operator = OperatorType.Divide;
-                        break;
-                    case TokenType.GreaterEqual:
-                        result.Operator = OperatorType.NotLessThan;
-                        break;
-                    case TokenType.Equal:
-                        result.Operator = OperatorType.EqualsTo;
-                        break;
-                    case TokenType.Greater:
-                        result.Operator = OperatorType.GreaterThan;
-                        break;
-                    case TokenType.LesserEqual:
-                        result.Operator = OperatorType.NotGreaterThan;
-                        break;
-                    case TokenType.Lesser:
-                        result.Operator = OperatorType.LesserThan;
-                        break;
-                    case TokenType.LogicEqual:
-                        result.Operator = OperatorType.LogicEqualsTo;
-                        break;
-                    case TokenType.LogicNotEqual:
-                        result.Operator = OperatorType.LogicNotEqualsTo;
-                        break;
-                    default:
-                        throw new CompileException(Identifier, Tokens.Current.Position, $"Unrecognized binary operator type {Tokens.Current.Type}");
-                }
+                result.Operator = GetOperator();
                 Tokens.MoveToNext();
                 if (Tokens.Current.Type == TokenType.LineBreak) {
                     throw new CompileException(Identifier, Tokens.Current.Position, "Unexpected LineBreak");
@@ -370,7 +320,15 @@ namespace WADV.VisualNovel.Compiler {
                     return result;
                 }
                 var nextPrecedence = GetOperatorPrecedence();
-                if (nextPrecedence < 0 || nextPrecedence < minimumOperatorPrecedence) { // 下一个运算符优先级低于阈值
+                var associativity = GetOperatorAssociativity(result.Operator);
+                if (nextPrecedence >= 0 && associativity == OperatorAssociativity.RightToLeft) { // 相同运算符按从右至左运算
+                    result.Right = ParseBinaryOperator(right, currentPrecedence + 1);
+                    currentPrecedence = GetOperatorPrecedence();
+                    if (currentPrecedence < 0) {
+                        return result;
+                    }
+                    result = new BinaryExpression(Tokens.Current.Position) {Left = result};
+                } else if (nextPrecedence < 0 || nextPrecedence < minimumOperatorPrecedence) { // 下一个运算符优先级低于阈值
                     result.Right = right;
                     return result;
                 } else if (nextPrecedence <= currentPrecedence) { // 下一个运算符优先级小于等于当前
@@ -579,6 +537,74 @@ namespace WADV.VisualNovel.Compiler {
                     return 5;
                 default:
                     return -1;
+            }
+        }
+
+        private OperatorAssociativity GetOperatorAssociativity(OperatorType operatorType) {
+            switch (operatorType) {
+                case OperatorType.PickChild:
+                case OperatorType.Add:
+                case OperatorType.Minus:
+                case OperatorType.Multiply:
+                case OperatorType.Divide:
+                case OperatorType.GreaterThan:
+                case OperatorType.LesserThan:
+                case OperatorType.NotLessThan:
+                case OperatorType.NotGreaterThan:
+                case OperatorType.LogicEqualsTo:
+                case OperatorType.LogicNotEqualsTo:
+                    return OperatorAssociativity.LeftToRight;
+                case OperatorType.AddBy:
+                case OperatorType.MinusBy:
+                case OperatorType.MultiplyBy:
+                case OperatorType.DivideBy:
+                case OperatorType.EqualsTo:
+                    return OperatorAssociativity.RightToLeft;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(operatorType), operatorType, $"Unknown operator type {operatorType}");
+            }
+        }
+
+        /// <summary>
+        /// 将当前标记类型转换为运算符类型
+        /// </summary>
+        /// <returns></returns>
+        private OperatorType GetOperator() {
+            switch (Tokens.Current.Type) {
+                case TokenType.PickChild:
+                    return OperatorType.PickChild;
+                case TokenType.MinusEqual:
+                    return OperatorType.MinusBy;
+                case TokenType.Minus:
+                    return OperatorType.Minus;
+                case TokenType.AddEqual:
+                    return OperatorType.AddBy;
+                case TokenType.Add:
+                    return OperatorType.Add;
+                case TokenType.MultiplyEqual:
+                    return OperatorType.MultiplyBy;
+                case TokenType.Multiply:
+                    return OperatorType.Multiply;
+                case TokenType.DivideEqual:
+                    return OperatorType.DivideBy;
+                case TokenType.Divide:
+                    return OperatorType.Divide;
+                case TokenType.GreaterEqual:
+                    return OperatorType.NotLessThan;
+                case TokenType.Equal:
+                    return OperatorType.EqualsTo;
+                case TokenType.Greater:
+                    return OperatorType.GreaterThan;
+                case TokenType.LesserEqual:
+                    return OperatorType.NotGreaterThan;
+                case TokenType.Lesser:
+                    return OperatorType.LesserThan;
+                case TokenType.LogicEqual:
+                    return OperatorType.LogicEqualsTo;
+                case TokenType.LogicNotEqual:
+                    return OperatorType.LogicNotEqualsTo;
+                default:
+                    throw new CompileException(Identifier, Tokens.Current.Position, $"Unrecognized binary operator type {Tokens.Current.Type}");
             }
         }
         

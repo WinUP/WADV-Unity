@@ -62,7 +62,7 @@ namespace WADV.VisualNovel.Compiler {
                         binaryExpression.Operator == OperatorType.MinusBy || binaryExpression.Operator == OperatorType.MultiplyBy ||
                         binaryExpression.Operator == OperatorType.DivideBy) {
                         Generate(context, binaryExpression.Left, CompilerFlag.UseSetLocalVariable);
-                        if (!(binaryExpression.Left is VariableExpression)) { // 对于所有赋值类语句，如果左侧不是自带赋值指令的变量表达式则补充一个赋值指令来改写内存堆栈值
+                        if (!(binaryExpression.Left is VariableExpression) && !(binaryExpression.Left is ConstantExpression)) { // 对于所有赋值类语句，如果左侧不是自带赋值指令的变量表达式则补充一个赋值指令来改写内存堆栈值
                             context.File.OperationCode(OperationCode.STMEM, binaryExpression.Left.Position);
                         }
                     } else {
@@ -130,7 +130,8 @@ namespace WADV.VisualNovel.Compiler {
                     context.File.CreateLabel(conditionEndLabel);
                     break;
                 case ConstantExpression constantExpression:
-                    if (constantExpression.Name is StringExpression constantNameExpression) {
+                    var isSetConstant = flags.Any(e => e == CompilerFlag.UseSetLocalVariable);
+                    if (constantExpression.Name is StringExpression constantNameExpression && !isSetConstant) {
                         switch (constantNameExpression.Value.ToUpper()) {
                             case "TRUE":
                                 context.File.LoadBoolean(true, constantExpression.Position);
@@ -148,7 +149,7 @@ namespace WADV.VisualNovel.Compiler {
                     } else {
                         Generate(context, constantExpression.Name);
                     }
-                    context.File.OperationCode(flags.Any(e => e == CompilerFlag.UseSetLocalVariable) ? OperationCode.STCON : OperationCode.LDCON, constantExpression.Position);
+                    context.File.OperationCode(isSetConstant ? OperationCode.STCON : OperationCode.LDCON, constantExpression.Position);
                     break;
                 case DialogueExpression dialogueExpression:
                     context.File.LoadDialogue(dialogueExpression.Character, dialogueExpression.Content, dialogueExpression.Position);
@@ -269,7 +270,8 @@ namespace WADV.VisualNovel.Compiler {
                     context.File.OperationCode(OperationCode.BVAL, toBooleanExpression.Position);
                     break;
                 case VariableExpression variableExpression:
-                    if (variableExpression.Name is StringExpression variableNameExpression) {
+                    var isSetVariable = flags.Any(e => e == CompilerFlag.UseSetLocalVariable);
+                    if (variableExpression.Name is StringExpression variableNameExpression && !isSetVariable) {
                         switch (variableNameExpression.Value.ToUpper()) {
                             case "TRUE":
                                 context.File.LoadBoolean(true, variableNameExpression.Position);
@@ -287,7 +289,7 @@ namespace WADV.VisualNovel.Compiler {
                     } else {
                         Generate(context, variableExpression.Name);
                     }
-                    context.File.OperationCode(flags.Any(e => e == CompilerFlag.UseSetLocalVariable) ? OperationCode.STLOC : OperationCode.LDLOC, variableExpression.Position);
+                    context.File.OperationCode(isSetVariable ? OperationCode.STLOC : OperationCode.LDLOC, variableExpression.Position);
                     break;
             }
         }

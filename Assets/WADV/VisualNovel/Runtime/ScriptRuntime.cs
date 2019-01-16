@@ -254,8 +254,11 @@ namespace WADV.VisualNovel.Runtime {
         private void SetVariable(VariableSearchMode mode) {
             var name = PopString();
             var value = MemoryStack.Pop();
+            value = value is ReferenceValue referenceValue ? referenceValue.Value : value;
             if (string.IsNullOrEmpty(name)) throw new RuntimeException(_callStack, $"Unable to set variable: expected name {name} is not string value");
             var variable = ActiveScope?.FindVariableAndScope(name, true, mode);
+            if (name.Equals("true", StringComparison.InvariantCultureIgnoreCase) || name.Equals("false", StringComparison.InvariantCultureIgnoreCase))
+                throw new RuntimeException(_callStack, "Unable to set variable: system value true/false is readonly");
             if (variable.HasValue) {
                 try {
                     if (value == null || value is NullValue) {
@@ -276,6 +279,7 @@ namespace WADV.VisualNovel.Runtime {
             var target = MemoryStack.Pop();
             var value = MemoryStack.Pop();
             if (target is ReferenceValue referenceTarget) {
+                value = value is ReferenceValue referenceValue ? referenceValue.Value : value;
                 referenceTarget.Value = value;
             } else {
                 throw new RuntimeException(_callStack, $"Unable to set memory: expected target {target} is not reference/variable value");
@@ -300,17 +304,29 @@ namespace WADV.VisualNovel.Runtime {
         }
 
         private void LoadVariable(VariableSearchMode mode) {
-            var name = PopString();
-            var target = ActiveScope?.FindVariable(name, true, mode);
-            if (target == null) {
-                LoadNull();
+            string name;
+            if (MemoryStack.Peek() is ReferenceValue referenceValue) {
+                name = PopString(referenceValue.Value);
+                MemoryStack.Pop();
             } else {
-                MemoryStack.Push(target.Value);
+                name = PopString();
+            }
+            if (name.Equals("true", StringComparison.InvariantCultureIgnoreCase)) {
+                MemoryStack.Push(new BooleanValue {Value = true});
+            } else if (name.Equals("false", StringComparison.InvariantCultureIgnoreCase)) {
+                MemoryStack.Push(new BooleanValue {Value = false});
+            } else {
+                var target = ActiveScope?.FindVariable(name, true, mode);
+                if (target == null) {
+                    LoadNull();
+                } else {
+                    MemoryStack.Push(target.Value);
+                }
             }
         }
         
-        private string PopString() {
-            var rawValue = MemoryStack.Pop();
+        private string PopString(SerializableValue target = null) {
+            var rawValue = target ?? MemoryStack.Pop();
             switch (rawValue) {
                 case StringValue stringMemoryValue:
                     return stringMemoryValue.Value;
@@ -390,7 +406,7 @@ namespace WADV.VisualNovel.Runtime {
         
         private async Task CreatePluginCall() {
             var plugin = FindPlugin();
-            var parameterCount = Script.ReadInteger();
+            var parameterCount = ((IIntegerConverter) MemoryStack.Pop()).ConvertToInteger();
             var context = PluginExecuteContext.Create(this);
             for (var i = -1; ++i < parameterCount;) {
                 context.Parameters.Add(MemoryStack.Pop() ?? new NullValue(), MemoryStack.Pop() ?? new NullValue());

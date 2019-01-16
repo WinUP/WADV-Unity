@@ -47,5 +47,10 @@ namespace WADV.VisualNovelPlugins.Dialogue {
                    && characterValue.Name.ConvertToString() == Name.ConvertToString()
                    && characterValue.Avatar.ConvertToString() == Avatar.ConvertToString();
         }
+
+        /// <inheritdoc />
+        public bool EqualsWith(SerializableValue target, string language) {
+            return EqualsWith(target);
+        }
     }
 }

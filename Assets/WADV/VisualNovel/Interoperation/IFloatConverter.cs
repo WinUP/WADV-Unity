@@ -8,5 +8,12 @@ namespace WADV.VisualNovel.Interoperation {
         /// </summary>
         /// <returns></returns>
         float ConvertToFloat();
+        
+        /// <summary>
+        /// 在特定语言下获取32位浮点数值
+        /// </summary>
+        /// <param name="language">目标语言</param>
+        /// <returns></returns>
+        float ConvertToFloat(string language);
     }
 }

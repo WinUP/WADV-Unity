@@ -32,13 +32,28 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public bool ConvertToBoolean(string language) {
+            return ConvertToBoolean();
+        }
+
+        /// <inheritdoc />
         public float ConvertToFloat() {
             return 0.0F;
         }
 
         /// <inheritdoc />
+        public float ConvertToFloat(string language) {
+            return ConvertToFloat();
+        }
+
+        /// <inheritdoc />
         public int ConvertToInteger() {
             return 0;
+        }
+
+        /// <inheritdoc />
+        public int ConvertToInteger(string language) {
+            return ConvertToInteger();
         }
 
         /// <inheritdoc />
@@ -51,8 +66,9 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             return ConvertToString();
         }
 
+        /// <inheritdoc />
         public override string ToString() {
-            return $"NullValue {{}}";
+            return ConvertToString();
         }
 
         /// <inheritdoc />
@@ -61,8 +77,18 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public bool EqualsWith(SerializableValue target, string language) {
+            return EqualsWith(target);
+        }
+
+        /// <inheritdoc />
         public SerializableValue AddWith(SerializableValue target) {
             return target.Duplicate();
+        }
+
+        /// <inheritdoc />
+        public SerializableValue AddWith(SerializableValue target, string language) {
+            return AddWith(target);
         }
 
         /// <inheritdoc />
@@ -71,13 +97,28 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         /// <inheritdoc />
+        public SerializableValue SubtractWith(SerializableValue target, string language) {
+            return SubtractWith(target);
+        }
+
+        /// <inheritdoc />
         public SerializableValue MultiplyWith(SerializableValue target) {
             return new NullValue();
         }
 
         /// <inheritdoc />
+        public SerializableValue MultiplyWith(SerializableValue target, string language) {
+            return MultiplyWith(target);
+        }
+
+        /// <inheritdoc />
         public SerializableValue DivideWith(SerializableValue target) {
             return target is NullValue ? new NullValue() : throw new NotSupportedException("Unable to divide null with any other value except null");
+        }
+
+        /// <inheritdoc />
+        public SerializableValue DivideWith(SerializableValue target, string language) {
+            return DivideWith(target);
         }
     }
 }
