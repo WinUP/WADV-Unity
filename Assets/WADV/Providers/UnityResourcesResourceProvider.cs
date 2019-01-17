@@ -13,8 +13,8 @@ namespace WADV.Providers {
         public UnityResourcesResourceProvider() : base("Resources", 0) { }
         
         /// <inheritdoc />
-        public override Task<Object> Load(string id) {
-            return Task.FromResult(Resources.Load(id));
+        public override Task<object> Load(string id) {
+            return Task.FromResult((object) Resources.Load(id));
         }
     }
 }

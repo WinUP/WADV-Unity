@@ -27,7 +27,7 @@ namespace WADV.Providers {
         }
         
         /// <inheritdoc />
-        public override async Task<Object> Load(string id) {
+        public override async Task<object> Load(string id) {
             if (_assetBundle == null) {
                 await ReadAssetBundle();
             }

@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace WADV.VisualNovel.Provider {
     /// <summary>
@@ -31,14 +30,14 @@ namespace WADV.VisualNovel.Provider {
         /// </summary>
         /// <param name="id">资源ID</param>
         /// <returns></returns>
-        public abstract Task<Object> Load(string id);
+        public abstract Task<object> Load(string id);
 
         /// <summary>
         /// 读取资源
         /// </summary>
         /// <param name="id">资源ID</param>
         /// <returns></returns>
-        public async Task<T> Load<T>(string id) where T : Object {
+        public virtual async Task<T> Load<T>(string id) where T : class {
             var result = await Load(id);
             return result == null || result.GetType() != typeof(T) ? null : (T) result;
         }

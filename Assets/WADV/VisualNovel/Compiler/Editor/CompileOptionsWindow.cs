@@ -64,7 +64,6 @@ namespace WADV.VisualNovel.Compiler.Editor {
             MessageService.Receivers.RemoveChild(_node);
         }
 
-
         private void OnGUI() {
             GUILayout.BeginHorizontal();
             // 左栏

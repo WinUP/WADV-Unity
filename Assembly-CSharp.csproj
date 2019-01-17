@@ -103,6 +103,7 @@
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\SimpleDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\Plugins\SoundPlugin.cs" />
     <Compile Include="Assets\WADV\Providers\AssetBundleFileResourceProvider.cs" />
+    <Compile Include="Assets\WADV\Providers\UnityPersistentResourceProvider.cs" />
     <Compile Include="Assets\WADV\Providers\UnityResourcesResourceProvider.cs" />
     <Compile Include="Assets\WADV\Thread\Dispatcher.cs" />
     <Compile Include="Assets\WADV\Thread\MainThreadPlaceholder.cs" />
