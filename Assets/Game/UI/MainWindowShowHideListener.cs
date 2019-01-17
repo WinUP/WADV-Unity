@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using WADV;
-using WADV.VisualNovelPlugins.Dialogue.Renderer;
+using WADV.Plugins.Dialogue.Renderer;
 
 namespace Game.UI {
     [RequireComponent(typeof(Image))]

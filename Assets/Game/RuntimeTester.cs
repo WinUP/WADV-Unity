@@ -1,9 +1,7 @@
 using UnityEngine;
 using WADV.MessageSystem;
-using WADV.VisualNovel.Plugin;
+using WADV.Plugins.Dialogue;
 using WADV.VisualNovel.Runtime;
-using WADV.VisualNovel.Runtime.Utilities;
-using WADV.VisualNovelPlugins.Dialogue;
 
 namespace Game {
     public class RuntimeTester : MonoBehaviour {

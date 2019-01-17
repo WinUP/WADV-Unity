@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 using UnityEngine;
+using WADV.Attributes;
 
 namespace WADV.VisualNovel.Plugin {
     /// <summary>
@@ -13,31 +13,13 @@ namespace WADV.VisualNovel.Plugin {
         private static readonly Dictionary<string, VisualNovelPlugin> Plugins = new Dictionary<string, VisualNovelPlugin>();
 
         static PluginManager() {
-            var plugins = new List<VisualNovelPlugin>();
-            foreach (var item in Assembly.GetExecutingAssembly().GetTypes().Where(IsPlugin)) {
-                try {
-                    var plugin = (VisualNovelPlugin) Activator.CreateInstance(item);
-                    plugins.Add(plugin);
-                    if (Application.isEditor) {
-                        Debug.Log($"Plugin manager: {item.FullName} register succeed");
-                    }
-                } catch (MissingMemberException) {
-                    if (Application.isEditor) {
-                        Debug.LogWarning($"Plugin manager: {item.FullName} register failed, manual registration required");
-                    }
-                } catch (Exception ex) {
-                    Debug.LogError($"Plugin manager: {item.FullName} register failed with \"{ex}\"");
-                }
-            }
-            foreach (var plugin in plugins.OrderByDescending(e => e.InitPriority)) {
-                Register(plugin);
-            }
+            AutoRegister.Load(Assembly.GetExecutingAssembly());
         }
 
         /// <summary>
         /// 根据名称寻找插件
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">插件名</param>
         /// <returns></returns>
         [CanBeNull]
         public static VisualNovelPlugin Find(string name) {
@@ -91,16 +73,6 @@ namespace WADV.VisualNovel.Plugin {
         /// <returns></returns>
         public static bool Contains(string name) {
             return Plugins.ContainsKey(name);
-        }
-
-        private static bool IsPlugin(Type e) {
-            if (!e.IsClass || e.IsAbstract) return false;
-            var baseType = e;
-            do {
-                baseType = baseType.BaseType;
-                if (baseType != null && baseType == typeof(VisualNovelPlugin)) return true;
-            } while (baseType != null);
-            return false;
         }
     }
 }

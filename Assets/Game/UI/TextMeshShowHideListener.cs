@@ -2,7 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using WADV;
-using WADV.VisualNovelPlugins.Dialogue.Renderer;
+using WADV.Plugins.Dialogue.Renderer;
 
 namespace Game.UI {
     [RequireComponent(typeof(TextMeshProUGUI))]
