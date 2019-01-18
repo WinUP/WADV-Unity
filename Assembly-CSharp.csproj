@@ -95,6 +95,7 @@
     <Compile Include="Assets\WADV\Plugins\Dialogue\Renderer\CharacterContentRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\Renderer\DialogueContentRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\Renderer\DialogueShowHideRenderer.cs" />
+    <Compile Include="Assets\WADV\Plugins\Dialogue\Renderer\RenderState.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\Renderer\TextMeshCharacterContentRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\Renderer\TextMeshDialogueContentRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\DialogueTextGenerator.cs" />

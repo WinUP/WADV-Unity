@@ -2,6 +2,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using UnityEditor.U2D;
 using UnityEngine;
 using WADV.Extensions;
 using WADV.MessageSystem;
@@ -18,6 +19,11 @@ namespace WADV.Plugins.Dialogue.Renderer {
         /// <inheritdoc />
         public int Mask { get; } = DialoguePlugin.MessageMask | CoreConstant.Mask;
         public bool IsStandaloneMessage { get; } = true;
+
+        /// <summary>
+        /// 获取渲染状态
+        /// </summary>
+        public RenderState State { get; private set; } = RenderState.Idle;
 
         /// <summary>
         /// 文本生成器
@@ -109,13 +115,16 @@ namespace WADV.Plugins.Dialogue.Renderer {
                             history = null;
                             break;
                         case PauseDialogueItem pauseDialogueItem:
+                            State = RenderState.Waiting;
                             if (pauseDialogueItem.Time.HasValue) {
                                 await Dispatcher.WaitForSeconds(pauseDialogueItem.Time.Value);
                             } else {
                                 await MessageService.WaitUntil(DialoguePlugin.MessageMask, DialoguePlugin.FinishContentWaiting);
                             }
+                            State = RenderState.Idle;
                             break;
                         case TextDialogueItem textDialogueItem:
+                            State = RenderState.Rendering;
                             PrepareStyle(textDialogueItem);
                             _generator.Text = textDialogueItem.Text;
                             _generator.Reset();
@@ -128,6 +137,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
                                     await Dispatcher.NextUpdate();
                                 }
                             }
+                            State = RenderState.Idle;
                             history = CurrentText;
                             break;
                     }
