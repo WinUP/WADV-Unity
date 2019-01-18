@@ -1,6 +1,8 @@
 using UnityEngine;
+using WADV.Extensions;
 using WADV.MessageSystem;
 using WADV.Plugins.Dialogue;
+using WADV.Thread;
 using WADV.VisualNovel.Runtime;
 
 namespace Game {
