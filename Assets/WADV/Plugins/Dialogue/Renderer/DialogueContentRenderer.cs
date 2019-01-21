@@ -2,7 +2,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using UnityEditor.U2D;
 using UnityEngine;
 using WADV.Extensions;
 using WADV.MessageSystem;
@@ -42,6 +41,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
         protected abstract string CurrentText { get; }
 
         private DialogueTextGenerator _generator;
+        private bool _quickMode;
 
         /// <summary>
         /// 清空文本
@@ -85,6 +85,8 @@ namespace WADV.Plugins.Dialogue.Renderer {
                 QuickCachePlaceholder(message.CreatePlaceholder());
                 await ProcessText(languageMessage.Content);
                 CompleteCachedPlaceholder();
+            } else if (State == RenderState.Rendering && message.HasTag(DialoguePlugin.MessageIntegration.FinishContentWaiting)) {
+                _quickMode = true;
             }
             return message;
         }
@@ -106,7 +108,8 @@ namespace WADV.Plugins.Dialogue.Renderer {
                             break;
                         case PauseDialogueItem pauseDialogueItem:
                             State = RenderState.Waiting;
-                            if (pauseDialogueItem.Time.HasValue) {
+                            if (_quickMode) {
+                            } else if (pauseDialogueItem.Time.HasValue) {
                                 await Dispatcher.WaitForSeconds(pauseDialogueItem.Time.Value);
                             } else {
                                 await MessageService.WaitUntil(DialoguePlugin.MessageIntegration.Mask, DialoguePlugin.MessageIntegration.FinishContentWaiting);
@@ -124,6 +127,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
                                 var time = 0.0F;
                                 while (time < timeSpan) {
                                     time += Time.deltaTime;
+                                    if (_quickMode) break;
                                     await Dispatcher.NextUpdate();
                                 }
                             }
@@ -135,6 +139,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
             } else {
                 ShowText(history, new StringBuilder());
             }
+            _quickMode = false;
             if (!noWait) {
                 await MessageService.WaitUntil(DialoguePlugin.MessageIntegration.Mask, DialoguePlugin.MessageIntegration.FinishContentWaiting);
             }
