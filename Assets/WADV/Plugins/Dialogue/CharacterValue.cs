@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Dialogue {
@@ -17,13 +16,11 @@ namespace WADV.Plugins.Dialogue {
         /// <summary>
         /// 获取或设置角色名称
         /// </summary>
-        [NotNull]
         public IStringConverter Name { get; set; }
             
         /// <summary>
         /// 获取或设置角色头像资源路径
         /// </summary>
-        [NotNull]
         public IStringConverter Avatar { get; set; }
             
         /// <inheritdoc />
@@ -38,7 +35,7 @@ namespace WADV.Plugins.Dialogue {
 
         /// <inheritdoc />
         public string ConvertToString(string language) {
-            return ConvertToString();
+            return Name.ConvertToString(language);
         }
 
         /// <inheritdoc />

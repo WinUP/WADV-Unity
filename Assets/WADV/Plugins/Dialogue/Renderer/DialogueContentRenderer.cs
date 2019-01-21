@@ -15,10 +15,10 @@ namespace WADV.Plugins.Dialogue.Renderer {
     /// <summary>
     /// 基础对话框内容组件
     /// </summary>
-    public abstract class DialogueContentRenderer : MonoBehaviour, IMessenger {
+    public abstract class DialogueContentRenderer : MonoMessengerBehaviour {
         /// <inheritdoc />
-        public int Mask { get; } = DialoguePlugin.MessageMask | CoreConstant.Mask;
-        public bool IsStandaloneMessage { get; } = true;
+        public override int Mask { get; } = DialoguePlugin.MessageIntegration.Mask | CoreConstant.Mask;
+        public override bool IsStandaloneMessage { get; } = true;
 
         /// <summary>
         /// 获取渲染状态
@@ -31,7 +31,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
         public DialogueTextGeneratorType textGenerator = DialogueTextGeneratorType.Simple;
         
         /// <summary>
-        /// 每两次生成的帧间隔
+        /// 每两次生成的时间间隔
         /// </summary>
         [Range(0.0F, 0.5F)]
         public float timeSpan;
@@ -42,16 +42,6 @@ namespace WADV.Plugins.Dialogue.Renderer {
         protected abstract string CurrentText { get; }
 
         private DialogueTextGenerator _generator;
-        [CanBeNull] private MainThreadPlaceholder _currentPlaceholder;
-        [CanBeNull] private DialogueDescription _currentDialogue;
-        
-        private void OnEnable() {
-            MessageService.Receivers.CreateChild(this);
-        }
-
-        private void OnDisable() {
-            MessageService.Receivers.RemoveChild(this);
-        }
 
         /// <summary>
         /// 清空文本
@@ -78,31 +68,31 @@ namespace WADV.Plugins.Dialogue.Renderer {
         }
 
         /// <inheritdoc />
-        public async Task<Message> Receive(Message message) {
-            if (message.Tag == DialoguePlugin.NewDialogueMessageTag && message is Message<DialogueDescription> dialogueMessage) {
-                _currentPlaceholder = message.CreatePlaceholder();
-                _currentDialogue = dialogueMessage.Content;
-                await ProcessText(dialogueMessage.Content.Context.Runtime.ActiveLanguage);
-                _currentDialogue = null;
-                if (_currentPlaceholder == null) return message;
-                _currentPlaceholder.Complete();
-                _currentPlaceholder = null;
-            } else if (_currentDialogue != null && message.Tag == CoreConstant.LanguageChange && message is Message<string> languageMessage) {
-                if (_currentPlaceholder != null) {
-                    await _currentPlaceholder;
+        public override async Task<Message> Receive(Message message) {
+            if (message.HasTag(DialoguePlugin.MessageIntegration.NewDialogue) && message is ContextMessage<DialoguePlugin.MessageIntegration.Content> dialogueMessage) {
+                if (HasQuickCachePlaceholder()) {
+                    await WaitCachedPlaceholder();
                 }
-                _currentPlaceholder = message.CreatePlaceholder();
+                QuickCacheMessage(message);
+                QuickCachePlaceholder(message.CreatePlaceholder());
+                await ProcessText(dialogueMessage.Context.Runtime.ActiveLanguage);
+                PopQuickCacheMessage();
+                CompleteCachedPlaceholder();
+            } else if (HasQuickCacheMessage() && message.HasTag(CoreConstant.LanguageChange) && message is Message<string> languageMessage) {
+                if (HasQuickCachePlaceholder()) {
+                    await WaitCachedPlaceholder();
+                }
+                QuickCachePlaceholder(message.CreatePlaceholder());
                 await ProcessText(languageMessage.Content);
-                if (_currentPlaceholder == null) return message;
-                _currentPlaceholder.Complete();
-                _currentPlaceholder = null;
+                CompleteCachedPlaceholder();
             }
             return message;
         }
 
         private async Task ProcessText(string language) {
-            if (_currentDialogue == null) return;
-            var (content, noWait, noClear) = DialoguePlugin.ProcessDialogueContent(_currentDialogue.Context.Runtime, _currentDialogue.RawContent, language);
+            var dialogue = PopQuickCacheMessage<ContextMessage<DialoguePlugin.MessageIntegration.Content>>();
+            if (dialogue == null) return;
+            var (content, noWait, noClear) = DialoguePlugin.CreateDialogueContent(dialogue.Context.Runtime, dialogue.Content.Text, language);
             var history = noClear ? CurrentText : null;
             if (_generator == null) {
                 ResetGenerator(textGenerator);
@@ -119,7 +109,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
                             if (pauseDialogueItem.Time.HasValue) {
                                 await Dispatcher.WaitForSeconds(pauseDialogueItem.Time.Value);
                             } else {
-                                await MessageService.WaitUntil(DialoguePlugin.MessageMask, DialoguePlugin.FinishContentWaiting);
+                                await MessageService.WaitUntil(DialoguePlugin.MessageIntegration.Mask, DialoguePlugin.MessageIntegration.FinishContentWaiting);
                             }
                             State = RenderState.Idle;
                             break;
@@ -146,7 +136,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
                 ShowText(history, new StringBuilder());
             }
             if (!noWait) {
-                await MessageService.WaitUntil(DialoguePlugin.MessageMask, DialoguePlugin.FinishContentWaiting);
+                await MessageService.WaitUntil(DialoguePlugin.MessageIntegration.Mask, DialoguePlugin.MessageIntegration.FinishContentWaiting);
             }
         }
     }

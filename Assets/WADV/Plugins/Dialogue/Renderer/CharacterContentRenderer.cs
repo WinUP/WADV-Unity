@@ -1,9 +1,5 @@
 using System.Threading.Tasks;
-using JetBrains.Annotations;
-using UnityEngine;
-using WADV.Extensions;
 using WADV.MessageSystem;
-using WADV.Thread;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Runtime;
 
@@ -12,60 +8,51 @@ namespace WADV.Plugins.Dialogue.Renderer {
     /// <summary>
     /// 基础对话框角色组件
     /// </summary>
-    public abstract class CharacterContentRenderer : MonoBehaviour, IMessenger {
+    public abstract class CharacterContentRenderer : MonoMessengerBehaviour {
         /// <inheritdoc />
-        public int Mask { get; } = DialoguePlugin.MessageMask | CoreConstant.Mask;
+        public override int Mask { get; } = DialoguePlugin.MessageIntegration.Mask | CoreConstant.Mask;
         
         /// <inheritdoc />
-        public bool IsStandaloneMessage { get; } = true;
+        public override bool IsStandaloneMessage { get; } = true;
 
-        [CanBeNull] private DialogueDescription _currentDescription;
-        [CanBeNull] private MainThreadPlaceholder _currentPlaceholder;
-        [CanBeNull] private string _showingText;
-
-        private void OnEnable() {
-            MessageService.Receivers.CreateChild(this);
-        }
-
-        private void OnDisable() {
-            MessageService.Receivers.RemoveChild(this);
-        }
+        
+        /// <summary>
+        /// 获取当前显示的文本
+        /// </summary>
+        public abstract string Text { get; }
 
         /// <summary>
         /// 显示文本
         /// </summary>
         /// <param name="text">目标文本</param>
         /// <returns></returns>
-        protected abstract Task ShowText(string text);
+        public abstract Task ShowText(string text);
 
         /// <summary>
         /// 立即替换文本
         /// </summary>
         /// <param name="text">目标文本</param>
-        protected abstract void ReplaceText(string text);
+        public abstract void ReplaceText(string text);
 
         /// <inheritdoc />
-        public async Task<Message> Receive(Message message) {
-            if (message.Tag == DialoguePlugin.NewDialogueMessageTag && message is Message<DialogueDescription> dialogueMessage) {
-                var dialogue = _currentDescription = dialogueMessage.Content;
-                var text = CreateCharacterText(dialogue.RawCharacter, dialogue.Context.Runtime, dialogue.Context.Runtime.ActiveLanguage);
-                if (text != _showingText) {
-                    _currentPlaceholder = message.CreatePlaceholder();
-                    _showingText = text;
-                    await ShowText(text);
-                    if (_currentPlaceholder == null) return message;
-                    _currentPlaceholder.Complete();
-                    _currentPlaceholder = null;
+        public override async Task<Message> Receive(Message message) {
+            if (message.HasTag(DialoguePlugin.MessageIntegration.NewDialogue) && message is ContextMessage<DialoguePlugin.MessageIntegration.Content> dialogueMessage) {
+                QuickCacheMessage(message);
+                var dialogue = dialogueMessage.Content;
+                var text = CreateCharacterText(dialogue.Character, dialogueMessage.Context.Runtime, dialogueMessage.Context.Runtime.ActiveLanguage);
+                if (text == Text) return message;
+                QuickCachePlaceholder(message.CreatePlaceholder());
+                await ShowText(text);
+                CompleteCachedPlaceholder();
+            } else if (HasQuickCacheMessage() && message.HasTag(CoreConstant.LanguageChange) && message is Message<string> languageMessage) {
+                if (HasQuickCachePlaceholder()) {
+                    await WaitCachedPlaceholder();
                 }
-            } else if (_currentDescription != null && message.Tag == CoreConstant.LanguageChange && message is Message<string> languageMessage) {
-                if (_currentPlaceholder != null) {
-                    await _currentPlaceholder;
-                }
-                var text = CreateCharacterText(_currentDescription.RawCharacter, _currentDescription.Context.Runtime, _currentDescription.Context.Runtime.ActiveLanguage);
-                if (text != _showingText) {
-                    ReplaceText(CreateCharacterText(_currentDescription.RawCharacter, _currentDescription.Context.Runtime, languageMessage.Content));
-                    _showingText = text;
-                }
+                dialogueMessage = PopQuickCacheMessage<ContextMessage<DialoguePlugin.MessageIntegration.Content>>();
+                if (dialogueMessage == null) return message;
+                var text = CreateCharacterText(dialogueMessage.Content.Character, dialogueMessage.Context.Runtime, dialogueMessage.Context.Language);
+                if (text == Text) return message;
+                ReplaceText(CreateCharacterText(dialogueMessage.Content.Character, dialogueMessage.Context.Runtime, languageMessage.Content));
             }
             return message;
         }

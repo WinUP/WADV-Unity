@@ -13,7 +13,7 @@ namespace Game {
         }
 
         public async void NextDialogue() {
-            await MessageService.ProcessAsync(new Message(DialoguePlugin.MessageMask, DialoguePlugin.FinishContentWaiting));
+            await MessageService.ProcessAsync(new Message(DialoguePlugin.MessageIntegration.Mask, DialoguePlugin.MessageIntegration.FinishContentWaiting));
         }
     }
 }

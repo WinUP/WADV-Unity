@@ -5,11 +5,10 @@ using WADV.MessageSystem;
 using WADV.Thread;
 
 namespace WADV.Plugins.Dialogue.Renderer {
-    public abstract class DialogueShowHideRenderer : MonoBehaviour, IMessenger {
-        public int Mask { get; } = DialoguePlugin.MessageMask;
-        public bool IsStandaloneMessage { get; } = true;
-
-        private float _initialAlpha;
+    public abstract class DialogueShowHideRenderer : MonoMessengerBehaviour {
+        public override int Mask { get; } = DialoguePlugin.MessageIntegration.Mask;
+        public override bool IsStandaloneMessage { get; } = false;
+        
         private bool _hidden;
         
         public static LinkedTreeNode<IMessenger> RootMessenger { get; }
@@ -18,11 +17,11 @@ namespace WADV.Plugins.Dialogue.Renderer {
             RootMessenger = MessageService.Receivers.CreateChild(new EmptyMessenger());
         }
         
-        private void OnEnable() {
+        protected override void OnEnable() {
             RootMessenger.CreateChild(this);
         }
 
-        private void OnDisable() {
+        protected override void OnDisable() {
             RootMessenger.RemoveChild(this);
         }
         
@@ -34,39 +33,41 @@ namespace WADV.Plugins.Dialogue.Renderer {
 
         protected abstract void OnHideFrame(float progress);
 
-        public async Task<Message> Receive(Message message) {
-            if (message.Tag != DialoguePlugin.HideDialogueBoxMessageTag && message.Tag != DialoguePlugin.ShowDialogueBoxMessageTag) return message;
-            if (message.Tag == DialoguePlugin.ShowDialogueBoxMessageTag && !_hidden || message.Tag == DialoguePlugin.HideDialogueBoxMessageTag && _hidden) return message;
-            _hidden = message.Tag == DialoguePlugin.HideDialogueBoxMessageTag;
-            var fadeTime = message is Message<float> floatMessage ? floatMessage.Content : 0.0F;
-            if (fadeTime.Equals(0.0F)) {
-                if (message.Tag == DialoguePlugin.ShowDialogueBoxMessageTag) {
-                    PrepareStartShow(fadeTime);
-                    OnShowFrame(1.0F);
-                } else {
-                    PrepareStartHide(fadeTime);
-                    OnHideFrame(1.0F);
-                }
-                return message;
-            }
-            var placeholder = message.CreatePlaceholder();
-            if (message.Tag == DialoguePlugin.ShowDialogueBoxMessageTag) {
-                PrepareStartShow(fadeTime);
+        public override Task<Message> Receive(Message message) {
+            float totalTime;
+            if (message.HasTag(DialoguePlugin.MessageIntegration.ShowDialogueBox)) {
+                if (!_hidden) return Task.FromResult(message);
+                _hidden = false;
+                totalTime = message is Message<float> floatMessage ? floatMessage.Content : 0.0F;
+                PrepareStartShow(totalTime);
+            } else if (message.HasTag(DialoguePlugin.MessageIntegration.HideDialogueBox)) {
+                if (_hidden) return Task.FromResult(message);
+                _hidden = true;
+                totalTime = message is Message<float> floatMessage ? floatMessage.Content : 0.0F;
+                PrepareStartHide(totalTime);
             } else {
-                PrepareStartHide(fadeTime);
+                return Task.FromResult(message);
             }
+            if (HasQuickCachePlaceholder()) {
+                CompleteCachedPlaceholder();
+            }
+            QuickCachePlaceholder(message.CreatePlaceholder());
+            StartCoroutine(RunShowHide(totalTime, message.Tag == DialoguePlugin.MessageIntegration.ShowDialogueBox).AsIEnumerator());
+            return Task.FromResult(message);
+        }
+
+        private async Task RunShowHide(float totalTime, bool isShow) {
             var time = 0.0F;
-            while (time <= fadeTime) {
+            while (time <= totalTime) {
                 time += Time.deltaTime;
-                if (message.Tag == DialoguePlugin.ShowDialogueBoxMessageTag) {
-                    OnShowFrame(Mathf.Clamp01(time / fadeTime));
+                if (isShow) {
+                    OnShowFrame(Mathf.Clamp01(time / totalTime));
                 } else {
-                    OnHideFrame(Mathf.Clamp01(time / fadeTime));
+                    OnHideFrame(Mathf.Clamp01(time / totalTime));
                 }
                 await Dispatcher.NextUpdate();
             }
-            placeholder.Complete();
-            return message;
+            CompleteCachedPlaceholder();
         }
     }
 }

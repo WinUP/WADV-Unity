@@ -17,9 +17,12 @@ namespace WADV.Plugins.Dialogue.Renderer {
             _textMesh = GetComponent<TextMeshProUGUI>();
             if (_textMesh == null) throw new NotSupportedException("Unable to create TextMeshCharacter: no TextMeshProUGUI component found in current object");
         }
-        
+
         /// <inheritdoc />
-        protected override async Task ShowText(string text) {
+        public override string Text => _textMesh.text;
+
+        /// <inheritdoc />
+        public override async Task ShowText(string text) {
             var color = _textMesh.color;
             var time = 0.0F;
             while (time < 0.1F) {
@@ -37,7 +40,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
         }
 
         /// <inheritdoc />
-        protected override void ReplaceText(string text) {
+        public override void ReplaceText(string text) {
             _textMesh.text = text;
         }
     }

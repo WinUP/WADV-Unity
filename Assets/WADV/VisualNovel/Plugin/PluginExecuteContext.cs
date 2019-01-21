@@ -17,6 +17,11 @@ namespace WADV.VisualNovel.Plugin {
         /// 获取完整参数列表
         /// </summary>
         public Dictionary<SerializableValue, SerializableValue> Parameters { get; }
+
+        /// <summary>
+        /// 获取当前激活的语言（等价于使用Runtime.ActiveLanguage）
+        /// </summary>
+        public string Language => Runtime?.ActiveLanguage;
         
         /// <summary>
         /// 获取名称可转换为字符串的参数列表
