@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using JetBrains.Annotations;
 using UnityEngine;
-using WADV.Attributes;
 
 namespace WADV.VisualNovel.Plugin {
     /// <summary>

@@ -25,6 +25,7 @@ namespace WADV.Providers {
         /// <inheritdoc />
         public override async Task<T> Load<T>(string id) {
             var result = await Load(id);
+            if (result == null) return null;
             if (typeof(T) == typeof(BinaryData)) return (T) result;
             try {
                 var deserializer = new BinaryFormatter();

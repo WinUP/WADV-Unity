@@ -9,7 +9,7 @@ namespace WADV.VisualNovel.Provider {
     /// 资源提供器管理器
     /// </summary>
     public static class ResourceProviderManager {
-        private static readonly Dictionary<string, Provider.ResourceProvider> Providers = new Dictionary<string, Provider.ResourceProvider>();
+        private static readonly Dictionary<string, ResourceProvider> Providers = new Dictionary<string, ResourceProvider>();
         
         static ResourceProviderManager() {
             AutoRegister.Load(Assembly.GetExecutingAssembly());
@@ -21,7 +21,7 @@ namespace WADV.VisualNovel.Provider {
         /// <param name="name">提供器名</param>
         /// <returns></returns>
         [CanBeNull]
-        public static Provider.ResourceProvider Find(string name) {
+        public static ResourceProvider Find(string name) {
             return Providers.ContainsKey(name) ? Providers[name] : null;
         }
         
@@ -30,7 +30,7 @@ namespace WADV.VisualNovel.Provider {
         /// <para>相同名称的提供器会覆盖之前注册的提供器</para>
         /// </summary>
         /// <param name="plugin">要注册的提供器</param>
-        public static void Register([NotNull] Provider.ResourceProvider plugin) {
+        public static void Register([NotNull] ResourceProvider plugin) {
             if (Providers.ContainsKey(plugin.Name)) {
                 Providers.Remove(plugin.Name);
             }
@@ -41,7 +41,7 @@ namespace WADV.VisualNovel.Provider {
         /// 注销一个资源提供器
         /// </summary>
         /// <param name="plugin">要注销的提供器</param>
-        public static void Unregister(Provider.ResourceProvider plugin) {
+        public static void Unregister(ResourceProvider plugin) {
             if (Providers.ContainsKey(plugin.Name)) {
                 Providers.Remove(plugin.Name);
             }
@@ -52,7 +52,7 @@ namespace WADV.VisualNovel.Provider {
         /// </summary>
         /// <param name="plugin">目标提供器</param>
         /// <returns></returns>
-        public static bool Contains(Provider.ResourceProvider plugin) {
+        public static bool Contains(ResourceProvider plugin) {
             return Providers.ContainsValue(plugin);
         }
         
@@ -71,12 +71,12 @@ namespace WADV.VisualNovel.Provider {
         /// <param name="address">资源地址（必须符合格式[provider]:[id]）</param>
         /// <returns></returns>
         public static async Task<object> Load(string address) {
-            var splitter = address.IndexOf(':');
-            if (splitter < 1) throw new FormatException($"Unable to load resource: address {address} must has format [provider]:[id]");
+            var splitter = address.IndexOf("://", StringComparison.Ordinal);
+            if (splitter < 1) throw new FormatException($"Unable to load resource: address {address} must has format [provider]://[id]");
             var providerName = address.Substring(0, splitter);
             var provider = Find(providerName);
             if (provider == null) throw new KeyNotFoundException($"Unable to load resource: expected provider {providerName} not existed");
-            return await provider.Load(address.Substring(splitter + 1));
+            return await provider.Load(address.Substring(splitter + 3));
         }
 
         /// <summary>

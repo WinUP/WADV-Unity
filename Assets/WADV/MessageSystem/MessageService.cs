@@ -16,7 +16,7 @@ namespace WADV.MessageSystem {
         /// </summary>
         public static readonly LinkedTreeNode<IMessenger> Receivers = new LinkedTreeNode<IMessenger>(Application.isEditor ? (IMessenger) new DebugLogMessenger() : new EmptyMessenger());
 
-        private static readonly Dictionary<Func<Message, bool>, MainThreadPlaceholder> WaitingTasks = new Dictionary<Func<Message, bool>, MainThreadPlaceholder>();
+        private static readonly Dictionary<Func<Message, bool>, MainThreadPlaceholder<Message>> WaitingTasks = new Dictionary<Func<Message, bool>, MainThreadPlaceholder<Message>>();
         
         /// <summary>
         /// 异步处理消息
@@ -57,10 +57,11 @@ namespace WADV.MessageSystem {
         /// </summary>
         /// <param name="prediction">判断消息是否满足条件的函数</param>
         /// <returns></returns>
-        public static async Task WaitUntil(Func<Message, bool> prediction) {
-            var awaiter = new MainThreadPlaceholder();
+        public static async Task<Message> WaitUntil(Func<Message, bool> prediction) {
+            var awaiter = new MainThreadPlaceholder<Message>();
             WaitingTasks.Add(prediction, awaiter);
             await awaiter;
+            return awaiter.Value;
         }
 
         /// <summary>
@@ -69,7 +70,7 @@ namespace WADV.MessageSystem {
         /// <param name="mask">目标消息的掩码</param>
         /// <param name="tag">目标消息的标记（不提供或值为null则不作为判断依据）</param>
         /// <returns></returns>
-        public static Task WaitUntil(int mask, string tag = null) {
+        public static Task<Message> WaitUntil(int mask, string tag = null) {
             return WaitUntil(message => (message.Mask & mask) != 0 && (string.IsNullOrEmpty(tag) || message.Tag == tag));
         }
 
@@ -78,7 +79,7 @@ namespace WADV.MessageSystem {
             foreach (var (prediction, awaiter) in WaitingTasks) {
                 if (!prediction.Invoke(message)) continue;
                 needRemove.Add(prediction);
-                awaiter.Complete();
+                awaiter.Complete(message);
             }
             foreach (var item in needRemove) {
                 WaitingTasks.Remove(item);

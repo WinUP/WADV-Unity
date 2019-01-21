@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace WADV.VisualNovel.Translation {
+    /// <summary>
+    /// 静态翻译管理器
+    /// </summary>
     public static class TranslationManager {
         public const string DefaultLanguage = "default";
         /// <summary>
@@ -16,7 +19,7 @@ namespace WADV.VisualNovel.Translation {
         /// <param name="name">项名</param>
         /// <param name="language">目标语言</param>
         /// <returns></returns>
-        public static string GetStatic(string name, string language = DefaultLanguage) {
+        public static string Get(string name, string language = DefaultLanguage) {
             EnsureLanguageName(language);
             return StaticTranslations.ContainsKey(name) ? StaticTranslations[name].FirstOrDefault(e => e.Name == language)?.Value : null;
         }
@@ -28,7 +31,7 @@ namespace WADV.VisualNovel.Translation {
         /// <param name="name">项名</param>
         /// <param name="value">项值</param>
         /// <param name="language">目标语言</param>
-        public static void SetStatic(string name, string value, string language = DefaultLanguage) {
+        public static void Set(string name, string value, string language = DefaultLanguage) {
             EnsureLanguageName(language);
             List<Translation> translations;
             if (StaticTranslations.ContainsKey(name)) {
@@ -50,7 +53,7 @@ namespace WADV.VisualNovel.Translation {
         /// </summary>
         /// <param name="name">项名</param>
         /// <param name="language">目标语言（为空代表移除所有语言中的对应翻译）</param>
-        public static void RemoveStatic(string name, string language = null) {
+        public static void Remove(string name, string language = null) {
             EnsureLanguageName(language);
             if (!StaticTranslations.ContainsKey(name)) return;
             if (language == null) {
