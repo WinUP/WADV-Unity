@@ -40,6 +40,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
 using UnityEngine;
 
 namespace WADV {
@@ -47,6 +48,77 @@ namespace WADV {
     /// 缓动函数库
     /// </summary>
     public static class Easing {
+        public static Func<float, float> GetEasingFunction(EasingType type) {
+            switch (type) {
+                case EasingType.Linear:
+                    return Linear;
+                case EasingType.Spring:
+                    return Spring;
+                case EasingType.QuadIn:
+                    return QuadIn;
+                case EasingType.QuadOut:
+                    return QuadOut;
+                case EasingType.QuadInOut:
+                    return QuadInOut;
+                case EasingType.CubicIn:
+                    return CubicIn;
+                case EasingType.CubicOut:
+                    return CubicOut;
+                case EasingType.CubicInOut:
+                    return CubicInOut;
+                case EasingType.QuartIn:
+                    return QuartIn;
+                case EasingType.QuartOut:
+                    return QuartOut;
+                case EasingType.QuartInOut:
+                    return QuartInOut;
+                case EasingType.QuintIn:
+                    return QuintIn;
+                case EasingType.QuintOut:
+                    return QuintOut;
+                case EasingType.QuintInOut:
+                    return QuintInOut;
+                case EasingType.SineIn:
+                    return SineIn;
+                case EasingType.SineOut:
+                    return SineOut;
+                case EasingType.SineInOut:
+                    return SineInOut;
+                case EasingType.ExponentIn:
+                    return ExponentIn;
+                case EasingType.ExponentOut:
+                    return ExponentOut;
+                case EasingType.ExponentInOut:
+                    return ExponentInOut;
+                case EasingType.CircleIn:
+                    return CircleIn;
+                case EasingType.CircleOut:
+                    return CircleOut;
+                case EasingType.CircleInOut:
+                    return CircleInOut;
+                case EasingType.BounceIn:
+                    return BounceIn;
+                case EasingType.BounceOut:
+                    return BounceOut;
+                case EasingType.BounceInOut:
+                    return BounceInOut;
+                case EasingType.BackIn:
+                    return BackIn;
+                case EasingType.BackOut:
+                    return BackOut;
+                case EasingType.BackInOut:
+                    return BackInOut;
+                case EasingType.ElasticIn:
+                    return ElasticIn;
+                case EasingType.ElasticOut:
+                    return ElasticOut;
+                case EasingType.ElasticInOut:
+                    return ElasticInOut;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, $"Unable to create ease function: unknown ease type {type}");
+            }
+        }
+        
         /// <summary>
         /// 使用函数y = x计算过渡进度
         /// </summary>

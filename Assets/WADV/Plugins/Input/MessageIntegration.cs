@@ -14,6 +14,11 @@ namespace WADV.Plugins.Input {
             /// 表示新建输入框的消息标记
             /// </summary>
             public const string CreateInput = "CREATE_INPUT";
+
+            /// <summary>
+            /// 表示返回输入文本的消息标记
+            /// </summary>
+            public const string InputText = "INPUT_TEXT";
             
             /// <summary>
             /// 输入框消息内容

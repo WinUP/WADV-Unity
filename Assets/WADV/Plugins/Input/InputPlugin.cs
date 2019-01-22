@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using UnityEngine;
 using WADV.Extensions;
 using WADV.MessageSystem;
 using WADV.VisualNovel.Interoperation;
@@ -38,6 +39,9 @@ namespace WADV.Plugins.Input {
                             description.ButtonText = stringButton;
                         } else
                             throw new NotSupportedException($"Unable to create input: button text {value} is not string value");
+                        break;
+                    default:
+                        Debug.LogWarning($"Input plugin: unknown parameter {name}");
                         break;
                 }
             }
