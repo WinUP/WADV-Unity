@@ -1459,6 +1459,7 @@ GameObject:
   - component: {fileID: 860222447}
   - component: {fileID: 860222446}
   - component: {fileID: 860222445}
+  - component: {fileID: 860222448}
   m_Layer: 5
   m_Name: TextMeshPro - InputField
   m_TagString: Untagged
@@ -1625,6 +1626,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 860222443}
   m_CullTransparentMesh: 0
+--- !u!114 &860222448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 860222443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea570729fa13445aa76160157ffc27de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visibleColor: {r: 1, g: 1, b: 1, a: 1}
+  hiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  easingType: 10
+  time: 0.1
 --- !u!1 &891657865
 GameObject:
   m_ObjectHideFlags: 0
@@ -1979,6 +1996,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   images:
+  - {fileID: 1004827609}
+  - {fileID: 860222448}
   - {fileID: 1004827609}
 --- !u!1 &1114930488
 GameObject:
@@ -2432,7 +2451,7 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: d3a62c2b61813419897de1fd8c7e1840, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:

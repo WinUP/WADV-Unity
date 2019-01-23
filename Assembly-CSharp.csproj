@@ -109,6 +109,11 @@
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\DialogueTextGeneratorType.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\EmptyDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\SimpleDialogueTextGenerator.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeIn.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeOut.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\IImageEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\ShaderImageEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\ImageCanvas.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
@@ -212,7 +217,7 @@
     <Compile Include="Assets\WADV\VisualNovel\Translation\Translation.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Translation\TranslationManager.cs" />
     <None Include="Assets\Resources\Logic\!Entrance.tr.jp.txt" />
-    <None Include="Assets\WADV\Shaders\ImageFade.shader" />
+    <None Include="Assets\WADV\Plugins\Image\Shaders\Fade.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMPro_Properties.cginc" />
