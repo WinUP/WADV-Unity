@@ -64,11 +64,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Game\RuntimeTester.cs" />
-    <Compile Include="Assets\Game\UI\FadeImage.cs" />
-    <Compile Include="Assets\Game\UI\FadeImageGroup.cs" />
     <Compile Include="Assets\Game\UI\InputCanvas.cs" />
     <Compile Include="Assets\Game\UI\MainWindowShowHideListener.cs" />
-    <Compile Include="Assets\Game\UI\TextMeshShowHideListener.cs" />
     <Compile Include="Assets\WADV\Attributes\SkipAutoRegistrationAttribute.cs" />
     <Compile Include="Assets\WADV\AutoRegister.cs" />
     <Compile Include="Assets\WADV\Easing.cs" />
@@ -81,6 +78,7 @@
     <Compile Include="Assets\WADV\Extensions\ListExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\StringExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\TaskExtensions.cs" />
+    <Compile Include="Assets\WADV\GraphicColorFade.cs" />
     <Compile Include="Assets\WADV\Intents\ChangeLanguageIntent.cs" />
     <Compile Include="Assets\WADV\LinkedTreeNode.cs" />
     <Compile Include="Assets\WADV\MessageSystem\CoreConstant.cs" />
@@ -217,6 +215,7 @@
     <Compile Include="Assets\WADV\VisualNovel\Translation\Translation.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Translation\TranslationManager.cs" />
     <None Include="Assets\Resources\Logic\!Entrance.tr.jp.txt" />
+    <None Include="Assets\WADV\Plugins\Image\Shaders\UIBase.cginc" />
     <None Include="Assets\WADV\Plugins\Image\Shaders\Fade.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />

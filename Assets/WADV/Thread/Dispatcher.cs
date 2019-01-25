@@ -12,51 +12,39 @@ namespace WADV.Thread {
         /// 跳转到主线程执行
         /// </summary>
         /// <returns></returns>
-        public static WaitForUpdate UseMainThread() {
-            return NextUpdate();
-        }
+        public static WaitForUpdate UseMainThread() => NextUpdate();
 
         /// <summary>
         /// 等待下一个更新循环
         /// </summary>
         /// <returns></returns>
-        public static WaitForUpdate NextUpdate() {
-            return new WaitForUpdate();
-        }
+        public static WaitForUpdate NextUpdate() => WaitForUpdate.Instance;
 
         /// <summary>
         /// 跳转到后台线程执行
         /// <para>后台线程往往拥有更出色的性能，但其不能访问任何Unity界面和游戏场景元素</para>
         /// </summary>
         /// <returns></returns>
-        public static WaitForBackgroundThread UseBackgroundThread() {
-            return new WaitForBackgroundThread();
-        }
+        public static WaitForBackgroundThread UseBackgroundThread() => new WaitForBackgroundThread();
 
         /// <summary>
         /// 等待一定时间
         /// </summary>
         /// <param name="seconds">总共等待秒数</param>
         /// <returns></returns>
-        public static WaitForSeconds WaitForSeconds(float seconds) {
-            return new WaitForSeconds(seconds);
-        }
+        public static WaitForSeconds WaitForSeconds(float seconds) => new WaitForSeconds(seconds);
 
         /// <summary>
         /// 等待一定时间
         /// </summary>
         /// <param name="timespan">总共等待时间</param>
         /// <returns></returns>
-        public static WaitForSeconds WaitForSeconds(TimeSpan timespan) {
-            return new WaitForSeconds((float) timespan.TotalSeconds);
-        }
+        public static WaitForSeconds WaitForSeconds(TimeSpan timespan) => new WaitForSeconds((float) timespan.TotalSeconds);
 
         /// <summary>
         /// 生成一个新的主线程占位符
         /// </summary>
         /// <returns></returns>
-        public static MainThreadPlaceholder CreatePlaceholder() {
-            return new MainThreadPlaceholder();
-        }
+        public static MainThreadPlaceholder CreatePlaceholder() => new MainThreadPlaceholder();
     }
 }

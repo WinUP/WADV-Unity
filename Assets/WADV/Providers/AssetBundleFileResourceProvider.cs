@@ -28,15 +28,12 @@ namespace WADV.Providers {
         
         /// <inheritdoc />
         public override async Task<object> Load(string id) {
-            if (_assetBundle == null) {
-                await ReadAssetBundle();
-            }
-            if (_assetBundle == null) {
-                Debug.LogError($"Unable to load {id}: cannot load asset bundle {_fileName} (resource provider will be unregistered)");
-                ResourceProviderManager.Unregister(this);
-                return null;
-            }
-            return await _assetBundle.LoadAssetAsync(id);
+            if (_assetBundle != null) return await _assetBundle.LoadAssetAsync(id);
+            await ReadAssetBundle();
+            if (_assetBundle != null) return await _assetBundle.LoadAssetAsync(id);
+            Debug.LogError($"Unable to load {id}: cannot load asset bundle {_fileName} (resource provider will be unregistered)");
+            ResourceProviderManager.Unregister(this);
+            return null;
         }
 
         private async Task ReadAssetBundle() {
