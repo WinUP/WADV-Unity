@@ -93,6 +93,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
 
         private async Task ProcessText(string language) {
             var dialogue = PopQuickCacheMessage<ContextMessage<DialoguePlugin.MessageIntegration.Content>>();
+            QuickCacheMessage(dialogue);
             if (dialogue == null) return;
             var (content, noWait, noClear) = DialoguePlugin.CreateDialogueContent(dialogue.Context.Runtime, dialogue.Content.Text, language);
             var history = noClear ? CurrentText : null;

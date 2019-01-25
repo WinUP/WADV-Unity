@@ -49,7 +49,7 @@ namespace WADV.VisualNovel.Runtime {
             set {
                 if (_activeLanguage == value) return;
                 if (!TranslationManager.CheckLanguageName(value)) throw new RuntimeException(_callStack, $"Unable to change language: {value} is not legal language name");
-                var message = MessageService.Process(new Message<ChangeLanguageIntent>(new ChangeLanguageIntent {Runtime = this, NewLanguage = value}, CoreConstant.Mask, CoreConstant.LanguageChange));
+                var message = MessageService.Process(new Message<ChangeLanguageIntent>(new ChangeLanguageIntent {Runtime = this, NewLanguage = value}, CoreConstant.Mask, CoreConstant.PrepareLanguageChange));
                 switch (message) {
                     case Message<ChangeLanguageIntent> result:
                         _activeLanguage = result.Content.NewLanguage;
@@ -58,6 +58,7 @@ namespace WADV.VisualNovel.Runtime {
                     default:
                         throw new RuntimeException(_callStack, $"Unable to change language: Message was modified to non-string type during broadcast");
                 }
+                MessageService.Process(Message<ChangeLanguageIntent>.Create(new ChangeLanguageIntent {Runtime = this, NewLanguage = _activeLanguage}, CoreConstant.Mask, CoreConstant.LanguageChange));
             }
         }
         

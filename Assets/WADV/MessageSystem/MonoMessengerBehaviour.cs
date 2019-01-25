@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.UI;
 using WADV.Extensions;
 using WADV.Thread;
 
@@ -53,6 +54,7 @@ namespace WADV.MessageSystem {
         /// </summary>
         /// <param name="target">目标消息</param>
         protected void QuickCacheMessage(Message target) {
+            PopQuickCacheMessage();
             _messageQuickCacheIndex = CacheMessage(target);
         }
 
@@ -84,6 +86,17 @@ namespace WADV.MessageSystem {
         protected T PopQuickCacheMessage<T>() where T : Message {
             var result = PopQuickCacheMessage();
             if (result == null) return null;
+            return typeof(T) == result.GetType() ? (T) result : null;
+        }
+
+        /// <summary>
+        /// 读取快速缓存区的消息并尝试转换为指定格式，之后清空缓存
+        /// </summary>
+        /// <returns></returns>
+        protected T PeekQuickCacheMessage<T>() where T : Message {
+            var result = PopQuickCacheMessage();
+            if (result == null) return null;
+            QuickCacheMessage(result);
             return typeof(T) == result.GetType() ? (T) result : null;
         }
 

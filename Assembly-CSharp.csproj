@@ -64,7 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Game\RuntimeTester.cs" />
-    <Compile Include="Assets\Game\UI\InputCanvas.cs" />
+    <Compile Include="Assets\Game\UI\InputBoxRenderer.cs" />
     <Compile Include="Assets\Game\UI\MainWindowShowHideListener.cs" />
     <Compile Include="Assets\WADV\Attributes\SkipAutoRegistrationAttribute.cs" />
     <Compile Include="Assets\WADV\AutoRegister.cs" />
@@ -109,8 +109,10 @@
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\SimpleDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeIn.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeOut.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Effects\IImageEffect.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Effects\ShaderImageEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\IGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\ILoopGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\ISingleGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\ShaderGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImageCanvas.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />

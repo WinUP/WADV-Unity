@@ -9,13 +9,13 @@ using WADV.Thread;
 using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Image.Effects {
-    public abstract class ShaderImageEffect : IImageEffect {
+    public abstract class ShaderGraphicEffect : ISingleGraphicEffect {
         protected readonly Shader EffectShader;
-        private RawImage[] _targets;
+        private Graphic[] _targets;
 
         private static readonly Dictionary<string, Shader> Shaders = new Dictionary<string, Shader>();
 
-        protected ShaderImageEffect(string shaderName) {
+        protected ShaderGraphicEffect(string shaderName) {
             if (Shaders.ContainsKey(shaderName)) {
                 EffectShader = Shaders[shaderName];
             } else {
@@ -25,19 +25,19 @@ namespace WADV.Plugins.Image.Effects {
             }
         }
         
-        public void Initialize(RawImage[] image) {
-            _targets = image;
+        public void Initialize(Graphic[] graphics) {
+            _targets = graphics;
         }
 
-        public async Task Apply(float time, Func<float, float> easing, SerializableValue[] parameters) {
-            var material = OnStart(time, parameters);
+        public async Task Apply(float totalTime, Func<float, float> easing, SerializableValue[] parameters) {
+            var material = OnStart(totalTime, parameters);
             foreach (var target in _targets) {
                 target.material = material;
             }
             var currentTime = 0.0F;
-            while (currentTime < time) {
+            while (currentTime < totalTime) {
                 currentTime += Time.deltaTime;
-                OnFrame(material, Mathf.Clamp01(easing(currentTime / time)));
+                OnFrame(material, Mathf.Clamp01(easing(currentTime / totalTime)));
                 await Dispatcher.NextUpdate();
             }
         }

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using WADV.Intents;
 using WADV.MessageSystem;
 using WADV.VisualNovel.Plugin;
 
@@ -21,13 +22,19 @@ namespace WADV.Plugins.Input {
 
         private bool _isShowing;
 
+        public abstract void SetText(PluginExecuteContext context, InputPlugin.MessageIntegration.Content content);
+
         /// <summary>
         /// 显示输入框并等待输入
         /// </summary>
-        /// <param name="context">插件执行上下文</param>
-        /// <param name="content">输入框参数</param>
         /// <returns></returns>
-        public abstract Task Show(PluginExecuteContext context, InputPlugin.MessageIntegration.Content content);
+        public abstract Task Show();
+
+        /// <summary>
+        /// 等待用户输入
+        /// </summary>
+        /// <returns></returns>
+        public abstract Task Wait();
 
         /// <summary>
         /// 隐藏输入框
@@ -37,13 +44,22 @@ namespace WADV.Plugins.Input {
         
         /// <inheritdoc />
         public override async Task<Message> Receive(Message message) {
-            if (_isShowing || !message.HasTag(InputPlugin.MessageIntegration.CreateInput)
-                           || !(message is ContextMessage<InputPlugin.MessageIntegration.Content> inputMessage)) return message;
-            _isShowing = true;
-            await Show(inputMessage.Context, inputMessage.Content);
-            await Hide();
-            _isShowing = false;
-            return Message<string>.Create(Text, InputPlugin.MessageIntegration.Mask, InputPlugin.MessageIntegration.InputText);
+             if (!_isShowing && message.HasTag(InputPlugin.MessageIntegration.CreateInput) && message is ContextMessage<InputPlugin.MessageIntegration.Content> inputMessage) {
+                _isShowing = true;
+                QuickCacheMessage(inputMessage);
+                SetText(inputMessage.Context, inputMessage.Content);
+                await Show();
+                await Wait();
+                await Hide();
+                PopQuickCacheMessage();
+                _isShowing = false;
+                return Message<string>.Create(Text, InputPlugin.MessageIntegration.Mask, InputPlugin.MessageIntegration.InputText);
+            } else if (_isShowing && message.HasTag(CoreConstant.LanguageChange) && message is Message<ChangeLanguageIntent> languageMessage) {
+                 inputMessage = PeekQuickCacheMessage<ContextMessage<InputPlugin.MessageIntegration.Content>>();
+                 if (inputMessage == null || inputMessage.Context.Runtime != languageMessage.Content.Runtime) return message;
+                 SetText(inputMessage.Context, inputMessage.Content);
+            }
+            return message;
         }
     }
 }

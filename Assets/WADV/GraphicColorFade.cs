@@ -11,7 +11,6 @@ namespace WADV {
     /// UGUI颜色渐变组件
     /// </summary>
     [AddComponentMenu("UI/Effects/Color Fade")]
-    [DisallowMultipleComponent]
     public class GraphicColorFade : MonoBehaviour {
         /// <summary>
         /// 起始颜色

@@ -14,7 +14,6 @@ namespace WADV.Plugins.Dialogue.Renderer {
         
         /// <inheritdoc />
         public override bool IsStandaloneMessage { get; } = true;
-
         
         /// <summary>
         /// 获取当前显示的文本
@@ -49,6 +48,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
                     await WaitCachedPlaceholder();
                 }
                 dialogueMessage = PopQuickCacheMessage<ContextMessage<DialoguePlugin.MessageIntegration.Content>>();
+                QuickCacheMessage(dialogueMessage);
                 if (dialogueMessage == null) return message;
                 var text = CreateCharacterText(dialogueMessage.Content.Character, dialogueMessage.Context.Runtime, dialogueMessage.Context.Language);
                 if (text == Text) return message;
