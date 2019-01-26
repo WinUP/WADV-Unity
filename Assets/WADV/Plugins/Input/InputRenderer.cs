@@ -53,7 +53,7 @@ namespace WADV.Plugins.Input {
                 await Hide();
                 PopQuickCacheMessage();
                 _isShowing = false;
-                return Message<string>.Create(Text, InputPlugin.MessageIntegration.Mask, InputPlugin.MessageIntegration.InputText);
+                return Message<string>.Create(Text, InputPlugin.MessageIntegration.Mask);
             } else if (_isShowing && message.HasTag(CoreConstant.LanguageChange) && message is Message<ChangeLanguageIntent> languageMessage) {
                  inputMessage = PeekQuickCacheMessage<ContextMessage<InputPlugin.MessageIntegration.Content>>();
                  if (inputMessage == null || inputMessage.Context.Runtime != languageMessage.Content.Runtime) return message;

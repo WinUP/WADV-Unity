@@ -18,7 +18,9 @@ namespace Game {
         }
 
         public async void UseInput() {
-            var title = new StringValue {Value = "输入姓名"};
+            await MessageService.ProcessAsync(Message<float>.Create(0.3F, DialoguePlugin.MessageIntegration.Mask,
+                                                             DialoguePlugin.MessageIntegration.HideDialogueBox));
+            var title = new StringValue {Value = "输入姓和名（空格隔开）"};
             var defaultText = new StringValue {Value = "诹访部 翔平"};
             var confirmText = new StringValue {Value = "继续"};
             var context = PluginExecuteContext.Create(new ScriptRuntime("Logic/Utilities"));
@@ -29,6 +31,8 @@ namespace Game {
             if (message is Message<string> stringMessage) {
                 Debug.Log(stringMessage.Content);
             }
+            await MessageService.ProcessAsync(Message<float>.Create(0.3F, DialoguePlugin.MessageIntegration.Mask,
+                                                                    DialoguePlugin.MessageIntegration.ShowDialogueBox));
         }
     }
 }

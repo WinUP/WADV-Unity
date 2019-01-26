@@ -46,21 +46,19 @@ namespace Game.UI {
             confirmText.text = content.ButtonText != null ? content.ButtonText.ConvertToString(context.Language) : "OK";
         }
 
-        public override Task Show() {
+        public override async Task Show() {
             _canvas.enabled = true;
-            Task.WaitAll(imageFader.Fade(), textFader.Fade());
-            return Task.CompletedTask;
+            await Dispatcher.WaitAll(imageFader.Fade(), textFader.Fade());
         }
 
         public override async Task Wait() {
-            QuickCachePlaceholder(new MainThreadPlaceholder());
+            QuickCachePlaceholder(Dispatcher.CreatePlaceholder());
             await WaitCachedPlaceholder();
         }
 
-        public override Task Hide() {
-            Task.WaitAll(imageFader.Reverse(), textFader.Reverse());
+        public override async Task Hide() {
+            await Dispatcher.WaitAll(imageFader.Reverse(), textFader.Reverse());
             _canvas.enabled = false;
-            return Task.CompletedTask;
         }
 
         private void OnButtonClick() {

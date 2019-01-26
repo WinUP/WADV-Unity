@@ -28,6 +28,10 @@ namespace WADV.Plugins.Dialogue.Renderer {
         protected virtual void PrepareStartShow(float totalTime) { }
         
         protected virtual void PrepareStartHide(float totalTime) { }
+        
+        protected virtual void AfterShow() { }
+        
+        protected virtual void AfterHide() { }
 
         protected abstract void OnShowFrame(float progress);
 
@@ -66,6 +70,11 @@ namespace WADV.Plugins.Dialogue.Renderer {
                     OnHideFrame(Mathf.Clamp01(time / totalTime));
                 }
                 await Dispatcher.NextUpdate();
+            }
+            if (isShow) {
+                AfterShow();
+            } else {
+                AfterHide();
             }
             CompleteCachedPlaceholder();
         }
