@@ -82,6 +82,7 @@
     <Compile Include="Assets\WADV\MessageSystem\Message.cs" />
     <Compile Include="Assets\WADV\MessageSystem\MessageService.cs" />
     <Compile Include="Assets\WADV\MessageSystem\MonoMessengerBehaviour.cs" />
+    <Compile Include="Assets\WADV\ParallaxController.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\CharacterPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\CharacterValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\DialogueCreator.cs" />
@@ -245,6 +246,12 @@
     </Reference>
     <Reference Include="Unity.Analytics.DataPrivacy">
       <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.Analytics.DataPrivacy.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Advertisements">
+      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/UnityEngine.Advertisements.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.Advertisements">
+      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/UnityEditor.Advertisements.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
       <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
@@ -447,12 +454,6 @@
     <Reference Include="UnityEngine.SpatialTracking">
       <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/RuntimeEditor/UnityEngine.SpatialTracking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Advertisements">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.ads@2.3.1/Runtime/UnityEngine.Advertisements.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.Advertisements.Editor">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.ads@2.3.1/Runtime/UnityEngine.Advertisements.Editor.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.Analytics.Editor">
       <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Editor.dll</HintPath>
     </Reference>
@@ -461,6 +462,9 @@
     </Reference>
     <Reference Include="Unity.Analytics.Tracker">
       <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Tracker.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.collections@0.0.9-preview.11/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
       <HintPath>C:/Program Files/Unity/Editor/Data/NetStandard/ref/2.0.0/netstandard.dll</HintPath>
