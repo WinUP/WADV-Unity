@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace WADV.Extensions {
@@ -53,10 +54,32 @@ namespace WADV.Extensions {
         /// <summary>
         /// 统一所有斜线至左斜线
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">目标字符串</param>
         /// <returns></returns>
         public static string UnifySlash(this string value) {
             return value.Replace('\\', '/');
+        }
+
+        /// <summary>
+        /// 统一所有换行符
+        /// </summary>
+        /// <param name="value">目标字符串</param>
+        /// <returns></returns>
+        public static string UnifyLineBreak(this string value) {
+            return value.Replace("\r\n", "\n").Replace('\r', '\n');
+        }
+
+        /// <summary>
+        /// 解析模板字符串
+        /// </summary>
+        /// <param name="value">目标字符串</param>
+        /// <param name="parts">模板替换项</param>
+        /// <returns></returns>
+        public static string ParseTemplate(this string value, IEnumerable<KeyValuePair<string, string>> parts) {
+            foreach (var (pattern, content) in parts) {
+                value = value.Replace($"{{{pattern}}}", content);
+            }
+            return value;
         }
         
         /// <summary>

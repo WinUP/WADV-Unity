@@ -28,7 +28,7 @@ namespace WADV.VisualNovel.Runtime.Editor {
                 assemblyContent.AppendLine(null, "; VisualNovelScript Version 1, assembly format");
                 assemblyContent.AppendLine(null, $"; ID {scriptAsset.id}");
                 assemblyContent.AppendLine(null, "");
-                var script = ScriptHeader.ReloadAsset(scriptAsset.id, scriptAsset.content).Header.CreateRuntimeFile();
+                var script = ScriptHeader.ParseBinary(scriptAsset.id, scriptAsset.content).Header.CreateRuntimeFile();
                 OperationCode? code;
                 do {
                     var label = script.Header.Labels.Where(e => e.Value == script.CurrentPosition).ToList();

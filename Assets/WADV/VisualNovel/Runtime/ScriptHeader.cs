@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using WADV.Extensions;
+using System.Threading.Tasks;
 using WADV.VisualNovel.Compiler;
 using WADV.VisualNovel.Translation;
 using JetBrains.Annotations;
-using UnityEngine;
+using WADV.Extensions;
+using WADV.VisualNovel.Provider;
+using WADV.VisualNovel.ScriptStatus;
 
 namespace WADV.VisualNovel.Runtime {
     /// <summary>
@@ -56,58 +58,60 @@ namespace WADV.VisualNovel.Runtime {
         }
         
         /// <summary>
-        /// 按照以下优先级将脚本可执行内容载入缓存
-        /// <list type="bullet">
-        ///     <item><description>若缓存中已存在则使用缓存</description></item>
-        ///     <item><description>当第二个参数存在时使用该参数内容</description></item>
-        ///     <item><description>当二进制文件存在时使用该文件内容（如果此时源文件存在且过期会得到警告）</description></item>
-        ///     <item><description>使用源文件的即时编译结果</description></item>
-        /// </list>
-        /// <para>不论采用何种方式，所有可用的翻译文件都会在第一次被加载时悉数载入</para>
+        /// 将脚本可执行内容载入缓存（如果该脚本不在缓存中）
         /// </summary>
         /// <param name="id">脚本ID</param>
-        /// <param name="source">用于覆盖原有脚本的可执行内容（该参数仅覆盖内存实现，不会修改本地文件）</param>
         /// <returns></returns>
-        public static (ScriptHeader Header, byte[] CodeSegment) LoadAsset([NotNull] string id, byte[] source = null) {
-            ScriptHeader header;
-            if (LoadedScripts.ContainsKey(id)) {
-                var (scriptHeader, codeSegment) = LoadedScripts[id];
-                header = scriptHeader;
-                source = codeSegment;
-            } else {
-                (header, source) = ReloadAsset(id, source);
-            }
+        public static async Task<(ScriptHeader Header, byte[] CodeSegment)> Load([NotNull] string id) {
+            if (!LoadedScripts.ContainsKey(id)) return await Reload(id);
+            var (scriptHeader, codeSegment) = LoadedScripts[id];
+            var header = scriptHeader;
+            var source = codeSegment;
+            return (header, source);
+        }
+
+        /// <summary>
+        /// 将脚本可执行内容载入缓存（如果该脚本不在缓存中）
+        /// </summary>
+        /// <param name="id">脚本ID</param>
+        /// <returns></returns>
+        public static (ScriptHeader Header, byte[] CodeSegment) LoadSync([NotNull] string id) {
+            if (!LoadedScripts.ContainsKey(id)) return Reload(id).GetResultAfterFinished();
+            var (scriptHeader, codeSegment) = LoadedScripts[id];
+            var header = scriptHeader;
+            var source = codeSegment;
             return (header, source);
         }
         
         /// <summary>
-        /// 按照以下优先级将脚本可执行内容载入缓存
-        /// <list type="bullet">
-        ///     <item><description>当第二个参数存在时使用该参数内容</description></item>
-        ///     <item><description>当二进制文件存在时使用该文件内容（如果此时源文件存在且过期会得到警告）</description></item>
-        ///     <item><description>使用源文件的即时编译结果</description></item>
-        /// </list>
-        /// <para>不论采用何种方式，所有可用的翻译文件都会被尽可能载入</para>
+        /// 将脚本可执行内容载入缓存
         /// </summary>
         /// <param name="id">脚本ID</param>
-        /// <param name="source">用于覆盖原有脚本的可执行内容（该参数仅覆盖内存实现，不会修改本地文件）</param>
         /// <returns></returns>
-        public static (ScriptHeader Header, byte[] CodeSegment) ReloadAsset([NotNull] string id, byte[] source = null) {
-            var initialTranslations = new Dictionary<string, ScriptTranslation>();
-            if (source == null) {
-                source = CodeCompiler.LoadBinaryResourceFromId(id)?.content;
-                var option = CompileOptions.Has(id) ? CompileOptions.Get(id) : null;
-                if (source == null) {
-                    if (option == null) throw new KeyNotFoundException($"Unable to load script {id}: Missing compile option");
-                    var (code, translations) = CodeCompiler.CompileResource(id, option);
-                    source = code;
-                    foreach (var (name, content) in translations.Where(e => e.Key != TranslationManager.DefaultLanguage)) {
-                        initialTranslations.Add(name, content);
-                    }
-                } else if (option != null && option.BinaryHash != option.SourceHash) {
-                    Debug.LogWarning($"VNScript binary file outdated: {id}");
-                }
+        public static async Task<(ScriptHeader Header, byte[] CodeSegment)> Reload([NotNull] string id) {
+            if (!CompileConfiguration.Content.Scripts.ContainsKey(id))
+                throw new KeyNotFoundException($"Unable to load script {id}: missing script information");
+            var info = CompileConfiguration.Content.Scripts[id];
+            if (!info.Binary.HasValue || string.IsNullOrEmpty(info.Binary.Value.Runtime))
+                throw new MissingMemberException($"Unable to load script {id}: missing runtime binary resource");
+            var code = await ResourceProviderManager.Load(info.GetBinaryRuntime());
+            var source = code is ScriptAsset scriptAsset ? scriptAsset.content : ((BinaryData) code).Data;
+            var result = ParseBinary(id, source);
+            if (LoadedScripts.ContainsKey(id)) {
+                LoadedScripts.Remove(id);
             }
+            LoadedScripts.Add(id, result);
+            return result;
+        }
+
+        /// <summary>
+        /// 解析并缓存VNB二进制数据
+        /// </summary>
+        /// <param name="id">脚本ID</param>
+        /// <param name="source">要解析的数据</param>
+        /// <returns></returns>
+        /// <exception cref="FormatException"></exception>
+        public static (ScriptHeader Header, byte[] Code) ParseBinary(string id, byte[] source) {
             ScriptHeader header;
             var reader = new ExtendedBinaryReader(new MemoryStream(source));
             switch (reader.ReadUInt32()) {
@@ -115,10 +119,7 @@ namespace WADV.VisualNovel.Runtime {
                     header = LoadScriptVersion1(id, reader);
                     break;
                 default:
-                    throw new FormatException($"Resource {id} is not any acceptable type of Visual Novel Binary");
-            }
-            foreach (var (language, translation) in initialTranslations) {
-                header.Translations.Add(language, translation);
+                    throw new FormatException($"Unable to load script {id}: resource is not any acceptable type of Visual Novel Binary");
             }
             var codeSegment = new MemoryStream();
             reader.BaseStream.CopyTo(codeSegment);
@@ -137,14 +138,21 @@ namespace WADV.VisualNovel.Runtime {
         /// </summary>
         /// <param name="language">目标语言</param>
         /// <returns></returns>
-        [CanBeNull]
-        public ScriptTranslation LoadTranslation(string language) {
+        public async Task<ScriptTranslation> LoadTranslation(string language) {
             if (Translations.ContainsKey(language)) return Translations[language];
-            var content = Resources.Load<TextAsset>(CodeCompiler.CreateLanguageResourcePathFromId(Id, language))?.text;
+            var content = await ResourceProviderManager.Load<string>(CompileConfiguration.Content.Scripts[Id].GetLanguageRuntime(language));
             if (string.IsNullOrEmpty(content)) return null;
             var translation = new ScriptTranslation(content);
             Translations.Add(language, translation);
             return translation;
+        }
+
+        /// <summary>
+        /// 读取默认翻译
+        /// </summary>
+        /// <returns></returns>
+        public ScriptTranslation LoadDefaultTranslation() {
+            return Translations[TranslationManager.DefaultLanguage];
         }
 
         /// <summary>

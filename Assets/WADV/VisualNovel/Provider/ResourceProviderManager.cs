@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using WADV.VisualNovel.Interoperation;
 
 namespace WADV.VisualNovel.Provider {
     /// <summary>
@@ -14,7 +17,12 @@ namespace WADV.VisualNovel.Provider {
         static ResourceProviderManager() {
             AutoRegister.Load(Assembly.GetExecutingAssembly());
         }
-        
+
+        /// <summary>
+        /// 获取资源提供器迭代器
+        /// </summary>
+        public static IEnumerator<KeyValuePair<string, ResourceProvider>> GetEnumerator => Providers.GetEnumerator();
+
         /// <summary>
         /// 根据名称寻找资源提供器
         /// </summary>
@@ -68,11 +76,11 @@ namespace WADV.VisualNovel.Provider {
         /// <summary>
         /// 读取资源
         /// </summary>
-        /// <param name="address">资源地址（必须符合格式[provider]:[id]）</param>
+        /// <param name="address">资源地址</param>
         /// <returns></returns>
         public static async Task<object> Load(string address) {
             var splitter = address.IndexOf("://", StringComparison.Ordinal);
-            if (splitter < 1) throw new FormatException($"Unable to load resource: address {address} must has format [provider]://[id]");
+            if (splitter < 1) throw new FormatException($"Unable to load resource: address {address} must has format {{provider}}://{{id}}");
             var providerName = address.Substring(0, splitter);
             var provider = Find(providerName);
             if (provider == null) throw new KeyNotFoundException($"Unable to load resource: expected provider {providerName} not existed");
@@ -80,13 +88,51 @@ namespace WADV.VisualNovel.Provider {
         }
 
         /// <summary>
-        /// 读取资源
+        /// 读取资源并按如下优先级尝试进行格式转换
+        /// <list type="bullet">
+        ///   <item><description>如果要求返回字符串，且提供器返回BinaryData，则取该对象的UTF-8文本表示</description></item>
+        ///   <item><description>如果要求返回字符串，且提供器返回IStringConverter，则取该对象在默认语言下的值</description></item>
+        ///   <item><description>如果要求返回字符串，且提供器没有返回上述对象，则强制转换为字符串</description></item>
+        ///   <item><description>如果提供器返回的对象可以强制转换为目标对象则进行强制转换</description></item>
+        ///   <item><description>如果读取到BinaryData或byte数组则尝试反序列化二进制内容为指定类型</description></item>
+        /// </list>
         /// </summary>
-        /// <param name="address">资源地址（必须符合格式[provider]:[id]）</param>
+        /// <param name="address">资源地址</param>
         /// <returns></returns>
         public static async Task<T> Load<T>(string address) where T : class {
             var result = await Load(address);
-            return result == null || result.GetType() != typeof(T) ? null : (T) result;
+            if (result == null) return null;
+            if (typeof(T) == typeof(string))
+                switch (result) {
+                    case BinaryData binaryResult:
+                        return binaryResult.Text as T;
+                    case IStringConverter stringResult:
+                        return stringResult.ConvertToString() as T;
+                    default:
+                        return result.ToString() as T;
+                }
+            if (result is T tryCaseResult) return tryCaseResult;
+            byte[] bytes = null;
+            switch (result) {
+                case BinaryData binaryResult:
+                    bytes = binaryResult.Data;
+                    break;
+                case byte[] byteResult:
+                    bytes = byteResult;
+                    break;
+            }
+            if (bytes != null) {
+                try {
+                    var deserializer = new BinaryFormatter();
+                    var stream = new MemoryStream(bytes);
+                    var item = deserializer.Deserialize(stream);
+                    stream.Close();
+                    return item.GetType() == typeof(T) ? (T) item : null;
+                } catch {
+                    return null;
+                }
+            }
+            return null;
         }
     }
 }
