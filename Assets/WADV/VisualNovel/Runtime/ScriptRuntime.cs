@@ -402,10 +402,8 @@ namespace WADV.VisualNovel.Runtime {
         private string PopString(SerializableValue target = null) {
             var rawValue = target ?? MemoryStack.Pop();
             switch (rawValue) {
-                case StringValue stringMemoryValue:
-                    return stringMemoryValue.Value;
-                case TranslatableValue translatableMemoryValue:
-                    return ScriptHeader.LoadSync(translatableMemoryValue.ScriptId).Header.GetTranslation(ActiveLanguage, translatableMemoryValue.TranslationId);
+                case IStringConverter stringConverter:
+                    return stringConverter.ConvertToString(ActiveLanguage);
                 default:
                     return null;
             }
@@ -523,12 +521,12 @@ namespace WADV.VisualNovel.Runtime {
             var valueRight = MemoryStack.Pop();
             switch (operatorType) {
                 case OperatorType.PickChild:
-                    if (valueRight is IStringConverter rightStringConverter && rightStringConverter.ConvertToString() == "Duplicate") {
+                    if (valueRight is IStringConverter rightStringConverter && rightStringConverter.ConvertToString(ActiveLanguage) == "Duplicate") {
                         // 复制(Duplicate)由于统一实现的困难暂且由运行环境处理
                         MemoryStack.Push(valueLeft.Duplicate());
                     } else if (valueLeft is IPickChildOperator leftPick) {
                         try {
-                            MemoryStack.Push(leftPick.PickChild(valueRight));
+                            MemoryStack.Push(leftPick.PickChild(valueRight, ActiveLanguage));
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
                         }
@@ -539,7 +537,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.Add:
                     if (valueLeft is IAddOperator leftAdd) {
                         try {
-                            MemoryStack.Push(leftAdd.AddWith(valueRight));
+                            MemoryStack.Push(leftAdd.AddWith(valueRight, ActiveLanguage));
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
                         }
@@ -550,7 +548,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.Minus:
                     if (valueLeft is ISubtractOperator leftSubtract) {
                         try {
-                            MemoryStack.Push(leftSubtract.SubtractWith(valueRight));
+                            MemoryStack.Push(leftSubtract.SubtractWith(valueRight, ActiveLanguage));
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
                         }
@@ -561,7 +559,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.Multiply:
                     if (valueLeft is IMultiplyOperator leftMultiply) {
                         try {
-                            MemoryStack.Push(leftMultiply.MultiplyWith(valueRight));
+                            MemoryStack.Push(leftMultiply.MultiplyWith(valueRight, ActiveLanguage));
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
                         }
@@ -572,7 +570,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.Divide:
                     if (valueLeft is IDivideOperator leftDivide) {
                         try {
-                            MemoryStack.Push(leftDivide.DivideWith(valueRight));
+                            MemoryStack.Push(leftDivide.DivideWith(valueRight, ActiveLanguage));
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
                         }
@@ -586,7 +584,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.NotGreaterThan:
                     if (valueLeft is ICompareOperator leftCompare) {
                         try {
-                            var compareResult = leftCompare.CompareWith(valueRight);
+                            var compareResult = leftCompare.CompareWith(valueRight, ActiveLanguage);
                             if (compareResult < 0) {
                                 MemoryStack.Push(new BooleanValue {Value = operatorType == OperatorType.LesserThan || operatorType == OperatorType.NotGreaterThan});
                             } else if (compareResult == 0) {
@@ -605,7 +603,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.LogicNotEqualsTo:
                     if (valueLeft is IEqualOperator leftEqual) {
                         try {
-                            var result = new BooleanValue {Value = leftEqual.EqualsWith(valueRight)};
+                            var result = new BooleanValue {Value = leftEqual.EqualsWith(valueRight, ActiveLanguage)};
                             if (operatorType == OperatorType.LogicNotEqualsTo) {
                                 result.Value = !result.Value;
                             }
@@ -632,7 +630,7 @@ namespace WADV.VisualNovel.Runtime {
         private async Task Load() {
             var scriptId = PopString();
             if (string.IsNullOrEmpty(scriptId)) throw new RuntimeException(_callStack, $"Unable to load script: script id {scriptId} is not string value");
-            var runtime = new ScriptRuntime(scriptId, _callStack);
+            var runtime = new ScriptRuntime(scriptId, _callStack) {ActiveLanguage = ActiveLanguage};
             await runtime.ExecuteScript();
             var result = new ObjectPlugin.ObjectValue();
             foreach (var (name, value) in runtime.Exported) {

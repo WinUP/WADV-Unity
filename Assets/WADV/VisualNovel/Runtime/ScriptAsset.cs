@@ -10,9 +10,5 @@ namespace WADV.VisualNovel.Runtime {
         /// 二进制脚本内容
         /// </summary>
         public byte[] content;
-        /// <summary>
-        /// 脚本ID
-        /// </summary>
-        public string id;
     } 
 }

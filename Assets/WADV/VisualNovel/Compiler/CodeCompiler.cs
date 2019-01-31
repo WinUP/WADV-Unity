@@ -30,17 +30,22 @@ namespace WADV.VisualNovel.Compiler {
         /// <summary>
         /// 编译文件
         /// </summary>
-        /// <param name="option">脚本信息</param>
+        /// <param name="path">脚本ID</param>
         /// <param name="forceCompile">是否强制重新编译</param>
         /// <returns>发生变化的文件列表</returns>
-        public static IEnumerable<string> CompileAsset(ScriptInformation option, bool forceCompile = false) {
+        public static IEnumerable<string> CompileAsset(string path, bool forceCompile = false) {
             if (!Application.isEditor)
-                throw new NotSupportedException($"Cannot compile {option.Source}: static file compiler can only run in editor mode");
-            if (string.IsNullOrEmpty(option.Source?.Asset) || !option.Hash.HasValue) return new string[] { };
+                throw new NotSupportedException($"Cannot compile {path}: static file compiler can only run in editor mode");
+            if (!path.EndsWith(".vns"))
+                throw new NotSupportedException($"Cannot compile {path}: file name extension must be .vns");
+            var option = ScriptInformation.CreateInformationFromAsset(path);
+            if (option == null)
+                throw new NullReferenceException($"Cannot compile {path}: target outside of source folder or target is not acceptable script/binary");
             var changedFiles = new List<string>();
-            if (!option.Source.Value.Asset.EndsWith(".vns"))
-                throw new NotSupportedException($"Cannot compile {option.Source}: File name extension must be vns");
-            var source = File.ReadAllText(option.Source.Value.Asset, Encoding.UTF8).UnifyLineBreak();
+            var source = File.ReadAllText(path, Encoding.UTF8).UnifyLineBreak();
+            if (!option.Hash.HasValue) {
+                option.Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source));
+            }
             var identifier = new CodeIdentifier {Id = option.Id, Hash = option.Hash.Value};
             // 编译文件
             if (!forceCompile) {
@@ -49,14 +54,13 @@ namespace WADV.VisualNovel.Compiler {
                 }
             }
             var (content, defaultTranslation) = CompileCode(source, identifier);
-            var binaryFile = option.GetBinaryAsset();
+            var binaryFile = option.CreateBinaryAsset();
             File.WriteAllBytes(binaryFile, content);
-            option.Binary = new RelativePath {Asset = binaryFile, Runtime = option.Binary?.Runtime};
             option.RecordedHash = option.Hash = identifier.Hash;
-            changedFiles.Add(option.Binary.Value.Asset);
+            changedFiles.Add(binaryFile);
             // 处理其他翻译
             foreach (var (language, _) in option.Translations) {
-                var languageFile = option.GetLanguageAsset(language);
+                var languageFile = option.CreateLanguageAsset(language);
                 if (File.Exists(languageFile)) {
                     var existedTranslation = new ScriptTranslation(File.ReadAllText(languageFile));
                     if (!existedTranslation.MergeWith(defaultTranslation)) continue;

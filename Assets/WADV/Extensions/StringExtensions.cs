@@ -5,33 +5,31 @@ using System.Text;
 namespace WADV.Extensions {
     public static class StringExtensions {
         /// <summary>
-        /// 删除字符串中第一次出现的子串
+        /// 如果字符串以目标子串开头则删除该子串
         /// </summary>
         /// <param name="value">目标字符串</param>
         /// <param name="part">要删除的子串</param>
         /// <returns></returns>
-        public static string RemoveWhenStartsWith(this string value, string part) {
-            var index = value.IndexOf(part, StringComparison.Ordinal);
-            if (index < 0) return value;
-            if (index + part.Length >= value.Length) {
-                return value.Substring(0, index);
-            }
-            return index < 0 ? value : value.Substring(part.Length);
+        public static string RemoveStarts(this string value, string part) {
+            return value == part
+                ? ""
+                : value.StartsWith(part)
+                    ? value.Substring(part.Length)
+                    : value;
         }
         
         /// <summary>
-        /// 删除字符串中最后一次出现的子串
+        /// 如果字符串以目标子串结尾则删除该子串
         /// </summary>
         /// <param name="value">目标字符串</param>
         /// <param name="part">要删除的子串</param>
         /// <returns></returns>
-        public static string RemoveWhenEndsWith(this string value, string part) {
-            var index = value.LastIndexOf(part, StringComparison.Ordinal);
-            return index < 0
-                ? value
-                : index + part.Length > value.Length
-                    ? value.Remove(index, part.Length)
-                    : value.Substring(0, index);
+        public static string RemoveEnds(this string value, string part) {
+            return value == part
+                ? ""
+                : value.EndsWith(part)
+                    ? value.Substring(0, value.Length - part.Length)
+                    : value;
         }
 
         /// <summary>

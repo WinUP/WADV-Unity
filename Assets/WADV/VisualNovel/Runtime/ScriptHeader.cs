@@ -89,13 +89,22 @@ namespace WADV.VisualNovel.Runtime {
         /// <param name="id">脚本ID</param>
         /// <returns></returns>
         public static async Task<(ScriptHeader Header, byte[] CodeSegment)> Reload([NotNull] string id) {
-            if (!CompileConfiguration.Content.Scripts.ContainsKey(id))
-                throw new KeyNotFoundException($"Unable to load script {id}: missing script information");
-            var info = CompileConfiguration.Content.Scripts[id];
-            if (!info.Binary.HasValue || string.IsNullOrEmpty(info.Binary.Value.Runtime))
-                throw new MissingMemberException($"Unable to load script {id}: missing runtime binary resource");
-            var code = await ResourceProviderManager.Load(info.GetBinaryRuntime());
-            var source = code is ScriptAsset scriptAsset ? scriptAsset.content : ((BinaryData) code).Data;
+            var option = CompileConfiguration.Content.Scripts.ContainsKey(id)
+                ? CompileConfiguration.Content.Scripts[id].DistributionTarget ?? CompileConfiguration.Content.DefaultRuntimeDistributionUri
+                : throw new KeyNotFoundException($"Unable to load script {id}: missing runtime script information");
+            var code = await ResourceProviderManager.Load(option.ParseTemplate(new Dictionary<string, string> {{"id", id}}));
+            byte[] source;
+            switch (code) {
+                case ScriptAsset scriptAsset:
+                    source = scriptAsset.content;
+                    break;
+                case BinaryData binaryData:
+                    source = binaryData.Data;
+                    break;
+                default:
+                    throw new NotSupportedException($"Unable to load script {id}: unsupported resource type {code}");
+            }
+            if (code == null) throw new FileNotFoundException($"Unable to load script {id}: resource not existed");
             var result = ParseBinary(id, source);
             if (LoadedScripts.ContainsKey(id)) {
                 LoadedScripts.Remove(id);
@@ -105,7 +114,7 @@ namespace WADV.VisualNovel.Runtime {
         }
 
         /// <summary>
-        /// 解析并缓存VNB二进制数据
+        /// 解析VNB二进制数据
         /// </summary>
         /// <param name="id">脚本ID</param>
         /// <param name="source">要解析的数据</param>
@@ -126,10 +135,6 @@ namespace WADV.VisualNovel.Runtime {
             reader.Close();
             var codes = codeSegment.ToArray();
             codeSegment.Close();
-            if (LoadedScripts.ContainsKey(id)) {
-                LoadedScripts.Remove(id);
-            }
-            LoadedScripts.Add(id, (header, codes));
             return (header, codes);
         }
         
@@ -140,7 +145,12 @@ namespace WADV.VisualNovel.Runtime {
         /// <returns></returns>
         public async Task<ScriptTranslation> LoadTranslation(string language) {
             if (Translations.ContainsKey(language)) return Translations[language];
-            var content = await ResourceProviderManager.Load<string>(CompileConfiguration.Content.Scripts[Id].GetLanguageRuntime(language));
+            var translations = CompileConfiguration.Content.Scripts.ContainsKey(Id)
+                ? CompileConfiguration.Content.Scripts[Id].Translations
+                : throw new KeyNotFoundException($"Unable to load translation for {Id}: missing runtime script information");
+            if (!translations.ContainsKey(language)) return null;
+            var content = await ResourceProviderManager.Load<string>((translations[language] ?? CompileConfiguration.Content.DefaultRuntimeLanguageUri).ParseTemplate(
+                                                                         new Dictionary<string, string> {{"id", Id}, {"language", language}}));
             if (string.IsNullOrEmpty(content)) return null;
             var translation = new ScriptTranslation(content);
             Translations.Add(language, translation);

@@ -20,14 +20,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
             var text = new TextAsset(File.ReadAllText(ctx.assetPath, Encoding.UTF8));
             ctx.AddObjectToAsset($"VNScript:{ctx.assetPath}", text, EditorGUIUtility.Load("File Icon/VNS Icon.png") as Texture2D);
             ctx.SetMainObject(text);
-            if (CompileConfiguration.Content.Scripts.ContainsKey(id)) {
-                var information = CompileConfiguration.Content.Scripts[id];
-                if (information.Source.HasValue && !string.IsNullOrEmpty(information.Source.Value.Asset) && information.Source.Value.Asset == ctx.assetPath) return;
-                information.Source = new RelativePath {Asset = ctx.assetPath};
-                CompileConfiguration.Save();
-            } else {
-                ScriptInformation.CreateInformationFromAsset(ctx.assetPath);
-            }
+            ScriptInformation.CreateInformationFromAsset(ctx.assetPath);
         }
 
         /// <summary>

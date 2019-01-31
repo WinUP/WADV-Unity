@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using JetBrains.Annotations;
 using WADV.Extensions;
 using WADV.VisualNovel.Compiler;
@@ -14,20 +15,9 @@ namespace WADV.VisualNovel.ScriptStatus {
     [Serializable]
     public class ScriptInformation {
         /// <summary>
-        /// 脚本ID
+        /// 脚本ID（即相对DistributionFolder的不含扩展名的文件路径）
         /// </summary>
         public string Id;
-        
-        /// <summary>
-        /// 源文件路径
-        /// </summary>
-        public RelativePath? Source;
-        
-        /// <summary>
-        /// 二进制文件路径
-        /// </summary>
-        public RelativePath? Binary;
-        
         /// <summary>
         /// 源文件当前哈希值
         /// </summary>
@@ -37,26 +27,48 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// 二进制文件中记录的编译时源文件哈希值
         /// </summary>
         public uint? RecordedHash;
-        
-        /// <summary>
-        /// 翻译文件路径列表
-        /// </summary>
-        public readonly Dictionary<string, RelativePath?> Translations = new Dictionary<string, RelativePath?>();
 
         /// <summary>
-        /// 从Asset路径新建脚本ID
+        /// 运行时二进制加载URI
         /// </summary>
-        /// <param name="path">目标文件路径</param>
-        /// <returns></returns>
         [CanBeNull]
-        public static string CreateIdFromAsset(string path) {
-            path = path.UnifySlash();
-            if (!path.StartsWith("Assets") || !path.EndsWith(".vns") && !path.EndsWith(".vnb")) return null;
-            if (path.StartsWith("Assets/Resources"))
-                return path.Substring(17, path.LastIndexOf(".", StringComparison.Ordinal) - 17);
-            if (path.StartsWith("Assets/StreamingAssets"))
-                return path.Substring(23, path.LastIndexOf(".", StringComparison.Ordinal) - 23);
-            return path.Substring(7, path.LastIndexOf(".", StringComparison.Ordinal) - 7);
+        public string DistributionTarget;
+        
+        /// <summary>
+        /// 运行时翻译加载URI列表
+        /// </summary>
+        public readonly Dictionary<string, string> Translations = new Dictionary<string, string>();
+
+        public bool HasSource => Hash.HasValue;
+
+        public bool HasBinary => RecordedHash.HasValue;
+
+        [CanBeNull]
+        public static string CreateIdFromAsset([NotNull] string path) {
+            path = path.StartsWith("Assets") ? path.Substring(7) : path;
+            path = path.StartsWith("/") ? path.Substring(1) : path;
+            if (path.StartsWith(CompileConfiguration.Content.DistributionFolder))
+                return path.EndsWith(".vnb") ? path.RemoveStarts($"{CompileConfiguration.Content.DistributionFolder}/").RemoveEnds(".vnb") : null;
+            if (path.StartsWith(CompileConfiguration.Content.SourceFolder))
+                return path.EndsWith(".vns") ? path.RemoveStarts($"{CompileConfiguration.Content.SourceFolder}/").RemoveEnds(".vns") : null;
+            if (path.StartsWith(CompileConfiguration.Content.LanguageFolder)) {
+                if (!path.EndsWith(".txt")) return null;
+                var target = path.RemoveStarts($"{CompileConfiguration.Content.LanguageFolder}/").RemoveEnds(".txt");
+                return target.Substring(target.IndexOf("/", StringComparison.Ordinal) + 1);
+            }
+            return null;
+        }
+
+        public static string CreateSourceAssetFromId([NotNull] string id) {
+            return $"Assets/{CompileConfiguration.Content.SourceFolder}/{id}.vns";
+        }
+
+        public static string CreateBinaryAssetFromId([NotNull] string id) {
+            return $"Assets/{CompileConfiguration.Content.DistributionFolder}/{id}.vnb";
+        }
+        
+        public static string CreateLanguageAssetFromId([NotNull] string id, [NotNull] string language) {
+            return $"Assets/{CompileConfiguration.Content.LanguageFolder}/{language}/{id}.txt";
         }
 
         /// <summary>
@@ -65,9 +77,9 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// <param name="path">目标文件路径</param>
         /// <returns></returns>
         [CanBeNull]
-        public static ScriptInformation CreateInformationFromAsset(string path) {
+        public static ScriptInformation CreateInformationFromAsset([NotNull] string path) {
             var id = CreateIdFromAsset(path);
-            if (id == null) return null;
+            if (string.IsNullOrEmpty(id)) return null;
             ScriptInformation result;
             if (CompileConfiguration.Content.Scripts.ContainsKey(id)) {
                 result = CompileConfiguration.Content.Scripts[id];
@@ -76,71 +88,18 @@ namespace WADV.VisualNovel.ScriptStatus {
                 CompileConfiguration.Content.Scripts.Add(id, result);
             }
             if (path.EndsWith(".vns")) {
-                if (!string.IsNullOrEmpty(result.Source?.Asset) && result.Source?.Asset != path)
-                    throw new NotSupportedException($"Unable to create script information for {id}: script with same id is already existed under Assets, Resources or StreamingAssets");
-                result.Source = new RelativePath {Asset = path, Runtime = result.Source?.Runtime};
-                result.Hash = Hasher.Crc32(File.ReadAllBytes(path));
-            } else {
-                if (!string.IsNullOrEmpty(result.Binary?.Asset) && result.Binary?.Asset != path)
-                    throw new NotSupportedException($"Unable to create script information for {id}: binary with same id is already existed under Assets, Resources or StreamingAssets");
-                result.Binary = new RelativePath {Asset = path, Runtime = result.Binary?.Runtime};
+                result.Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(path, Encoding.UTF8).UnifyLineBreak()));
+            } else if (path.EndsWith(".vnb")) {
                 result.RecordedHash = ReadBinaryHash(new FileStream(path, FileMode.Open));
+            } else {
+                path = path.RemoveStarts($"{CompileConfiguration.Content.LanguageFolder}/");
+                var language = path.Substring(0, path.IndexOf("/", StringComparison.Ordinal));
+                if (!result.Translations.ContainsKey(language)) {
+                    result.Translations.Add(language, null);
+                }
             }
             CompileConfiguration.Save();
             return result;
-        }
-
-        /// <summary>
-        /// 从脚本编译配置中删除与此脚本信息同ID的配置
-        /// </summary>
-        public void RemoveFromConfiguration() {
-            if (CompileConfiguration.Content.Scripts.ContainsKey(Id)) {
-                CompileConfiguration.Content.Scripts.Remove(Id);
-            }
-        }
-
-        /// <summary>
-        /// 获取二进制文件Asset路径
-        /// </summary>
-        /// <returns></returns>
-        public string GetBinaryAsset() {
-            return CompileConfiguration.ParseTemplate($"{Binary?.Asset ?? CompileConfiguration.Content.DefaultCompilePath}/{{id}}.vnb",
-                                                      new Dictionary<string, string> {{CompileConfiguration.TemplateItems.Id, Id}});
-        }
-
-        /// <summary>
-        /// 获取二进制文件运行时路径
-        /// </summary>
-        /// <returns></returns>
-        public string GetBinaryRuntime() {
-            return CompileConfiguration.ParseTemplate(Binary?.Runtime ?? CompileConfiguration.Content.DefaultBinaryRuntime,
-                                                      new Dictionary<string, string> {{CompileConfiguration.TemplateItems.Id, Id}});
-        }
-
-        /// <summary>
-        /// 获取语言文件Asset路径
-        /// </summary>
-        /// <param name="language">目标语言</param>
-        /// <returns></returns>
-        public string GetLanguageAsset(string language) {
-            return CompileConfiguration.ParseTemplate($"{Translations[language]?.Asset ?? CompileConfiguration.Content.DefaultLanguagePath}.txt",
-                                                      new Dictionary<string, string> {
-                                                          {CompileConfiguration.TemplateItems.Id, Id},
-                                                          {CompileConfiguration.TemplateItems.Language, language}
-                                                      });
-        }
-
-        /// <summary>
-        /// 获取翻译文件运行时路径
-        /// </summary>
-        /// <param name="language">目标语言</param>
-        /// <returns></returns>
-        public string GetLanguageRuntime(string language) {
-            return CompileConfiguration.ParseTemplate($"{Translations[language]?.Runtime ?? CompileConfiguration.Content.DefaultLanguageRuntime}.txt",
-                                                      new Dictionary<string, string> {
-                                                          {CompileConfiguration.TemplateItems.Id, Id},
-                                                          {CompileConfiguration.TemplateItems.Language, language}
-                                                      });
         }
 
         /// <summary>
@@ -172,6 +131,20 @@ namespace WADV.VisualNovel.ScriptStatus {
             reader.Dispose();
             data.Close();
             return hash;
+        }
+
+        public bool HasLanguage(string language) => Translations.ContainsKey(language);
+        
+        public string CreateSourceAsset() {
+            return CreateSourceAssetFromId(Id);
+        }
+
+        public string CreateBinaryAsset() {
+            return CreateBinaryAssetFromId(Id);
+        }
+        
+        public string CreateLanguageAsset([NotNull] string language) {
+            return CreateLanguageAssetFromId(Id, language);
         }
     }
 }

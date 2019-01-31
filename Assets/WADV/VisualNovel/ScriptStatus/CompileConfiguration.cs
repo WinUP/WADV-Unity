@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Extensions;
 using WADV.MessageSystem;
-using WADV.VisualNovel.Translation;
-
-// ReSharper disable InconsistentNaming
 
 namespace WADV.VisualNovel.ScriptStatus {
     /// <summary>
@@ -23,59 +20,61 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// 脚本信息列表
         /// </summary>
         public readonly Dictionary<string, ScriptInformation> Scripts = new Dictionary<string, ScriptInformation>();
+
+        /// <summary>
+        /// 源文件目录
+        /// </summary>
+        public string SourceFolder {
+            get => _sourceFolder;
+            set => _sourceFolder = NormalizePath(value);
+        }
         
         /// <summary>
-        /// 默认编译路径
+        /// 编译输出目录
         /// </summary>
-        public string DefaultCompilePath = "Assets/{provider}/Binary"; // +/{id}.vnb
-
-        /// <summary>
-        /// 默认二进制文件运行时路径
-        /// </summary>
-        public string DefaultBinaryRuntime = "{provider}://Binary/{id}";
+        public string DistributionFolder {
+            get => _distributionFolder;
+            set => _distributionFolder = NormalizePath(value);
+        }
         
         /// <summary>
-        /// 默认语言文件输出路径
+        /// 翻译输出目录
         /// </summary>
-        public string DefaultLanguagePath = "Assets/{provider}/Translations/{language}/{id}"; // +.txt
+        public string LanguageFolder {
+            get => _languageFolder;
+            set => _languageFolder = NormalizePath(value);
+        }
 
         /// <summary>
-        /// 默认语言文件运行时路径
+        /// 默认运行时二进制加载URI
         /// </summary>
-        public string DefaultLanguageRuntime = "{provider}://Translations/{language}/{id}";
+        public string DefaultRuntimeDistributionUri { get; set; } = "Resources://Logic/Distribution/{id}";
+        
+        /// <summary>
+        /// 默认运行时翻译加载URI
+        /// </summary>
+        public string DefaultRuntimeLanguageUri { get; set; } = "Resources://Logic/Translations/{language}/{id}";
 
         /// <summary>
-        /// 默认资源提供器名
+        /// 是否进入Play模式以及发布前时自动编译
         /// </summary>
-        public string DefaultProvider = "Resources";
+        public bool AutoCompile { get; set; }
+
+        private string _sourceFolder = "Resources/Logic/Source";
+        private string _distributionFolder = "Resources/Logic/Distribution";
+        private string _languageFolder = "Resources/Logic/Translation";
 
         static CompileConfiguration() {
             if (!File.Exists(RecordFilePath)) {
                 File.CreateText(RecordFilePath).Close();
                 Content = new CompileConfiguration();
+                Save();
                 return;
             }
             var file = new FileStream(RecordFilePath, FileMode.Open);
             var formatter = new BinaryFormatter();
             Content = formatter.Deserialize(file) as CompileConfiguration;
             file.Close();
-        }
-
-        /// <summary>
-        /// 解析模板字符串
-        /// </summary>
-        /// <param name="path">目标字符串</param>
-        /// <param name="parts">模板替换项</param>
-        /// <returns></returns>
-        public static string ParseTemplate(string path, IEnumerable<KeyValuePair<string, string>> parts) {
-            var list = parts.ToDictionary(e => e.Key, e => e.Value);
-            if (!list.ContainsKey(TemplateItems.Language)) {
-                list.Add(TemplateItems.Language, TranslationManager.DefaultLanguage);
-            }
-            if (!list.ContainsKey(TemplateItems.Provider)) {
-                list.Add(TemplateItems.Provider, Content.DefaultProvider);
-            }
-            return path.ParseTemplate(list);
         }
         
         /// <summary>
@@ -92,27 +91,21 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// <summary>
         /// 清空所有脚本编译配置
         /// </summary>
-        public static void Clear() {
+        public static void ClearScripts() {
             Content.Scripts.Clear();
             Save();
         }
-        
-        /// <summary>
-        /// 模板项名
-        /// </summary>
-        public static class TemplateItems {
-            /// <summary>
-            /// 脚本ID
-            /// </summary>
-            public const string Id = "id";
-            /// <summary>
-            /// 语言
-            /// </summary>
-            public const string Language = "language";
-            /// <summary>
-            /// 提供器名
-            /// </summary>
-            public const string Provider = "provider";
+
+        private static string NormalizePath(string source) {
+            if (string.IsNullOrEmpty(source)) return "Resources";
+            source = source.UnifySlash();
+            if (source.StartsWith("/")) {
+                source = source.Substring(1);
+            }
+            if (source.EndsWith("/")) {
+                source = source.Substring(0, source.Length - 1);
+            }
+            return string.IsNullOrEmpty(source) ? "Resources" : source;
         }
     }
 }

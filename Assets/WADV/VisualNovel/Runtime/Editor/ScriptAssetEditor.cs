@@ -25,10 +25,8 @@ namespace WADV.VisualNovel.Runtime.Editor {
             }
             if (string.IsNullOrEmpty(_assemblyCode)) {
                 var assemblyContent = new AssemblyContent();
-                assemblyContent.AppendLine(null, "; VisualNovelScript Version 1, assembly format");
-                assemblyContent.AppendLine(null, $"; ID {scriptAsset.id}");
-                assemblyContent.AppendLine(null, "");
-                var script = ScriptHeader.ParseBinary(scriptAsset.id, scriptAsset.content).Header.CreateRuntimeFile();
+                var (header, bytes) = ScriptHeader.ParseBinary("", scriptAsset.content);
+                var script = new ScriptFile(header, bytes);
                 OperationCode? code;
                 do {
                     var label = script.Header.Labels.Where(e => e.Value == script.CurrentPosition).ToList();
