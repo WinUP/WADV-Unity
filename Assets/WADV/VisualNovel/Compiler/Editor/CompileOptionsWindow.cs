@@ -1,36 +1,85 @@
-//using System;
-//using System.Collections.Generic;
-//using System.IO;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using WADV.Extensions;
-//using WADV.MessageSystem;
-//using WADV.VisualNovel.Runtime;
-//using WADV.VisualNovel.Translation;
-//using UnityEditor;
-//using UnityEngine;
-//using WADV.VisualNovel.ScriptStatus;
-//
-//namespace WADV.VisualNovel.Compiler.Editor {
-//    public class CompileOptionsWindow : EditorWindow, IMessenger {
-//        public int Mask { get; } = CoreConstant.Mask;
-//        public bool IsStandaloneMessage { get; } = false;
-//
-//        private readonly Dictionary<string, ScriptEditorStatus> _isEditorOpened = new Dictionary<string, ScriptEditorStatus>();
-//        private Vector2 _scriptsScrollPosition = Vector2.zero;
-//        private LinkedTreeNode<IMessenger> _node;
-//        private string _newGlobalLanguage = "";
-//
-//        public CompileOptionsWindow() {
-//            titleContent = new GUIContent("VNS Compile Options");
-//        }
-//        
-//        [MenuItem("Window/Visual Novel/Compile Options Viewer")]
-//        public static void ShowWindow() {
-//            GetWindowWithRect<CompileOptionsWindow>(new Rect(150, 50, 800, 450));
-//        }
-//        
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using WADV.Extensions;
+using WADV.MessageSystem;
+using UnityEditor;
+using UnityEngine;
+using WADV.VisualNovel.ScriptStatus;
+
+namespace WADV.VisualNovel.Compiler.Editor {
+    public class CompileOptionsWindow : EditorWindow, IMessenger {
+        public int Mask { get; } = CoreConstant.Mask;
+        public bool IsStandaloneMessage { get; } = false;
+        private LinkedTreeNode<IMessenger> _node;
+
+        public CompileOptionsWindow() {
+            titleContent = new GUIContent("VNS Compile Options");
+        }
+        
+        public Task<Message> Receive(Message message) {
+            if (message.Tag == CoreConstant.RepaintCompileOptionEditor) {
+                Repaint();
+            }
+            return Task.FromResult(message);
+        }
+        
+        [MenuItem("Window/Visual Novel/Compile Options Viewer")]
+        public static void ShowWindow() {
+            GetWindowWithRect<CompileOptionsWindow>(new Rect(150, 50, 800, 450));
+        }
+
+        public static void RescanScriptInformation(ScriptInformation option) {
+            var source = option.SourceAssetPath();
+            if (!string.IsNullOrEmpty(source)) {
+                if (File.Exists(source)) {
+                    option.Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(source, Encoding.UTF8).UnifyLineBreak()));
+                } else {
+                    option.Hash = null;
+                }
+            }
+            var binary = option.BinaryAssetPath();
+            if (!string.IsNullOrEmpty(binary)) {
+                if (File.Exists(source)) {
+                    var stream = new FileStream(binary, FileMode.Open);
+                    var hash = ScriptInformation.ReadBinaryHash(stream);
+                    stream.Close();
+                    option.RecordedHash = hash;
+                } else {
+                    option.RecordedHash = null;
+                }
+            }
+            var detectedLanguage = new List<string>();
+            foreach (var language in Directory.GetDirectories($"Assets/{CompileConfiguration.Content.LanguageFolder}").Select(Path.GetFileName)) {
+                if (File.Exists($"Assets/{CompileConfiguration.Content.LanguageFolder}/{language}/{option.Id}.txt")) {
+                    if (!option.Translations.ContainsKey(language)) {
+                        option.Translations.Add(language, null);
+                    }
+                    detectedLanguage.Add(language);
+                } else {
+                    if (option.Translations.ContainsKey(language)) {
+                        option.Translations.Remove(language);
+                    }
+                }
+            }
+            var needRemove = new List<string>();
+            foreach (var (key, _) in option.Translations) {
+                if (!detectedLanguage.Contains(key)) {
+                    needRemove.Add(key);
+                }
+            }
+            foreach (var key in needRemove) {
+                option.Translations.Remove(key);
+            }
+            CompileConfiguration.Save();
+        }
+
+        private void OnGUI() {
+            throw new System.NotImplementedException();
+        }
+
 //        [MenuItem("Window/Visual Novel/Reload All Compile Options")]
 //        public static void Reload() {
 //            CompileOptions.Clear();
@@ -48,14 +97,7 @@
 //                CompileOptions.CreateOrUpdateScript(target);
 //            }
 //        }
-//
-//        public Task<Message> Receive(Message message) {
-//            if (message.Tag == CoreConstant.RepaintCompileOptionEditor) {
-//                Repaint();
-//            }
-//            return Task.FromResult(message);
-//        }
-//
+//  
 //        private void OnEnable() {
 //            titleContent.image = EditorGUIUtility.Load("Script Editor/CompileOptionsWindow Icon.png") as Texture2D;
 //            _node = MessageService.Receivers.CreateChild(this);
@@ -267,5 +309,5 @@
 //            public bool IsOpened { get; set; }
 //            public string LanguageName { get; set; } = "";
 //        }
-//    }
-//}
+    }
+}

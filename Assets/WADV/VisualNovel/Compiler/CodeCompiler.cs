@@ -54,13 +54,13 @@ namespace WADV.VisualNovel.Compiler {
                 }
             }
             var (content, defaultTranslation) = CompileCode(source, identifier);
-            var binaryFile = option.CreateBinaryAsset();
+            var binaryFile = option.BinaryAssetPath();
             File.WriteAllBytes(binaryFile, content);
             option.RecordedHash = option.Hash = identifier.Hash;
             changedFiles.Add(binaryFile);
             // 处理其他翻译
             foreach (var (language, _) in option.Translations) {
-                var languageFile = option.CreateLanguageAsset(language);
+                var languageFile = option.LanguageAssetPath(language);
                 if (File.Exists(languageFile)) {
                     var existedTranslation = new ScriptTranslation(File.ReadAllText(languageFile));
                     if (!existedTranslation.MergeWith(defaultTranslation)) continue;

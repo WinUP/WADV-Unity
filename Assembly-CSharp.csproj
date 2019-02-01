@@ -220,7 +220,7 @@
     <Compile Include="Assets\WADV\VisualNovel\Translation\ScriptTranslation.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Translation\Translation.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Translation\TranslationManager.cs" />
-    <None Include="Assets\Resources\Logic\Translations\jp\!Entrance.txt" />
+    <None Include="Assets\Resources\Logic\Translation\jp\!Entrance.txt" />
     <None Include="Assets\WADV\Plugins\Image\Shaders\UIBase.cginc" />
     <None Include="Assets\WADV\Plugins\Image\Shaders\Fade.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />
@@ -239,7 +239,7 @@
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_Sprite.shader" />
-    <None Include="Assets\Resources\Logic\Translations\jp\Utilities.txt" />
+    <None Include="Assets\Resources\Logic\Translation\jp\Utilities.txt" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface.shader" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>/Users/bo/SCB_YUME_NO_MISAKI_SAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>

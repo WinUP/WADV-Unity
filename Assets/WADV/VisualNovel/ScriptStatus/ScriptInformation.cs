@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using JetBrains.Annotations;
+using UnityEngine;
 using WADV.Extensions;
 using WADV.VisualNovel.Compiler;
 
@@ -29,22 +30,24 @@ namespace WADV.VisualNovel.ScriptStatus {
         public uint? RecordedHash;
 
         /// <summary>
-        /// 运行时二进制加载URI
+        /// 自定义的运行时二进制加载URI
         /// </summary>
         [CanBeNull]
         public string DistributionTarget;
         
         /// <summary>
-        /// 运行时翻译加载URI列表
+        /// 支持的翻译和自定义运行时翻译加载URI列表
         /// </summary>
         public readonly Dictionary<string, string> Translations = new Dictionary<string, string>();
-
-        public bool HasSource => Hash.HasValue;
-
-        public bool HasBinary => RecordedHash.HasValue;
-
+        
+        /// <summary>
+        /// 根据Asset路径创建脚本ID
+        /// </summary>
+        /// <param name="path">目标文件路径</param>
+        /// <returns></returns>
         [CanBeNull]
         public static string CreateIdFromAsset([NotNull] string path) {
+            path = path.UnifySlash();
             path = path.StartsWith("Assets") ? path.Substring(7) : path;
             path = path.StartsWith("/") ? path.Substring(1) : path;
             if (path.StartsWith(CompileConfiguration.Content.DistributionFolder))
@@ -59,15 +62,31 @@ namespace WADV.VisualNovel.ScriptStatus {
             return null;
         }
 
-        public static string CreateSourceAssetFromId([NotNull] string id) {
+        /// <summary>
+        /// 根据脚本ID创建源文件路径
+        /// </summary>
+        /// <param name="id">脚本ID</param>
+        /// <returns></returns>
+        public static string CreateSourceAssetPathFromId([NotNull] string id) {
             return $"Assets/{CompileConfiguration.Content.SourceFolder}/{id}.vns";
         }
 
-        public static string CreateBinaryAssetFromId([NotNull] string id) {
+        /// <summary>
+        /// 根据脚本ID创建二进制文件路径
+        /// </summary>
+        /// <param name="id">脚本ID</param>
+        /// <returns></returns>
+        public static string CreateBinaryAssetPathFromId([NotNull] string id) {
             return $"Assets/{CompileConfiguration.Content.DistributionFolder}/{id}.vnb";
         }
-        
-        public static string CreateLanguageAssetFromId([NotNull] string id, [NotNull] string language) {
+
+        /// <summary>
+        /// 根据脚本ID创建翻译文件路径
+        /// </summary>
+        /// <param name="id">脚本ID</param>
+        /// <param name="language">目标翻译的语言名</param>
+        /// <returns></returns>
+        public static string CreateLanguageAssetPathFromId([NotNull] string id, [NotNull] string language) {
             return $"Assets/{CompileConfiguration.Content.LanguageFolder}/{language}/{id}.txt";
         }
 
@@ -88,17 +107,24 @@ namespace WADV.VisualNovel.ScriptStatus {
                 CompileConfiguration.Content.Scripts.Add(id, result);
             }
             if (path.EndsWith(".vns")) {
-                result.Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(path, Encoding.UTF8).UnifyLineBreak()));
+                var hash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(path, Encoding.UTF8).UnifyLineBreak()));
+                if (result.Hash == hash) return result;
+                result.Hash = hash;
+                CompileConfiguration.Save();
             } else if (path.EndsWith(".vnb")) {
-                result.RecordedHash = ReadBinaryHash(new FileStream(path, FileMode.Open));
+                var stream = new FileStream(path, FileMode.Open);
+                var hash = ReadBinaryHash(stream);
+                stream.Close();
+                if (result.RecordedHash == hash) return result;
+                result.RecordedHash = hash;
+                CompileConfiguration.Save();
             } else {
-                path = path.RemoveStarts($"{CompileConfiguration.Content.LanguageFolder}/");
+                path = path.RemoveStarts($"Assets/{CompileConfiguration.Content.LanguageFolder}/");
                 var language = path.Substring(0, path.IndexOf("/", StringComparison.Ordinal));
-                if (!result.Translations.ContainsKey(language)) {
-                    result.Translations.Add(language, null);
-                }
+                if (result.Translations.ContainsKey(language)) return result;
+                result.Translations.Add(language, null);
+                CompileConfiguration.Save();
             }
-            CompileConfiguration.Save();
             return result;
         }
 
@@ -129,22 +155,71 @@ namespace WADV.VisualNovel.ScriptStatus {
             }
             var hash = reader.ReadUInt32();
             reader.Dispose();
-            data.Close();
             return hash;
         }
+        
+        /// <summary>
+        /// 确定脚本是否有源文件
+        /// </summary>
+        public bool HasSource() => Hash.HasValue;
 
+        /// <summary>
+        /// 确定脚本是否有二进制文件
+        /// </summary>
+        public bool HasBinary() => RecordedHash.HasValue;
+
+        /// <summary>
+        /// 确定脚本是否支持指定翻译
+        /// </summary>
+        /// <param name="language">目标翻译的语言名</param>
+        /// <returns></returns>
         public bool HasLanguage(string language) => Translations.ContainsKey(language);
         
-        public string CreateSourceAsset() {
-            return CreateSourceAssetFromId(Id);
+        /// <summary>
+        /// 获取脚本的源文件路径
+        /// </summary>
+        public string SourceAssetPath() => CreateSourceAssetPathFromId(Id);
+        
+        /// <summary>
+        /// 获取脚本的二进制文件路径
+        /// </summary>
+        public string BinaryAssetPath() => CreateBinaryAssetPathFromId(Id);
+        
+        /// <summary>
+        /// 获取脚本的运行时二进制加载URI模板
+        /// </summary>
+        public string DistributionTargetTemplate() => string.IsNullOrEmpty(DistributionTarget) ? CompileConfiguration.Content.DefaultRuntimeDistributionUri : DistributionTarget;
+
+        /// <summary>
+        /// 获取脚本的运行时二进制加载URI
+        /// </summary>
+        public string DistributionTargetUri() => DistributionTargetTemplate().ParseTemplate(new Dictionary<string, string> {{"id", Id}, {"language", "default"}});
+        
+        /// <summary>
+        /// 获取脚本的翻译文件路径
+        /// </summary>
+        /// <param name="language">目标翻译的语言名</param>
+        /// <returns></returns>
+        public string LanguageAssetPath([NotNull] string language) => CreateLanguageAssetPathFromId(Id, language);
+
+        /// <summary>
+        /// 获取脚本的运行时翻译加载URI模板
+        /// </summary>
+        /// <param name="language">目标翻译的语言名</param>
+        /// <returns></returns>
+        [CanBeNull]
+        public string LanguageTemplate(string language) {
+            if (!Translations.ContainsKey(language)) return null;
+            var address = Translations[language];
+            return string.IsNullOrEmpty(address) ? CompileConfiguration.Content.DefaultRuntimeLanguageUri : address;
         }
 
-        public string CreateBinaryAsset() {
-            return CreateBinaryAssetFromId(Id);
-        }
-        
-        public string CreateLanguageAsset([NotNull] string language) {
-            return CreateLanguageAssetFromId(Id, language);
-        }
+        /// <summary>
+        /// 获取脚本的运行时翻译加载URI
+        /// </summary>
+        /// <param name="language">目标翻译的语言名</param>
+        /// <returns></returns>
+        [CanBeNull]
+        public string LanguageUri(string language) => LanguageTemplate(language)?.ParseTemplate(new Dictionary<string, string> {{"id", Id}, {"language", language}});
     }
 }

@@ -29,16 +29,16 @@ namespace WADV.VisualNovel.Compiler.Editor {
                             if (!target.Translations.ContainsKey(language)) {
                                 target.Translations.Add(language, path);
                             }
-                            var from = origin.CreateLanguageAsset(language);
-                            var to = target.CreateLanguageAsset(language);
+                            var from = origin.LanguageAssetPath(language);
+                            var to = target.LanguageAssetPath(language);
                             if (from != to && File.Exists(from)) {
                                 File.Move(from, to);
                             }
                         }
                         // 移动编译文件
                         target.RecordedHash = target.RecordedHash ?? origin.RecordedHash;
-                        var binaryFile = origin.CreateBinaryAsset();
-                        var targetBinaryFile = target.CreateBinaryAsset();
+                        var binaryFile = origin.BinaryAssetPath();
+                        var targetBinaryFile = target.BinaryAssetPath();
                         if (binaryFile != targetBinaryFile && File.Exists(binaryFile)) {
                             File.Move(binaryFile, targetBinaryFile);
                         }
@@ -54,16 +54,16 @@ namespace WADV.VisualNovel.Compiler.Editor {
                             if (!target.Translations.ContainsKey(language)) {
                                 target.Translations.Add(language, path);
                             }
-                            var from = origin.CreateLanguageAsset(language);
-                            var to = target.CreateLanguageAsset(language);
+                            var from = origin.LanguageAssetPath(language);
+                            var to = target.LanguageAssetPath(language);
                             if (from != to && File.Exists(from)) {
                                 File.Move(from, to);
                             }
                         }
                         // 移动源文件
                         target.Hash = target.Hash ?? origin.Hash;
-                        var sourceFile = origin.CreateSourceAsset();
-                        var targetSourceFile = target.CreateSourceAsset();
+                        var sourceFile = origin.SourceAssetPath();
+                        var targetSourceFile = target.SourceAssetPath();
                         if (sourceFile != targetSourceFile && File.Exists(sourceFile)) {
                             File.Move(sourceFile, targetSourceFile);
                         }

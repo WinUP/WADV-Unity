@@ -4,12 +4,12 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using WADV.Extensions;
 using WADV.VisualNovel.Compiler;
 using WADV.VisualNovel.Translation;
-using JetBrains.Annotations;
-using WADV.Extensions;
 using WADV.VisualNovel.Provider;
 using WADV.VisualNovel.ScriptStatus;
+using JetBrains.Annotations;
 
 namespace WADV.VisualNovel.Runtime {
     /// <summary>
@@ -90,9 +90,9 @@ namespace WADV.VisualNovel.Runtime {
         /// <returns></returns>
         public static async Task<(ScriptHeader Header, byte[] CodeSegment)> Reload([NotNull] string id) {
             var option = CompileConfiguration.Content.Scripts.ContainsKey(id)
-                ? CompileConfiguration.Content.Scripts[id].DistributionTarget ?? CompileConfiguration.Content.DefaultRuntimeDistributionUri
+                ? CompileConfiguration.Content.Scripts[id].DistributionTargetUri()
                 : throw new KeyNotFoundException($"Unable to load script {id}: missing runtime script information");
-            var code = await ResourceProviderManager.Load(option.ParseTemplate(new Dictionary<string, string> {{"id", id}}));
+            var code = await ResourceProviderManager.Load(option);
             byte[] source;
             switch (code) {
                 case ScriptAsset scriptAsset:
@@ -145,12 +145,11 @@ namespace WADV.VisualNovel.Runtime {
         /// <returns></returns>
         public async Task<ScriptTranslation> LoadTranslation(string language) {
             if (Translations.ContainsKey(language)) return Translations[language];
-            var translations = CompileConfiguration.Content.Scripts.ContainsKey(Id)
-                ? CompileConfiguration.Content.Scripts[Id].Translations
+            var target = CompileConfiguration.Content.Scripts.ContainsKey(Id)
+                ? CompileConfiguration.Content.Scripts[Id].LanguageUri(language)
                 : throw new KeyNotFoundException($"Unable to load translation for {Id}: missing runtime script information");
-            if (!translations.ContainsKey(language)) return null;
-            var content = await ResourceProviderManager.Load<string>((translations[language] ?? CompileConfiguration.Content.DefaultRuntimeLanguageUri).ParseTemplate(
-                                                                         new Dictionary<string, string> {{"id", Id}, {"language", language}}));
+            if (string.IsNullOrEmpty(target)) return null;
+            var content = await ResourceProviderManager.Load<string>(target);
             if (string.IsNullOrEmpty(content)) return null;
             var translation = new ScriptTranslation(content);
             Translations.Add(language, translation);

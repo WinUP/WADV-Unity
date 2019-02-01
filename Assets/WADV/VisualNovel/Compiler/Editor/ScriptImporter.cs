@@ -14,9 +14,6 @@ namespace WADV.VisualNovel.Compiler.Editor {
     [ScriptedImporter(1, "vns")]
     public class ScriptImporter : ScriptedImporter {
         public override void OnImportAsset(AssetImportContext ctx) {
-            var id = ScriptInformation.CreateIdFromAsset(ctx.assetPath);
-            if (string.IsNullOrEmpty(id))
-                throw new NotSupportedException($"Unable to import visual novel script {ctx.assetPath}: script id recognize failed");
             var text = new TextAsset(File.ReadAllText(ctx.assetPath, Encoding.UTF8));
             ctx.AddObjectToAsset($"VNScript:{ctx.assetPath}", text, EditorGUIUtility.Load("File Icon/VNS Icon.png") as Texture2D);
             ctx.SetMainObject(text);
