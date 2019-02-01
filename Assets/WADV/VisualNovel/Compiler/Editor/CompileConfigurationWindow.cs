@@ -10,13 +10,23 @@ using UnityEngine;
 using WADV.VisualNovel.ScriptStatus;
 
 namespace WADV.VisualNovel.Compiler.Editor {
-    public class CompileOptionsWindow : EditorWindow, IMessenger {
+    public class CompileConfigurationWindow : EditorWindow, IMessenger {
         public int Mask { get; } = CoreConstant.Mask;
         public bool IsStandaloneMessage { get; } = false;
         private LinkedTreeNode<IMessenger> _node;
+        private Vector2 _scriptsScrollPosition = Vector2.zero;
+        
+        private void OnEnable() {
+            titleContent.image = EditorGUIUtility.Load("Script Editor/CompileOptionsWindow Icon.png") as Texture2D;
+            _node = MessageService.Receivers.CreateChild(this);
+        }
+        
+        private void OnDisable() {
+            MessageService.Receivers.RemoveChild(_node);
+        }
 
-        public CompileOptionsWindow() {
-            titleContent = new GUIContent("VNS Compile Options");
+        public CompileConfigurationWindow() {
+            titleContent = new GUIContent("VNS/VNB Compile Configuration");
         }
         
         public Task<Message> Receive(Message message) {
@@ -26,12 +36,29 @@ namespace WADV.VisualNovel.Compiler.Editor {
             return Task.FromResult(message);
         }
         
-        [MenuItem("Window/Visual Novel/Compile Options Viewer")]
+        [MenuItem("Window/Visual Novel/Compile Configuration")]
         public static void ShowWindow() {
-            GetWindowWithRect<CompileOptionsWindow>(new Rect(150, 50, 800, 450));
+            GetWindowWithRect<CompileConfigurationWindow>(new Rect(150, 50, 800, 450));
         }
 
-        public static void RescanScriptInformation(ScriptInformation option) {
+        [MenuItem("Window/Visual Novel/Rescan Project")]
+        public static void Reload() {
+            CompileConfiguration.ClearScripts();
+            ReloadDirectory("Assets/Resources");
+            CompileConfiguration.Save();
+            var content = "Scripts:\n" + string.Join("\n", CompileConfiguration.Content.Scripts.Keys.Take(20).Select(e => $"\t{e}"));
+            if (CompileConfiguration.Content.Scripts.Count > 20) {
+                content += "\n...more";
+            }
+            EditorUtility.DisplayDialog("Rescan finished", content, "Close");
+        }
+        
+        /// <summary>
+        /// 重新扫描项目并更新目标脚本的信息
+        /// </summary>
+        /// <param name="option">目标脚本信息</param>
+        /// <param name="save">是否扫描完成后自动保存</param>
+        public static void RescanScriptInformation(ScriptInformation option, bool save = true) {
             var source = option.SourceAssetPath();
             if (!string.IsNullOrEmpty(source)) {
                 if (File.Exists(source)) {
@@ -73,40 +100,38 @@ namespace WADV.VisualNovel.Compiler.Editor {
             foreach (var key in needRemove) {
                 option.Translations.Remove(key);
             }
-            CompileConfiguration.Save();
+            if (!option.HasSource() && !option.HasBinary()) {
+                CompileConfiguration.Content.Scripts.Remove(option.Id);
+            }
+            if (save) {
+                CompileConfiguration.Save();
+            }
         }
 
         private void OnGUI() {
-            throw new System.NotImplementedException();
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical();
+            EditorGUILayout.LabelField("Scripts", EditorStyles.boldLabel);
+            _scriptsScrollPosition = GUILayout.BeginScrollView(_scriptsScrollPosition);
+            GUILayout.BeginVertical();
+            foreach (var (id, info) in CompileConfiguration.Content.Scripts) {
+                
+            }
+            GUILayout.EndVertical();
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
         }
 
-//        [MenuItem("Window/Visual Novel/Reload All Compile Options")]
-//        public static void Reload() {
-//            CompileOptions.Clear();
-//            ReloadDirectory("Assets/Resources");
-//            EditorUtility.DisplayDialog("Reload finished", "Successfully reloaded all script compile options", "Close");
-//        }
-//
-//        private static void ReloadDirectory(string root) {
-//            foreach (var directory in Directory.GetDirectories(root)) {
-//                ReloadDirectory(directory);
-//            }
-//            foreach (var file in Directory.GetFiles(root).Where(e => e.EndsWith(".vns"))) {
-//                var target = CodeCompiler.CreatePathFromAsset(file);
-//                if (target == null) continue;
-//                CompileOptions.CreateOrUpdateScript(target);
-//            }
-//        }
-//  
-//        private void OnEnable() {
-//            titleContent.image = EditorGUIUtility.Load("Script Editor/CompileOptionsWindow Icon.png") as Texture2D;
-//            _node = MessageService.Receivers.CreateChild(this);
-//        }
-//        
-//        public void OnDisable() {
-//            MessageService.Receivers.RemoveChild(_node);
-//        }
-//
+        private static void ReloadDirectory(string root) {
+            foreach (var directory in Directory.GetDirectories(root)) {
+                ReloadDirectory(directory);
+            }
+            foreach (var file in Directory.GetFiles(root).Where(e => e.EndsWith(".vns") || e.EndsWith(".vnb"))) {
+                RescanScriptInformation(ScriptInformation.CreateInformationFromAsset(file), false);
+            }
+        }
+
 //        private void OnGUI() {
 //            GUILayout.BeginHorizontal();
 //            // 左栏

@@ -71,14 +71,14 @@ namespace WADV.VisualNovel.Compiler.Editor {
                 EditorGUILayout.HelpBox("Put vns in source folder/vnb in distribution folder to enable script and editor ui", MessageType.Warning);
                 EditorGUILayout.Space();
                 if (GUILayout.Button("Open Global Options")) {
-                    CompileOptionsWindow.ShowWindow();
+                    CompileConfigurationWindow.ShowWindow();
                 }
                 return;
             }
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("ID", _option.Id);
             if (!_editMode && GUILayout.Button("Refresh", EditorStyles.miniButton)) {
-                CompileOptionsWindow.RescanScriptInformation(_option);
+                CompileConfigurationWindow.RescanScriptInformation(_option);
             }
             EditorGUILayout.EndHorizontal();
             // 源状态
