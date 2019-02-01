@@ -1,16 +1,23 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WADV.MessageSystem;
 using UnityEditor;
 using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 using WADV.Extensions;
+using WADV.MessageSystem;
 using WADV.VisualNovel.ScriptStatus;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Compiler.Editor {
     [CustomEditor(typeof(ScriptImporter))]
-    public class ScriptImporterEditor : ScriptedImporterEditor, IMessenger {
+    public class ScriptImporterEditor : ScriptImporterEditorBase { }
+    
+    [CustomEditor(typeof(ScriptBinaryImporter))]
+    public class ScriptBinaryImporterEditor : ScriptImporterEditorBase { }
+    
+    public abstract class ScriptImporterEditorBase : ScriptedImporterEditor, IMessenger {
         public int Mask { get; } = CoreConstant.Mask;
         public bool IsStandaloneMessage { get; } = false;
         private LinkedTreeNode<IMessenger> _node;
@@ -19,8 +26,10 @@ namespace WADV.VisualNovel.Compiler.Editor {
         private ScriptInformation _option;
         private bool _editMode;
         private string _customizedDistribution;
+        private string _newLanguage;
+        private readonly List<(string Key, string Value)> _customizedLanguage = new List<(string Key, string Value)>();
 
-        static ScriptImporterEditor() {
+        static ScriptImporterEditorBase() {
             ImporterEditorRoot = MessageService.Receivers.CreateChild(new EmptyMessenger());
         }
         
@@ -34,13 +43,18 @@ namespace WADV.VisualNovel.Compiler.Editor {
         public override void OnEnable() {
             _node = ImporterEditorRoot.CreateChild(this);
             base.OnEnable();
-            var importer = target as ScriptImporter;
-            if (importer == null) {
-                throw new TypeLoadException("Inspected type is not VisualNovelScriptImporter");
+            var script = target as ScriptImporter;
+            var binary = target as ScriptBinaryImporter;
+            var path = script != null ? script.assetPath : binary != null ? binary.assetPath : null;
+            if (path == null) {
+                throw new TypeLoadException("Inspected type is not ScriptImporter or ScriptBinaryImporter");
             }
-            _option = ScriptInformation.CreateInformationFromAsset(importer.assetPath);
+            _option = ScriptInformation.CreateInformationFromAsset(path);
             if (_option == null) return;
             _customizedDistribution = _option.DistributionTargetTemplate();
+            foreach (var (key, _) in _option.Translations) {
+                _customizedLanguage.Add((key, _option.LanguageTemplate(key)));
+            }
         }
 
         public override void OnDisable() {
@@ -52,17 +66,18 @@ namespace WADV.VisualNovel.Compiler.Editor {
             // ID
             if (_option == null) {
                 EditorGUILayout.LabelField("Source Folder", $"Assets/{CompileConfiguration.Content.SourceFolder}");
+                EditorGUILayout.LabelField("Distribution Folder", $"Assets/{CompileConfiguration.Content.DistributionFolder}");
                 EditorGUILayout.Space();
-                EditorGUILayout.HelpBox("Put in source folder to enable script and editor ui", MessageType.Warning);
+                EditorGUILayout.HelpBox("Put vns in source folder/vnb in distribution folder to enable script and editor ui", MessageType.Warning);
                 EditorGUILayout.Space();
                 if (GUILayout.Button("Open Global Options")) {
-                    CreateInstance<CompileOptionsWindow>();
+                    CompileOptionsWindow.ShowWindow();
                 }
                 return;
             }
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("ID", _option.Id);
-            if (GUILayout.Button("Refresh", EditorStyles.miniButton)) {
+            if (!_editMode && GUILayout.Button("Refresh", EditorStyles.miniButton)) {
                 CompileOptionsWindow.RescanScriptInformation(_option);
             }
             EditorGUILayout.EndHorizontal();
@@ -98,7 +113,23 @@ namespace WADV.VisualNovel.Compiler.Editor {
             ++EditorGUI.indentLevel;
             if (_option.Translations.Any()) {
                 if (_editMode) {
-                
+                    for (var i = -1; ++i < _customizedLanguage.Count;) {
+                        var (key, value) = _customizedLanguage[i];
+                        EditorGUILayout.BeginHorizontal();
+                        _customizedLanguage[i] = (key, EditorGUILayout.TextField(key, value));
+                        if (GUILayout.Button("-", EditorStyles.miniButton)) {
+                            if (OnRemoveTranslationClicked(key)) {
+                                --i;
+                            }
+                        }
+                        EditorGUILayout.EndHorizontal();
+                    }
+                    EditorGUILayout.BeginHorizontal();
+                    _newLanguage = EditorGUILayout.TextField(_newLanguage);
+                    if (GUILayout.Button("Add")) {
+                        OnAddTranslationClicked();
+                    }
+                    EditorGUILayout.EndHorizontal();
                 } else {
                     foreach (var (key, _) in _option.Translations) {
                         EditorGUILayout.LabelField(key, _option.LanguageUri(key));
@@ -109,93 +140,94 @@ namespace WADV.VisualNovel.Compiler.Editor {
             }
             --EditorGUI.indentLevel;
             // 工具按钮
+            EditorGUILayout.Space();
             EditorGUILayout.BeginHorizontal();
             if (_editMode) {
                 if (GUILayout.Button("Save")) {
-                    if (string.IsNullOrEmpty(_customizedDistribution) || _customizedDistribution == CompileConfiguration.Content.DefaultRuntimeDistributionUri) {
-                        _option.DistributionTarget = null;
-                    } else {
-                        _option.DistributionTarget = _customizedDistribution;
-                    }
-                    CompileConfiguration.Save();
-                    _editMode = false;
+                    OnSaveClicked();
                 }
             } else {
                 if (GUILayout.Button("Edit")) {
-                    if (string.IsNullOrEmpty(_customizedDistribution)) {
-                        _customizedDistribution = _option.DistributionTargetTemplate();
-                    }
-                    _editMode = true;
+                    OnEditClicked();
                 }
             }
-            if (GUILayout.Button("Compile")) {
-                try {
-                    var changedFiles = CodeCompiler.CompileAsset(_option.SourceAssetPath()).ToArray();
-                    EditorUtility.DisplayDialog(
-                        "Compile finished",
-                        changedFiles.Any()
-                            ? $"File changed:\n{string.Join("\n", changedFiles)}"
-                            : "No change detected, skip compilation",
-                        "Close");
-                } catch (CompileException compileException) {
-                    EditorUtility.DisplayDialog("Script has error", compileException.Message, "Close");
-                } catch (Exception exception) {
-                    EditorUtility.DisplayDialog("Unknown exception", exception.Message, "Close");
-                }
-                AssetDatabase.Refresh();
+            if (!_editMode && GUILayout.Button("Compile")) {
+                OnCompileClicked();
             }
             EditorGUILayout.EndHorizontal();
         }
 
-//        public static string DrawLanguageGui(ScriptCompileOption option, CodeCompiler.ScriptPaths script, string languageName, bool showOpenButton = false) {
-//            EditorGUILayout.BeginVertical();
-//            if (showOpenButton) {
-//                EditorGUILayout.BeginHorizontal();
-//                EditorGUILayout.LabelField("Available Translations", EditorStyles.boldLabel);
-//                if (GUILayout.Button("Open", EditorStyles.miniButton)) {
-//                    UnityEditorInternal.InternalEditorUtility.OpenFileAtLineExternal(script.Source, 0);
-//                }
-//                EditorGUILayout.EndHorizontal();
-//            } else {
-//                EditorGUILayout.LabelField("Available Translations", EditorStyles.boldLabel);
-//            }
-//            ++EditorGUI.indentLevel;
-//            EditorGUILayout.LabelField("default", "build-in resource");
-//            foreach (var language in option.ExtraTranslationLanguages.ToArray()) {
-//                EditorGUILayout.BeginHorizontal();
-//                EditorGUILayout.LabelField(language, "text file");
-//                if (GUILayout.Button("-", EditorStyles.miniButton)) {
-//                    if (EditorUtility.DisplayDialog($"Remove \"{language}\" translation from {script.SourceResource}?", "This action cannot be reversed", "Continue", "Cancel")) {
-//                        AssetDatabase.DeleteAsset(CodeCompiler.CreateLanguageAssetPathFromId(script.SourceResource, language));
-//                    }
-//                }
-//                EditorGUILayout.EndHorizontal();
-//            }
-//            EditorGUILayout.BeginHorizontal();
-//            languageName = EditorGUILayout.TextField(languageName);
-//            if (GUILayout.Button("+", EditorStyles.miniButton)) {
-//                if (string.IsNullOrEmpty(languageName)) {
-//                    EditorUtility.DisplayDialog("Invalid language", "Language name cannot be empty", "Close");
-//                } else if (option.ExtraTranslationLanguages.Contains(languageName)) {
-//                    EditorUtility.DisplayDialog("Language name conflict", $"Language {languageName} is already existed", "Close");
-//                } else {
-//                    ScriptTranslation defaultTranslationContent;
-//                    try {
-//                        var (header, _) = ScriptHeader.Load(script.SourceResource);
-//                        defaultTranslationContent = header.Translations[TranslationManager.DefaultLanguage];
-//                    } catch (Exception e) {
-//                        Debug.LogError(e);
-//                        defaultTranslationContent = new ScriptTranslation("");
-//                    }
-//                    File.WriteAllText(CodeCompiler.CreateLanguageAssetPathFromId(script.SourceResource, languageName), defaultTranslationContent.Pack(), Encoding.UTF8);
-//                    AssetDatabase.Refresh();
-//                    languageName = "";
-//                }
-//            }
-//            EditorGUILayout.EndHorizontal();
-//            --EditorGUI.indentLevel;
-//            EditorGUILayout.EndVertical();
-//            return languageName;
-//        }
+        private bool OnRemoveTranslationClicked(string key) {
+            if (!EditorUtility.DisplayDialog($"Delete translation {key}", "This action cannot be reversed", "Continue", "Cancel")) return false;
+            _option.Translations.Remove(key);
+            _customizedLanguage.RemoveAll(e => e.Key == key);
+            _option.RemoveTranslationFile(key);
+            CompileConfiguration.Save();
+            AssetDatabase.Refresh();
+            return true;
+        }
+
+        private void OnAddTranslationClicked() {
+            if (!TranslationManager.CheckLanguageName(_newLanguage)) {
+                EditorUtility.DisplayDialog("Unable to add translation", $"Translation name can only contains A-Z, a-z, 0-9, _", "Close");
+            } else if (_option.Translations.ContainsKey(_newLanguage)) {
+                EditorUtility.DisplayDialog("Unable to add translation", $"Translation {_newLanguage} already existed", "Close");
+            } else {
+                _option.Translations.Add(_newLanguage, null);
+                _customizedLanguage.Add((_newLanguage, _option.LanguageTemplate(_newLanguage)));
+                _option.CreateTranslationFile(_newLanguage);
+                _newLanguage = "";
+                CompileConfiguration.Save();
+                AssetDatabase.Refresh();
+            }
+        }
+
+        private void OnSaveClicked() {
+            if (string.IsNullOrEmpty(_customizedDistribution) || _customizedDistribution == CompileConfiguration.Content.DefaultRuntimeDistributionUri) {
+                _option.DistributionTarget = null;
+            } else {
+                _option.DistributionTarget = _customizedDistribution;
+            }
+            for (var i = -1; ++i < _customizedLanguage.Count;) {
+                var (key, value) = _customizedLanguage[i];
+                if (string.IsNullOrEmpty(value) || value == CompileConfiguration.Content.DefaultRuntimeLanguageUri) {
+                    _option.Translations[key] = null;
+                } else {
+                    _option.Translations[key] = value;
+                }
+            }
+            CompileConfiguration.Save();
+            _editMode = false;
+        }
+
+        private void OnEditClicked() {
+            if (string.IsNullOrEmpty(_customizedDistribution)) {
+                _customizedDistribution = _option.DistributionTargetTemplate();
+            }
+            for (var i = -1; ++i < _customizedLanguage.Count;) {
+                var (key, value) = _customizedLanguage[i];
+                if (string.IsNullOrEmpty(value)) {
+                    _customizedLanguage[i] = (key, _option.LanguageTemplate(key));
+                }
+            }
+            _editMode = true;
+        }
+
+        private void OnCompileClicked() {
+            try {
+                var changedFiles = CodeCompiler.CompileAsset(_option.SourceAssetPath()).ToArray();
+                EditorUtility.DisplayDialog(
+                    "Compile finished",
+                    changedFiles.Any()
+                        ? $"File changed:\n{string.Join("\n", changedFiles)}"
+                        : "No change detected, skip compilation",
+                    "Close");
+            } catch (CompileException compileException) {
+                EditorUtility.DisplayDialog("Script has error", compileException.Message, "Close");
+            } catch (Exception exception) {
+                EditorUtility.DisplayDialog("Unknown exception", exception.Message, "Close");
+            }
+            AssetDatabase.Refresh();
+        }
     }
 }

@@ -6,6 +6,8 @@ using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Extensions;
 using WADV.VisualNovel.Compiler;
+using WADV.VisualNovel.Runtime;
+using WADV.VisualNovel.Translation;
 
 // ReSharper disable InconsistentNaming
 
@@ -156,6 +158,41 @@ namespace WADV.VisualNovel.ScriptStatus {
             var hash = reader.ReadUInt32();
             reader.Dispose();
             return hash;
+        }
+        
+        /// <summary>
+        /// 创建翻译文件
+        /// </summary>
+        /// <param name="language">目标语言</param>
+        public void CreateTranslationFile(string language) {
+            if (!Application.isEditor)
+                throw new NotSupportedException($"Cannot create translation file for {Id}: static file compiler can only run in editor mode");
+            var target = $"Assets/{CompileConfiguration.Content.LanguageFolder}/{language}";
+            if (!Directory.Exists(target)) {
+                Directory.CreateDirectory(target);
+            }
+            target = CreateLanguageAssetPathFromId(Id, language);
+            if (File.Exists(target)) {
+                var translation = new ScriptTranslation(File.ReadAllText(target, Encoding.UTF8));
+                if (translation.MergeWith(ScriptHeader.LoadSync(Id).Header.LoadDefaultTranslation())) {
+                    File.WriteAllText(target, translation.Pack());
+                }
+            } else {
+                File.WriteAllText(target, ScriptHeader.LoadSync(Id).Header.LoadDefaultTranslation().Pack());
+            }
+        }
+
+        /// <summary>
+        /// 删除翻译文件
+        /// </summary>
+        /// <param name="language">目标语言</param>
+        public void RemoveTranslationFile(string language) {
+            var target = LanguageAssetPath(language);
+            if (!File.Exists(target)) return;
+            File.Delete(target);
+            if (Translations.ContainsKey(language)) {
+                Translations.Remove(language);
+            }
         }
         
         /// <summary>

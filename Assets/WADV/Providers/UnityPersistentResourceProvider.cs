@@ -1,5 +1,4 @@
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using UnityEngine;
 using WADV.Extensions;

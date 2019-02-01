@@ -77,7 +77,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
                 var id = ScriptInformation.CreateIdFromAsset(file);
                 if (id == null) continue;
                 if (CompileConfiguration.Content.Scripts.ContainsKey(id)) {
-                    CompileConfiguration.Content.Scripts.Remove(id);
+                    CompileOptionsWindow.RescanScriptInformation(CompileConfiguration.Content.Scripts[id]);
                 }
             }
             AssetDatabase.Refresh();

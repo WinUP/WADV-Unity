@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using WADV;
 using WADV.Plugins.Dialogue.Renderer;
 

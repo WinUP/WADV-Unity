@@ -67,6 +67,14 @@ namespace WADV.VisualNovel.Translation {
         }
 
         /// <summary>
+        /// 复制当前可翻译字符串列表
+        /// </summary>
+        /// <returns></returns>
+        public ScriptTranslation Duplicate() {
+            return new ScriptTranslation(_translatableStrings);
+        }
+
+        /// <summary>
         /// 将新的翻译合并到此翻译中
         /// <list type="bullet">
         ///     <item><description>目标与此翻译ID和哈希相同的条目会被忽略</description></item>
@@ -113,9 +121,9 @@ namespace WADV.VisualNovel.Translation {
         public byte[] ToByteArray() {
             var writer = new BinaryWriter(new MemoryStream());
             writer.Write(_translatableStrings.Count);
-            foreach (var item in _translatableStrings) {
-                writer.Write(item.Key);
-                writer.Write(item.Value);
+            foreach (var (key, value) in _translatableStrings) {
+                writer.Write(key);
+                writer.Write(value);
             }
             var result = ((MemoryStream) writer.BaseStream).ToArray();
             writer.Close();
