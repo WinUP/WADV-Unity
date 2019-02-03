@@ -64,11 +64,11 @@ namespace WADV.VisualNovel.Compiler {
                 if (File.Exists(languageFile)) {
                     var existedTranslation = new ScriptTranslation(File.ReadAllText(languageFile));
                     if (!existedTranslation.MergeWith(defaultTranslation)) continue;
-                    File.WriteAllText(languageFile, existedTranslation.Pack(), Encoding.UTF8);
+                    existedTranslation.SaveToAsset(languageFile);
                     changedFiles.Add(languageFile);
                 } else {
                     // 如果翻译不存在，以默认翻译为蓝本新建翻译文件
-                    File.WriteAllText(languageFile, defaultTranslation.Pack(), Encoding.UTF8);
+                    defaultTranslation.SaveToAsset(languageFile);
                     changedFiles.Add(languageFile);
                 }
             }

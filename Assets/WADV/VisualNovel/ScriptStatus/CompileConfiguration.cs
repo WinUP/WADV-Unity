@@ -39,9 +39,9 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// <summary>
         /// 翻译输出目录
         /// </summary>
-        public string LanguageFolder {
-            get => _languageFolder;
-            set => _languageFolder = NormalizePath(value);
+        public string TranslationFolder {
+            get => _translationFolder;
+            set => _translationFolder = NormalizePath(value);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// <summary>
         /// 默认运行时翻译加载URI
         /// </summary>
-        public string DefaultRuntimeLanguageUri { get; set; } = "Resources://Logic/Translations/{language}/{id}";
+        public string DefaultRuntimeTranslationUri { get; set; } = "Resources://Logic/Translations/{language}/{id}";
 
         /// <summary>
         /// 是否进入Play模式以及发布前时自动编译
@@ -61,7 +61,7 @@ namespace WADV.VisualNovel.ScriptStatus {
 
         private string _sourceFolder = "Resources/Logic/Source";
         private string _distributionFolder = "Resources/Logic/Distribution";
-        private string _languageFolder = "Resources/Logic/Translation";
+        private string _translationFolder = "Resources/Logic/Translation";
 
         static CompileConfiguration() {
             if (!File.Exists(RecordFilePath)) {
@@ -80,6 +80,9 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// 保存脚本编译配置
         /// </summary>
         public static void Save() {
+            if (!File.Exists(RecordFilePath)) {
+                File.CreateText(RecordFilePath).Close();
+            }
             var file = new FileStream(RecordFilePath, FileMode.Truncate);
             var formatter = new BinaryFormatter();
             formatter.Serialize(file, Content);

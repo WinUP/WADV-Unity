@@ -56,9 +56,9 @@ namespace WADV.VisualNovel.ScriptStatus {
                 return path.EndsWith(".vnb") ? path.RemoveStarts($"{CompileConfiguration.Content.DistributionFolder}/").RemoveEnds(".vnb") : null;
             if (path.StartsWith(CompileConfiguration.Content.SourceFolder))
                 return path.EndsWith(".vns") ? path.RemoveStarts($"{CompileConfiguration.Content.SourceFolder}/").RemoveEnds(".vns") : null;
-            if (path.StartsWith(CompileConfiguration.Content.LanguageFolder)) {
+            if (path.StartsWith(CompileConfiguration.Content.TranslationFolder)) {
                 if (!path.EndsWith(".txt")) return null;
-                var target = path.RemoveStarts($"{CompileConfiguration.Content.LanguageFolder}/").RemoveEnds(".txt");
+                var target = path.RemoveStarts($"{CompileConfiguration.Content.TranslationFolder}/").RemoveEnds(".txt");
                 return target.Substring(target.IndexOf("/", StringComparison.Ordinal) + 1);
             }
             return null;
@@ -89,7 +89,7 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// <param name="language">目标翻译的语言名</param>
         /// <returns></returns>
         public static string CreateLanguageAssetPathFromId([NotNull] string id, [NotNull] string language) {
-            return $"Assets/{CompileConfiguration.Content.LanguageFolder}/{language}/{id}.txt";
+            return $"Assets/{CompileConfiguration.Content.TranslationFolder}/{language}/{id}.txt";
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace WADV.VisualNovel.ScriptStatus {
                 result.RecordedHash = hash;
                 CompileConfiguration.Save();
             } else {
-                path = path.RemoveStarts($"Assets/{CompileConfiguration.Content.LanguageFolder}/");
+                path = path.RemoveStarts($"Assets/{CompileConfiguration.Content.TranslationFolder}/");
                 var language = path.Substring(0, path.IndexOf("/", StringComparison.Ordinal));
                 if (result.Translations.ContainsKey(language)) return result;
                 result.Translations.Add(language, null);
@@ -167,7 +167,7 @@ namespace WADV.VisualNovel.ScriptStatus {
         public void CreateTranslationFile(string language) {
             if (!Application.isEditor)
                 throw new NotSupportedException($"Cannot create translation file for {Id}: static file compiler can only run in editor mode");
-            var target = $"Assets/{CompileConfiguration.Content.LanguageFolder}/{language}";
+            var target = $"Assets/{CompileConfiguration.Content.TranslationFolder}/{language}";
             if (!Directory.Exists(target)) {
                 Directory.CreateDirectory(target);
             }
@@ -175,10 +175,10 @@ namespace WADV.VisualNovel.ScriptStatus {
             if (File.Exists(target)) {
                 var translation = new ScriptTranslation(File.ReadAllText(target, Encoding.UTF8));
                 if (translation.MergeWith(ScriptHeader.LoadSync(Id).Header.LoadDefaultTranslation())) {
-                    File.WriteAllText(target, translation.Pack());
+                    translation.SaveToAsset(target);
                 }
             } else {
-                File.WriteAllText(target, ScriptHeader.LoadSync(Id).Header.LoadDefaultTranslation().Pack());
+                ScriptHeader.LoadSync(Id).Header.LoadDefaultTranslation().SaveToAsset(target);
             }
         }
 
@@ -248,7 +248,7 @@ namespace WADV.VisualNovel.ScriptStatus {
         public string LanguageTemplate(string language) {
             if (!Translations.ContainsKey(language)) return null;
             var address = Translations[language];
-            return string.IsNullOrEmpty(address) ? CompileConfiguration.Content.DefaultRuntimeLanguageUri : address;
+            return string.IsNullOrEmpty(address) ? CompileConfiguration.Content.DefaultRuntimeTranslationUri : address;
         }
 
         /// <summary>

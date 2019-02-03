@@ -146,6 +146,9 @@ namespace WADV.VisualNovel.Compiler.Editor {
                 if (GUILayout.Button("Save")) {
                     OnSaveClicked();
                 }
+                if (GUILayout.Button("Cancel")) {
+                    _editMode = false;
+                }
             } else {
                 if (GUILayout.Button("Edit")) {
                     OnEditClicked();
@@ -158,7 +161,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
         }
 
         private bool OnRemoveTranslationClicked(string key) {
-            if (!EditorUtility.DisplayDialog($"Delete translation {key}", "This action cannot be reversed", "Continue", "Cancel")) return false;
+            if (!EditorUtility.DisplayDialog($"Delete translation {key}", "This action cannot be reversed", "Remove", "Cancel")) return false;
             _option.Translations.Remove(key);
             _customizedLanguage.RemoveAll(e => e.Key == key);
             _option.RemoveTranslationFile(key);
@@ -190,7 +193,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
             }
             for (var i = -1; ++i < _customizedLanguage.Count;) {
                 var (key, value) = _customizedLanguage[i];
-                if (string.IsNullOrEmpty(value) || value == CompileConfiguration.Content.DefaultRuntimeLanguageUri) {
+                if (string.IsNullOrEmpty(value) || value == CompileConfiguration.Content.DefaultRuntimeTranslationUri) {
                     _option.Translations[key] = null;
                 } else {
                     _option.Translations[key] = value;

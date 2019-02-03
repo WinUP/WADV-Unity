@@ -69,7 +69,7 @@ namespace WADV.VisualNovel.Translation {
         /// <param name="language">目标语言</param>
         public static bool CheckLanguageName(string language) {
             // 127: 7位int最大长度
-            return language != null && language.Length < 127 && language.All(e => e >= '0' && e <= '9' || e >= 'a' && e <= 'z' || e >= 'A' && e <= 'Z' || e =='_');
+            return !string.IsNullOrEmpty(language) && language.Length < 127 && language.All(e => e >= '0' && e <= '9' || e >= 'a' && e <= 'z' || e >= 'A' && e <= 'Z' || e =='_');
         }
 
         private static void EnsureLanguageName(string language) {

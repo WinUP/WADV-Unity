@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 using WADV.Extensions;
 
 namespace WADV.VisualNovel.Translation {
@@ -142,6 +143,15 @@ namespace WADV.VisualNovel.Translation {
                 content.AppendLine();
             }
             return content.ToString();
+        }
+
+        /// <summary>
+        /// 保存翻译的字符串版本到文件
+        /// </summary>
+        /// <param name="path"></param>
+        public void SaveToAsset(string path) {
+            if (!Application.isEditor) throw new NotSupportedException("Unable to save translation: direct write can only run in editor mode");
+            File.WriteAllText(path, Pack(), Encoding.UTF8);
         }
 
         public IEnumerator<KeyValuePair<uint, string>> GetEnumerator() {

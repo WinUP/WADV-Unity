@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEditor.Experimental.AssetImporters;
@@ -17,6 +19,15 @@ namespace WADV.VisualNovel.Compiler.Editor {
             ctx.AddObjectToAsset($"VNScript:{ctx.assetPath}", text, EditorGUIUtility.Load("File Icon/VNS Icon.png") as Texture2D);
             ctx.SetMainObject(text);
             ScriptInformation.CreateInformationFromAsset(ctx.assetPath);
+            if (!CompileConfiguration.Content.AutoCompile) return;
+            try {
+                CodeCompiler.CompileAsset(ctx.assetPath);
+            } catch (CompileException compileException) {
+                Debug.LogError($"Script {ctx.assetPath} contains error\n{compileException.Message}");
+            } catch (Exception exception) {
+                Debug.LogError($"Script {ctx.assetPath} compile failed\n{exception.Message}");
+            }
+            AssetDatabase.Refresh();
         }
 
         /// <summary>
