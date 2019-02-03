@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading.Tasks;
 using WADV.VisualNovel.Compiler;
 using WADV.VisualNovel.Translation;
 using JetBrains.Annotations;
@@ -33,7 +34,7 @@ namespace WADV.VisualNovel.Runtime {
         public ScriptFile([NotNull] ScriptHeader header, [NotNull] byte[] code) {
             Header = header;
             _reader = new ExtendedBinaryReader(new MemoryStream(code));
-            UseTranslation();
+            ActiveTranslation = Header.LoadDefaultTranslation();
         }
 
         ~ScriptFile() {
@@ -45,8 +46,17 @@ namespace WADV.VisualNovel.Runtime {
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static ScriptFile Load(string id) {
-            return ScriptHeader.LoadAsset(id).Header.CreateRuntimeFile();
+        public static ScriptFile LoadSync(string id) {
+            return ScriptHeader.LoadSync(id).Header.CreateRuntimeFile();
+        }
+        
+        /// <summary>
+        /// 根据脚本ID创建运行时脚本
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static async Task<ScriptFile> Load(string id) {
+            return (await ScriptHeader.Load(id)).Header.CreateRuntimeFile();
         }
 
         /// <summary>
@@ -54,8 +64,8 @@ namespace WADV.VisualNovel.Runtime {
         /// <para>如果目标翻译不存在会自动使用默认翻译</para>
         /// </summary>
         /// <param name="name">语言名称</param>
-        public void UseTranslation(string name = TranslationManager.DefaultLanguage) {
-            ActiveTranslation = Header.LoadTranslation(name) ?? Header.LoadTranslation(TranslationManager.DefaultLanguage);
+        public async Task UseTranslation(string name = TranslationManager.DefaultLanguage) {
+            ActiveTranslation = await Header.LoadTranslation(name) ?? Header.LoadDefaultTranslation();
         }
 
         /// <summary>
@@ -64,14 +74,6 @@ namespace WADV.VisualNovel.Runtime {
         /// <param name="offset">目标偏移</param>
         public void MoveTo(long offset) {
             _reader.BaseStream.Position = offset;
-        }
-
-        /// <summary>
-        /// 跳转到指定标签处
-        /// </summary>
-        /// <param name="labelId">标签ID</param>
-        public void JumpTo(int labelId) {
-            MoveTo(Header.Labels[labelId]);
         }
 
         /// <summary>

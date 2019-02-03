@@ -1,6 +1,7 @@
 /Library
 /obj
-/Packages
+/Packages/*
+!/Packages/manifest.json
 /Temp
 /.vs
 /.idea

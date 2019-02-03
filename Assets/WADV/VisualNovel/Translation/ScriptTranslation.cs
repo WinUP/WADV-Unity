@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 using WADV.Extensions;
 
 namespace WADV.VisualNovel.Translation {
@@ -67,6 +68,14 @@ namespace WADV.VisualNovel.Translation {
         }
 
         /// <summary>
+        /// 复制当前可翻译字符串列表
+        /// </summary>
+        /// <returns></returns>
+        public ScriptTranslation Duplicate() {
+            return new ScriptTranslation(_translatableStrings);
+        }
+
+        /// <summary>
         /// 将新的翻译合并到此翻译中
         /// <list type="bullet">
         ///     <item><description>目标与此翻译ID和哈希相同的条目会被忽略</description></item>
@@ -113,9 +122,9 @@ namespace WADV.VisualNovel.Translation {
         public byte[] ToByteArray() {
             var writer = new BinaryWriter(new MemoryStream());
             writer.Write(_translatableStrings.Count);
-            foreach (var item in _translatableStrings) {
-                writer.Write(item.Key);
-                writer.Write(item.Value);
+            foreach (var (key, value) in _translatableStrings) {
+                writer.Write(key);
+                writer.Write(value);
             }
             var result = ((MemoryStream) writer.BaseStream).ToArray();
             writer.Close();
@@ -134,6 +143,15 @@ namespace WADV.VisualNovel.Translation {
                 content.AppendLine();
             }
             return content.ToString();
+        }
+
+        /// <summary>
+        /// 保存翻译的字符串版本到文件
+        /// </summary>
+        /// <param name="path"></param>
+        public void SaveToAsset(string path) {
+            if (!Application.isEditor) throw new NotSupportedException("Unable to save translation: direct write can only run in editor mode");
+            File.WriteAllText(path, Pack(), Encoding.UTF8);
         }
 
         public IEnumerator<KeyValuePair<uint, string>> GetEnumerator() {

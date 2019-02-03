@@ -3,9 +3,9 @@
   <PropertyGroup>
     <LangVersion>7</LangVersion>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <DisableHandlePackageFileConflicts>true</DisableHandlePackageFileConflicts>
     <_TargetFrameworkDirectories>non_empty_path_generated_by_rider_editor_plugin</_TargetFrameworkDirectories>
     <_FullFrameworkReferenceAssemblyPaths>non_empty_path_generated_by_rider_editor_plugin</_FullFrameworkReferenceAssemblyPaths>
+    <DisableHandlePackageFileConflicts>true</DisableHandlePackageFileConflicts>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -116,6 +116,7 @@
     <Compile Include="Assets\WADV\Providers\AssetBundleFileResourceProvider.cs" />
     <Compile Include="Assets\WADV\Providers\UnityPersistentResourceProvider.cs" />
     <Compile Include="Assets\WADV\Providers\UnityResourcesResourceProvider.cs" />
+    <Compile Include="Assets\WADV\Providers\UnityStreamingAssetsResourceProvider.cs" />
     <Compile Include="Assets\WADV\Thread\Dispatcher.cs" />
     <Compile Include="Assets\WADV\Thread\MainThreadPlaceholder.cs" />
     <Compile Include="Assets\WADV\Thread\TaskDelegator.cs" />
@@ -127,7 +128,6 @@
     <Compile Include="Assets\WADV\VisualNovel\Compiler\CodeCompiler.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\CodeIdentifier.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\CompileException.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Compiler\CompileOptions.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\CompilerFlag.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Expressions\BinaryExpression.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Expressions\CallExpression.cs" />
@@ -159,7 +159,6 @@
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Lexer.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\OperationCode.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Parser.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Compiler\ScriptCompileOption.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\SourceCode.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\SourceIndent.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\SourcePosition.cs" />
@@ -186,6 +185,7 @@
     <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginExecuteContext.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Plugin\VisualNovelPlugin.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Provider\BinaryData.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Provider\ResourceProvider.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Provider\ResourceProviderManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\CallStack.cs" />
@@ -205,13 +205,16 @@
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\StringValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\TranslatableValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\VariableSearchMode.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\CompileConfiguration.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\RelativePath.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\ScriptInformation.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Sound\PlaySoundMessageContent.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Sound\SoundChannel.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Sound\SoundManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Translation\ScriptTranslation.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Translation\Translation.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Translation\TranslationManager.cs" />
-    <None Include="Assets\Resources\Logic\!Entrance.tr.jp.txt" />
+    <None Include="Assets\Resources\Logic\Translation\jp\!Entrance.txt" />
     <None Include="Assets\WADV\Plugins\Image\Shaders\UIBase.cginc" />
     <None Include="Assets\WADV\Plugins\Image\Shaders\Fade.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />
@@ -230,10 +233,13 @@
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_Sprite.shader" />
-    <None Include="Assets\Resources\Logic\Utilities.tr.jp.txt" />
+    <None Include="Assets\Resources\Logic\Translation\jp\Utilities.txt" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface.shader" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Advertisements">
+      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/UnityEngine.Advertisements.dll</HintPath>
     </Reference>
     <Reference Include="Unity.PackageManagerUI.Editor">
       <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
@@ -241,17 +247,14 @@
     <Reference Include="Unity.CollabProxy.Editor">
       <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEditor.Advertisements">
+      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/UnityEditor.Advertisements.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.DataPrivacy">
       <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.Analytics.DataPrivacy.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.Advertisements">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/UnityEngine.Advertisements.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEditor.Advertisements">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/UnityEditor.Advertisements.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
       <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
@@ -462,9 +465,6 @@
     </Reference>
     <Reference Include="Unity.Analytics.Tracker">
       <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Tracker.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.collections@0.0.9-preview.11/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
       <HintPath>C:/Program Files/Unity/Editor/Data/NetStandard/ref/2.0.0/netstandard.dll</HintPath>

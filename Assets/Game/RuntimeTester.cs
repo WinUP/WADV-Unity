@@ -9,7 +9,7 @@ using WADV.VisualNovel.Runtime.Utilities;
 namespace Game {
     public class RuntimeTester : MonoBehaviour {
         public async void TestScript() {
-            var runtime = new ScriptRuntime("Logic/!Entrance");
+            var runtime = new ScriptRuntime("!Entrance");
             await runtime.ExecuteScript();
         }
 
@@ -23,7 +23,7 @@ namespace Game {
             var title = new StringValue {Value = "输入姓和名（空格隔开）"};
             var defaultText = new StringValue {Value = "诹访部 翔平"};
             var confirmText = new StringValue {Value = "继续"};
-            var context = PluginExecuteContext.Create(new ScriptRuntime("Logic/Utilities"));
+            var context = PluginExecuteContext.Create(new ScriptRuntime("Utilities"));
             var message = await MessageService.ProcessAsync(ContextMessage<InputPlugin.MessageIntegration.Content>.Create(context,
                                                                 new InputPlugin.MessageIntegration.Content {Title = title, Default = defaultText, ButtonText = confirmText},
                                                                 InputPlugin.MessageIntegration.Mask,

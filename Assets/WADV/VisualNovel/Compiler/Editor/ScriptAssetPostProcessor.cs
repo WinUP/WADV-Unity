@@ -1,97 +1,83 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using WADV.Extensions;
+using WADV.VisualNovel.ScriptStatus;
 
 namespace WADV.VisualNovel.Compiler.Editor {
     public class ScriptAssetPostProcessor : AssetPostprocessor {
         private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
-            // 重命名，按照vns -> bin -> lang的顺序处理
-            var movingFiles = new List<(string From, string To)>();
-            for (var i = -1; ++i < movedFromAssetPaths.Length;) {
-                var from = movedFromAssetPaths[i];
-                if (from.EndsWith(".vns") || from.EndsWith(".txt") || from.EndsWith(".bin.vnb")) {
-                    movingFiles.Add((from, movedAssets[i]));
-                }
-            }
-            foreach (var (movedFromAsset, moveToAsset) in movingFiles.OrderBy(e => e.From.EndsWith(".vns") ? 0 : e.From.EndsWith(".bin.vnb") ? 1 : 2)) {
-                var origin = CodeCompiler.CreatePathFromAsset(movedFromAsset);
+            // 重命名
+            var movingFiles = movedFromAssetPaths
+                              .WithIndex()
+                              .Where(e => e.item.EndsWith(".vns") || e.item.EndsWith(".vnb") || e.item.EndsWith(".txt"))
+                              .Select(e => (From: e.item, To: movedAssets[e.index]));
+            foreach (var (movedFromAsset, moveToAsset) in movingFiles) {
+                var origin = ScriptInformation.CreateInformationFromAsset(movedFromAsset);
                 if (origin == null) continue;
-                var target = CodeCompiler.CreatePathFromAsset(moveToAsset);
+                var target = ScriptInformation.CreateInformationFromAsset(moveToAsset);
+                if (target == null) {
+                    CompileConfiguration.Content.Scripts.Remove(origin.Id);
+                    continue;
+                }
                 if (movedFromAsset.EndsWith(".vns")) {
-                    if (target == null) { // vns -> ?
-                        CompileOptions.Remove(origin);
-                    } else if (moveToAsset.EndsWith(".vns")) { // vns -> vns
+                    if (moveToAsset.EndsWith(".vns")) { // vns -> vns
+                        // 同步Hash
+                        target.Hash = target.Hash ?? origin.Hash;
                         // 移动翻译文件
-                        foreach (var language in CodeCompiler.FilterAssetFromId(Directory.GetFiles(origin.Directory), origin.SourceResource).Where(e => !string.IsNullOrEmpty(e.Language))) {
-                            var from = CodeCompiler.CreateLanguageAssetPathFromId(origin.SourceResource, language.Language);
-                            var to = CodeCompiler.CreateLanguageAssetPathFromId(target.SourceResource, language.Language);
-                            File.Move(from, to);
+                        foreach (var (language, path) in origin.Translations) {
+                            if (!target.Translations.ContainsKey(language)) {
+                                target.Translations.Add(language, path);
+                            }
+                            var from = origin.LanguageAssetPath(language);
+                            var to = target.LanguageAssetPath(language);
+                            if (from != to && File.Exists(from)) {
+                                File.Move(from, to);
+                            }
                         }
                         // 移动编译文件
-                        var binaryFile = CodeCompiler.CreateBinaryAssetPathFromId(origin.SourceResource);
-                        if (File.Exists(binaryFile)) {
-                            File.Move(binaryFile, CodeCompiler.CreateBinaryAssetPathFromId(target.SourceResource));
+                        target.RecordedHash = target.RecordedHash ?? origin.RecordedHash;
+                        var binaryFile = origin.BinaryAssetPath();
+                        var targetBinaryFile = target.BinaryAssetPath();
+                        if (binaryFile != targetBinaryFile && File.Exists(binaryFile)) {
+                            File.Move(binaryFile, targetBinaryFile);
                         }
-                        // 应用重命名
-                        CompileOptions.Rename(origin, target);
-                    } else if (moveToAsset.EndsWith(".bin.vnb")) { // vns -> bin
-                        CompileOptions.Remove(origin);
-                        CompileOptions.UpdateBinaryHash(target);
-                    } else { // vns -> lang
-                        CompileOptions.Remove(origin);
-                        CompileOptions.ApplyLanguage(target);
                     }
-                } else if (movedFromAsset.EndsWith(".bin.vnb")) {
-                    if (target == null) { // bin -> ?
-                        CompileOptions.UpdateBinaryHash(origin);
-                    } else if (moveToAsset.EndsWith(".vns")) { // bin -> vns
-                        CompileOptions.UpdateBinaryHash(origin);
-                        CompileOptions.CreateOrUpdateScript(target);
-                    } else if (moveToAsset.EndsWith(".bin.vnb")) { // bin -> bin
-                        CompileOptions.Get(target.SourceResource).BinaryHash = CompileOptions.Get(origin.SourceResource).BinaryHash;
-                        CompileOptions.UpdateBinaryHash(origin);
-                    } else { // bin -> lang
-                        CompileOptions.UpdateBinaryHash(origin);
-                        CompileOptions.ApplyLanguage(target);
+                    // 删除旧配置
+                    CompileConfiguration.Content.Scripts.Remove(origin.Id);
+                } else if (movedFromAsset.EndsWith(".vnb")) {
+                    if (moveToAsset.EndsWith(".vnb")) { // vnb -> vnb
+                        // 同步Hash
+                        target.RecordedHash = target.RecordedHash ?? origin.RecordedHash;
+                        // 移动翻译文件
+                        foreach (var (language, path) in origin.Translations) {
+                            if (!target.Translations.ContainsKey(language)) {
+                                target.Translations.Add(language, path);
+                            }
+                            var from = origin.LanguageAssetPath(language);
+                            var to = target.LanguageAssetPath(language);
+                            if (from != to && File.Exists(from)) {
+                                File.Move(from, to);
+                            }
+                        }
+                        // 移动源文件
+                        target.Hash = target.Hash ?? origin.Hash;
+                        var sourceFile = origin.SourceAssetPath();
+                        var targetSourceFile = target.SourceAssetPath();
+                        if (sourceFile != targetSourceFile && File.Exists(sourceFile)) {
+                            File.Move(sourceFile, targetSourceFile);
+                        }
                     }
-                } else if (!string.IsNullOrEmpty(origin.Language)) {
-                    if (target == null) { // lang -> ?
-                        CompileOptions.RemoveLanguage(origin);
-                    } else if (moveToAsset.EndsWith(".vns")) { // lang -> vns
-                        CompileOptions.RemoveLanguage(origin);
-                        CompileOptions.CreateOrUpdateScript(target);
-                    } else if (moveToAsset.EndsWith(".bin.vnb")) { // lang -> bin
-                        CompileOptions.RemoveLanguage(origin);
-                        CompileOptions.UpdateBinaryHash(target);
-                    } else { // lang -> lang
-                        CompileOptions.RemoveLanguage(origin);
-                        CompileOptions.ApplyLanguage(target);
-                    }
-                }
-            }
-            // 处理新建和重新导入
-            foreach (var file in importedAssets.Where(e => e.EndsWith(".vns") || e.EndsWith(".txt") || e.EndsWith(".bin.vnb"))) {
-                var target = CodeCompiler.CreatePathFromAsset(file);
-                if (target == null) continue;
-                if (file.EndsWith(".vns")) {
-                    CompileOptions.CreateOrUpdateScript(target);
-                } else if (file.EndsWith(".bin.vnb")) {
-                    CompileOptions.UpdateBinaryHash(target);
-                } else {
-                    CompileOptions.ApplyLanguage(target);
+                    // 删除旧配置
+                    CompileConfiguration.Content.Scripts.Remove(origin.Id);
                 }
             }
             // 处理删除
-            foreach (var file in deletedAssets.Where(e => e.EndsWith(".vns") || e.EndsWith(".txt") || e.EndsWith(".bin.vnb"))) {
-                var target = CodeCompiler.CreatePathFromAsset(file);
-                if (target == null) continue;
-                if (file.EndsWith(".vns")) {
-                    CompileOptions.Remove(target);
-                } else if (file.EndsWith(".bin.vnb")) {
-                    CompileOptions.UpdateBinaryHash(target);
-                } else {
-                    CompileOptions.RemoveLanguage(target);
+            foreach (var file in deletedAssets.Where(e => e.EndsWith(".vns") || e.EndsWith(".txt") || e.EndsWith(".vnb"))) {
+                var id = ScriptInformation.CreateIdFromAsset(file);
+                if (id == null) continue;
+                if (CompileConfiguration.Content.Scripts.ContainsKey(id)) {
+                    CompileConfigurationWindow.RescanScriptInformation(CompileConfiguration.Content.Scripts[id]);
                 }
             }
             AssetDatabase.Refresh();

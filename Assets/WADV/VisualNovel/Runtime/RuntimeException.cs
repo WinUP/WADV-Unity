@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WADV.Extensions;
 
 namespace WADV.VisualNovel.Runtime {
     /// <summary>
@@ -28,7 +29,7 @@ namespace WADV.VisualNovel.Runtime {
                 var result = new StringBuilder();
                 // 写入脚本调用堆栈
                 foreach (var scope in _scope) {
-                    var position = ScriptHeader.LoadAsset(scope.ScriptId).Header.Positions[scope.Offset];
+                    var position = ScriptHeader.Load(scope.ScriptId).GetResultAfterFinished().Header.Positions[scope.Offset];
                     result.AppendLine($"   at {scope.ScriptId}: Line {position.Line + 1}, Column {position.Column + 1}");
                 }
                 return result.ToString();

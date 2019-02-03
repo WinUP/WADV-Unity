@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using WADV.Extensions;
 using WADV.Intents;
 using WADV.MessageSystem;
+using WADV.Thread;
 using WADV.VisualNovel.Compiler;
 using WADV.VisualNovel.Compiler.Expressions;
 using WADV.VisualNovel.Interoperation;
@@ -28,7 +31,7 @@ namespace WADV.VisualNovel.Runtime {
         /// 获取当前激活的顶层作用域
         /// </summary>
         [CanBeNull]
-        public ScopeValue ActiveScope { get; set; }
+        public ScopeValue ActiveScope { get; private set; }
 
         /// <summary>
         /// 获取当前内存堆栈
@@ -58,6 +61,7 @@ namespace WADV.VisualNovel.Runtime {
                     default:
                         throw new RuntimeException(_callStack, $"Unable to change language: Message was modified to non-string type during broadcast");
                 }
+                Script.UseTranslation(_activeLanguage).Wait();
                 MessageService.Process(Message<ChangeLanguageIntent>.Create(new ChangeLanguageIntent {Runtime = this, NewLanguage = _activeLanguage}, CoreConstant.Mask, CoreConstant.LanguageChange));
             }
         }
@@ -65,18 +69,78 @@ namespace WADV.VisualNovel.Runtime {
         private string _activeLanguage = TranslationManager.DefaultLanguage;
         private readonly CallStack _callStack = new CallStack();
         private readonly Stack<ScopeValue> _historyScope = new Stack<ScopeValue>();
+        [CanBeNull] private MainThreadPlaceholder _stopRequest;
 
         public ScriptRuntime(ScriptFile script) {
             Script = script ?? throw new ArgumentException("Unable to load script: expected script is not existed", nameof(script));
+            Script.UseTranslation(ActiveLanguage).Wait();
         }
+
+        public ScriptRuntime(string scriptId) : this(ScriptFile.LoadSync(scriptId)) { }
+
+        public ScriptRuntime(string scriptId, IEnumerable<CallStack.StackItem> initialCallStack) : this(ScriptFile.LoadSync(scriptId), initialCallStack) { }
         
         private ScriptRuntime(ScriptFile script, IEnumerable<CallStack.StackItem> initialCallStack) : this(script) {
             _callStack.Push(initialCallStack);
         }
 
-        public ScriptRuntime(string scriptId) : this(ScriptFile.Load(scriptId)) { }
+        private ScriptRuntime(Stack<SerializableValue> memoryStack, Dictionary<string, SerializableValue> exported, CallStack callStack, Stack<ScopeValue> historyScope) {
+            MemoryStack = memoryStack;
+            Exported = exported;
+            _callStack = callStack;
+            _historyScope = historyScope;
+        }
 
-        public ScriptRuntime(string scriptId, IEnumerable<CallStack.StackItem> initialCallStack) : this(ScriptFile.Load(scriptId), initialCallStack) { }
+        /// <summary>
+        /// 将二进制数组转换为脚本运行环境
+        /// </summary>
+        /// <param name="data">原始数据</param>
+        /// <returns></returns>
+        [CanBeNull]
+        public static ScriptRuntime LoadFrom(byte[] data) {
+            var deserializer = new BinaryFormatter();
+            var record = deserializer.Deserialize(new MemoryStream(data)) as RuntimeDump;
+            if (record == null) return null;
+            var target = new ScriptRuntime(record.Memory, record.Exported, record.CallStack, record.HistoryScope);
+            if (record.Scope != null) {
+                target.ActiveScope = record.Scope;
+                target.Script = ScriptFile.LoadSync(target.ActiveScope.ScriptId);
+                target.Script.MoveTo(record.Offset);
+                target.Script.UseTranslation(target.ActiveLanguage).Wait();
+            }
+            target.ActiveLanguage = record.Language;
+            return target;
+        }
+
+        /// <summary>
+        /// 将脚本运行环境转换为二进制数组
+        /// </summary>
+        /// <returns></returns>
+        public byte[] Dump() {
+            var serializer = new BinaryFormatter();
+            var stream = new MemoryStream();
+            serializer.Serialize(stream, new RuntimeDump {
+                Offset = Script.CurrentPosition,
+                Scope = ActiveScope,
+                Memory = MemoryStack,
+                Exported = Exported,
+                Language = ActiveLanguage,
+                CallStack = _callStack,
+                HistoryScope = _historyScope
+            });
+            return stream.ToArray();
+        }
+
+        /// <summary>
+        /// 等待当前字节码执行完成后停止脚本执行
+        /// </summary>
+        /// <returns></returns>
+        public async Task StopRunning() {
+            if (_stopRequest == null) {
+                _stopRequest = new MainThreadPlaceholder();
+            }
+            await _stopRequest;
+        }
         
         /// <summary>
         /// 从当前代码段偏移位置开始执行脚本
@@ -88,7 +152,12 @@ namespace WADV.VisualNovel.Runtime {
             }
             _callStack.Clear();
             _callStack.Push(Script);
-            while (await ExecuteSingleLine()) {}
+            while (await ExecuteSingleLine()) {
+                if (_stopRequest == null) continue;
+                _stopRequest.Complete();
+                _stopRequest = null;
+                break;
+            }
         }
 
         private async Task<bool> ExecuteSingleLine() {
@@ -135,7 +204,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperationCode.LDC_R4_525:
                 case OperationCode.LDC_R4_55:
                 case OperationCode.LDC_R4_575:
-                    MemoryStack.Push(new FloatValue {Value = ((byte) code - (byte) OperationCode.LDC_R4_0) * (float) 0.25});
+                    MemoryStack.Push(new FloatValue {Value = ((byte) code - (byte) OperationCode.LDC_R4_0) * 0.25F});
                     break;
                 case OperationCode.LDC_R4:
                     MemoryStack.Push(new FloatValue {Value = Script.ReadFloat()});
@@ -225,10 +294,11 @@ namespace WADV.VisualNovel.Runtime {
                     LeaveScope();
                     break;
                 case OperationCode.RET:
-                    ReturnToPreviousScript();
+                    await ReturnToPreviousScript();
+                    if (_callStack.Count == 0) return false;
                     break;
                 case OperationCode.FUNC:
-                    CreateFunctionCall();
+                    await CreateFunctionCall();
                     break;
                 case OperationCode.BF:
                     var condition = MemoryStack.Pop();
@@ -332,10 +402,8 @@ namespace WADV.VisualNovel.Runtime {
         private string PopString(SerializableValue target = null) {
             var rawValue = target ?? MemoryStack.Pop();
             switch (rawValue) {
-                case StringValue stringMemoryValue:
-                    return stringMemoryValue.Value;
-                case TranslatableValue translatableMemoryValue:
-                    return ScriptHeader.LoadAsset(translatableMemoryValue.ScriptId).Header.GetTranslation(ActiveLanguage, translatableMemoryValue.TranslationId);
+                case IStringConverter stringConverter:
+                    return stringConverter.ConvertToString(ActiveLanguage);
                 default:
                     return null;
             }
@@ -349,7 +417,7 @@ namespace WADV.VisualNovel.Runtime {
             ActiveScope = newScope;
         }
 
-        private void CreateFunctionCall() {
+        private async Task CreateFunctionCall() {
             var functionName = MemoryStack.Pop();
             while (functionName is ReferenceValue referenceFunction) {
                 functionName = referenceFunction.Value;
@@ -376,8 +444,9 @@ namespace WADV.VisualNovel.Runtime {
             _historyScope.Push(ActiveScope);
             ActiveScope = functionBody;
             // 重定向执行位置
-            Script = ScriptFile.Load(ActiveScope.ScriptId);
+            Script = await ScriptFile.Load(ActiveScope.ScriptId);
             Script.MoveTo(ActiveScope.Entrance);
+            await Script.UseTranslation(ActiveLanguage);
             _callStack.Push(Script);
         }
 
@@ -388,21 +457,22 @@ namespace WADV.VisualNovel.Runtime {
             ActiveScope = ActiveScope.ParentScope;
         }
 
-        private void ReturnToPreviousScript() {
+        private async Task ReturnToPreviousScript() {
             // 切换历史作用域
             ActiveScope = _historyScope.Pop();
             // 重定向执行位置
             _callStack.Pop();
             var pointer = _callStack.Last;
-            Script = ScriptFile.Load(pointer.ScriptId);
+            Script = ScriptFile.LoadSync(pointer.ScriptId);
             Script.MoveTo(pointer.Offset);
+            await Script.UseTranslation(ActiveLanguage);
             // 跳过刚刚执行完的跳转指令
             Script.ReadOperationCode();
         }
         
         private VisualNovelPlugin FindPlugin() {
             var pluginName = PopString();
-            if (string.IsNullOrEmpty(pluginName)) throw new RuntimeException(_callStack, $"Unable to find plugin: expected string name");
+            if (string.IsNullOrEmpty(pluginName)) throw new RuntimeException(_callStack, "Unable to find plugin: expected string name");
             var plugin = PluginManager.Find(pluginName);
             if (plugin == null) throw new RuntimeException(_callStack, $"Unable to find plugin: expected plugin {pluginName} not existed");
             return plugin;
@@ -451,12 +521,12 @@ namespace WADV.VisualNovel.Runtime {
             var valueRight = MemoryStack.Pop();
             switch (operatorType) {
                 case OperatorType.PickChild:
-                    if (valueRight is IStringConverter rightStringConverter && rightStringConverter.ConvertToString() == "Duplicate") {
+                    if (valueRight is IStringConverter rightStringConverter && rightStringConverter.ConvertToString(ActiveLanguage) == "Duplicate") {
                         // 复制(Duplicate)由于统一实现的困难暂且由运行环境处理
                         MemoryStack.Push(valueLeft.Duplicate());
                     } else if (valueLeft is IPickChildOperator leftPick) {
                         try {
-                            MemoryStack.Push(leftPick.PickChild(valueRight));
+                            MemoryStack.Push(leftPick.PickChild(valueRight, ActiveLanguage));
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
                         }
@@ -467,7 +537,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.Add:
                     if (valueLeft is IAddOperator leftAdd) {
                         try {
-                            MemoryStack.Push(leftAdd.AddWith(valueRight));
+                            MemoryStack.Push(leftAdd.AddWith(valueRight, ActiveLanguage));
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
                         }
@@ -478,7 +548,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.Minus:
                     if (valueLeft is ISubtractOperator leftSubtract) {
                         try {
-                            MemoryStack.Push(leftSubtract.SubtractWith(valueRight));
+                            MemoryStack.Push(leftSubtract.SubtractWith(valueRight, ActiveLanguage));
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
                         }
@@ -489,7 +559,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.Multiply:
                     if (valueLeft is IMultiplyOperator leftMultiply) {
                         try {
-                            MemoryStack.Push(leftMultiply.MultiplyWith(valueRight));
+                            MemoryStack.Push(leftMultiply.MultiplyWith(valueRight, ActiveLanguage));
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
                         }
@@ -500,7 +570,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.Divide:
                     if (valueLeft is IDivideOperator leftDivide) {
                         try {
-                            MemoryStack.Push(leftDivide.DivideWith(valueRight));
+                            MemoryStack.Push(leftDivide.DivideWith(valueRight, ActiveLanguage));
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
                         }
@@ -514,7 +584,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.NotGreaterThan:
                     if (valueLeft is ICompareOperator leftCompare) {
                         try {
-                            var compareResult = leftCompare.CompareWith(valueRight);
+                            var compareResult = leftCompare.CompareWith(valueRight, ActiveLanguage);
                             if (compareResult < 0) {
                                 MemoryStack.Push(new BooleanValue {Value = operatorType == OperatorType.LesserThan || operatorType == OperatorType.NotGreaterThan});
                             } else if (compareResult == 0) {
@@ -533,7 +603,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.LogicNotEqualsTo:
                     if (valueLeft is IEqualOperator leftEqual) {
                         try {
-                            var result = new BooleanValue {Value = leftEqual.EqualsWith(valueRight)};
+                            var result = new BooleanValue {Value = leftEqual.EqualsWith(valueRight, ActiveLanguage)};
                             if (operatorType == OperatorType.LogicNotEqualsTo) {
                                 result.Value = !result.Value;
                             }
@@ -560,13 +630,26 @@ namespace WADV.VisualNovel.Runtime {
         private async Task Load() {
             var scriptId = PopString();
             if (string.IsNullOrEmpty(scriptId)) throw new RuntimeException(_callStack, $"Unable to load script: script id {scriptId} is not string value");
-            var runtime = new ScriptRuntime(scriptId, _callStack);
+            var runtime = new ScriptRuntime(scriptId, _callStack) {ActiveLanguage = ActiveLanguage};
             await runtime.ExecuteScript();
             var result = new ObjectPlugin.ObjectValue();
             foreach (var (name, value) in runtime.Exported) {
                 result.Add(new StringValue {Value = name}, value);
             }
             MemoryStack.Push(result);
+        }
+        
+        [Serializable]
+        private class RuntimeDump {
+            // ReSharper disable InconsistentNaming
+            public long Offset;
+            public ScopeValue Scope;
+            public Stack<SerializableValue> Memory;
+            public Dictionary<string, SerializableValue> Exported;
+            public string Language;
+            public CallStack CallStack;
+            public Stack<ScopeValue> HistoryScope;
+            // ReSharper restore InconsistentNaming
         }
     }
 }

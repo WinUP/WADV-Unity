@@ -31,15 +31,5 @@ namespace WADV.VisualNovel.Provider {
         /// <param name="id">资源ID</param>
         /// <returns></returns>
         public abstract Task<object> Load(string id);
-
-        /// <summary>
-        /// 读取资源
-        /// </summary>
-        /// <param name="id">资源ID</param>
-        /// <returns></returns>
-        public virtual async Task<T> Load<T>(string id) where T : class {
-            var result = await Load(id);
-            return result == null || result.GetType() != typeof(T) ? null : (T) result;
-        }
     }
 }

@@ -1,36 +1,35 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace WADV.Extensions {
     public static class StringExtensions {
         /// <summary>
-        /// 删除字符串中第一次出现的子串
+        /// 如果字符串以目标子串开头则删除该子串
         /// </summary>
         /// <param name="value">目标字符串</param>
         /// <param name="part">要删除的子串</param>
         /// <returns></returns>
-        public static string RemoveWhenStartsWith(this string value, string part) {
-            var index = value.IndexOf(part, StringComparison.Ordinal);
-            if (index < 0) return value;
-            if (index + part.Length >= value.Length) {
-                return value.Substring(0, index);
-            }
-            return index < 0 ? value : value.Substring(part.Length);
+        public static string RemoveStarts(this string value, string part) {
+            return value == part
+                ? ""
+                : value.StartsWith(part)
+                    ? value.Substring(part.Length)
+                    : value;
         }
         
         /// <summary>
-        /// 删除字符串中最后一次出现的子串
+        /// 如果字符串以目标子串结尾则删除该子串
         /// </summary>
         /// <param name="value">目标字符串</param>
         /// <param name="part">要删除的子串</param>
         /// <returns></returns>
-        public static string RemoveWhenEndsWith(this string value, string part) {
-            var index = value.LastIndexOf(part, StringComparison.Ordinal);
-            return index < 0
-                ? value
-                : index + part.Length > value.Length
-                    ? value.Remove(index, part.Length)
-                    : value.Substring(0, index);
+        public static string RemoveEnds(this string value, string part) {
+            return value == part
+                ? ""
+                : value.EndsWith(part)
+                    ? value.Substring(0, value.Length - part.Length)
+                    : value;
         }
 
         /// <summary>
@@ -53,10 +52,32 @@ namespace WADV.Extensions {
         /// <summary>
         /// 统一所有斜线至左斜线
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">目标字符串</param>
         /// <returns></returns>
         public static string UnifySlash(this string value) {
             return value.Replace('\\', '/');
+        }
+
+        /// <summary>
+        /// 统一所有换行符
+        /// </summary>
+        /// <param name="value">目标字符串</param>
+        /// <returns></returns>
+        public static string UnifyLineBreak(this string value) {
+            return value.Replace("\r\n", "\n").Replace('\r', '\n');
+        }
+
+        /// <summary>
+        /// 解析模板字符串
+        /// </summary>
+        /// <param name="value">目标字符串</param>
+        /// <param name="parts">模板替换项</param>
+        /// <returns></returns>
+        public static string ParseTemplate(this string value, IEnumerable<KeyValuePair<string, string>> parts) {
+            foreach (var (pattern, content) in parts) {
+                value = value.Replace($"{{{pattern}}}", content);
+            }
+            return value;
         }
         
         /// <summary>

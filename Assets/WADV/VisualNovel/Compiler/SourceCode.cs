@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using WADV.Extensions;
 
 namespace WADV.VisualNovel.Compiler {
     /// <summary>
@@ -58,7 +59,7 @@ namespace WADV.VisualNovel.Compiler {
             if (content.Contains('\t')) {
                 throw new ArgumentException("Unable to create code content: WADV VNS string/file cannot includes \\t");
             }
-            content = content.Replace("\r\n", "\n").Replace('\r', '\n');
+            content = content.UnifyLineBreak();
             Content = content.Last() == '\n' ? content : content + '\n';
             Length = Content.Length;
             Offset = 0;

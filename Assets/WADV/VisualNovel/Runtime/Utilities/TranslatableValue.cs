@@ -35,7 +35,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         
         /// <inheritdoc />
         public string ConvertToString(string language) {
-            return ScriptHeader.LoadAsset(ScriptId).Header.GetTranslation(language, TranslationId);
+            return ScriptHeader.LoadSync(ScriptId).Header.GetTranslation(language, TranslationId);
         }
 
         public override string ToString() {

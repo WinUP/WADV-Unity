@@ -1,15 +1,15 @@
-using System;
 using System.IO;
 using WADV.VisualNovel.Runtime;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
+using WADV.VisualNovel.ScriptStatus;
 
 namespace WADV.VisualNovel.Compiler.Editor {
     /// <inheritdoc />
     /// <summary>
-    /// 适用于Unity 2017.2+的二进制脚本导入器
+    /// 适用于Unity 2017.2+的VNB导入器
     /// </summary>
     [ScriptedImporter(1, "vnb")]
     [UsedImplicitly]
@@ -17,12 +17,9 @@ namespace WADV.VisualNovel.Compiler.Editor {
         public override void OnImportAsset(AssetImportContext ctx) {
             var script = ScriptableObject.CreateInstance<ScriptAsset>();
             script.content = File.ReadAllBytes(ctx.assetPath);
-            script.id = CodeCompiler.CreatePathFromAsset(ctx.assetPath)?.SourceResource;
-            if (string.IsNullOrEmpty(script.id)) {
-                throw new NotSupportedException($"Unable to import visual novel binary {ctx.assetPath}: script id recognize failed");
-            }
             ctx.AddObjectToAsset($"VNBinary:{ctx.assetPath}", script, EditorGUIUtility.Load("File Icon/VNB Icon.png") as Texture2D);
             ctx.SetMainObject(script);
+            ScriptInformation.CreateInformationFromAsset(ctx.assetPath);
         }
     }
 }
