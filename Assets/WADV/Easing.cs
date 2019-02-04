@@ -120,6 +120,25 @@ namespace WADV {
         }
         
         /// <summary>
+        /// 反转过渡函数
+        /// </summary>
+        /// <param name="type">目标函数类型</param>
+        /// <returns></returns>
+        public static Func<float, float> GetReverse(EasingType type) {
+            var target = GetEasingFunction(type);
+            return value => 1 - target(value);
+        }
+
+        /// <summary>
+        /// 反转过渡函数
+        /// </summary>
+        /// <param name="target">目标函数</param>
+        /// <returns></returns>
+        public static Func<float, float> Reverse(Func<float, float> target) {
+            return value => 1 - target(value);
+        }
+        
+        /// <summary>
         /// 使用函数y = x计算过渡进度
         /// </summary>
         /// <param name="value">原始过渡进度</param>

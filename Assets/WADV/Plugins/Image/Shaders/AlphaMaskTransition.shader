@@ -1,6 +1,7 @@
-﻿Shader "UI/Unlit/Fade" {
+Shader "UI/Unlit/AlphaMaskTransition" {
     Properties {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
+        _MaskTex ("Mask Texture", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
@@ -9,7 +10,8 @@
         _StencilReadMask ("Stencil Read Mask", Float) = 255
         _ColorMask ("Color Mask", Float) = 15
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip ("Use Alpha Clip", Float) = 0
-        _Alpha ("Alpha", Range(0, 1)) = 1
+        _Threshold ("Threshold", Range(0, 1)) = 0.2
+        _Progress ("Progress", Range(0, 1)) = 0
     }
     SubShader {
         Tags {
@@ -43,6 +45,7 @@
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
             #include "UIBase.cginc"
+            #include "EffectUtilities.cginc"
             
             #pragma multi_compile __ UNITY_UI_CLIP_RECT
             #pragma multi_compile __ UNITY_UI_ALPHACLIP
@@ -62,8 +65,10 @@
                 UNITY_VERTEX_OUTPUT_STEREO
             };
             
-            float _Alpha;
+            float _Progress;
+            float _Threshold;
             sampler2D _MainTex;
+            sampler2D _MaskTex;
             fixed4 _Color;
             fixed4 _TextureSampleAdd;
             float4 _ClipRect;
@@ -84,8 +89,15 @@
                 #ifdef UNITY_UI_ALPHACLIP
                 UI_ALPHACLIP(color);
                 #endif
-                
-                color.a = saturate(color.a - 1 + _Alpha);
+                half mask = to_grayscale(tex2D(_MaskTex, i.uv));
+                half offset = -_Threshold * (1 - _Progress);
+                if (mask > _Progress + _Threshold + offset) {
+                    color.a = 0;
+                } else if (mask > _Progress + offset) {
+                    color.a = lerp(1, 0, (mask - _Progress - offset) / _Threshold);
+                } else {
+                    color.a = 1;
+                }
                 return color;
             }
             ENDCG
