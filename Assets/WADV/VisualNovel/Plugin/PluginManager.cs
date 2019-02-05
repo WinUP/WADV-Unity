@@ -1,18 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 using UnityEngine;
+using WADV.Reflection;
 
 namespace WADV.VisualNovel.Plugin {
     /// <summary>
     /// 插件管理器
     /// </summary>
     public static class PluginManager {
-        private static readonly Dictionary<string, VisualNovelPlugin> Plugins = new Dictionary<string, VisualNovelPlugin>();
+        private static readonly Dictionary<string, IVisualNovelPlugin> Plugins = new Dictionary<string, IVisualNovelPlugin>();
+        
+        public class AutoRegister : IAssemblyRegister {
+            public void RegisterType(Type target, UseStaticRegistration info, string name) {
+                if (target.GetInterfaces().Contains(typeof(IVisualNovelPlugin))) {
+                    Register((IVisualNovelPlugin) Activator.CreateInstance(target));
+                }
+            }
+        }
 
         static PluginManager() {
-            AutoRegister.Load(Assembly.GetExecutingAssembly());
+            AssemblyRegister.Load(Assembly.GetExecutingAssembly());
         }
 
         /// <summary>
@@ -21,7 +31,7 @@ namespace WADV.VisualNovel.Plugin {
         /// <param name="name">插件名</param>
         /// <returns></returns>
         [CanBeNull]
-        public static VisualNovelPlugin Find(string name) {
+        public static IVisualNovelPlugin Find(string name) {
             return Plugins.ContainsKey(name) ? Plugins[name] : null;
         }
 
@@ -30,15 +40,16 @@ namespace WADV.VisualNovel.Plugin {
         /// <para>相同名称的插件会覆盖之前注册的插件</para>
         /// </summary>
         /// <param name="plugin">要注册的插件</param>
-        public static void Register([NotNull] VisualNovelPlugin plugin) {
-            if (Plugins.ContainsKey(plugin.Name)) {
-                if (!plugin.OnUnregister(true)) throw new NotSupportedException($"Plugin {plugin.Name} registration failed: conflict plugin denied to unregister");
-                Plugins.Remove(plugin.Name);
+        public static void Register([NotNull] IVisualNovelPlugin plugin) {
+            var name = AssemblyRegister.GetName(plugin.GetType(), plugin);
+            if (Plugins.ContainsKey(name)) {
+                if (!plugin.OnUnregister(true)) throw new NotSupportedException($"Plugin {name} registration failed: conflict plugin denied to unregister");
+                Plugins.Remove(name);
             }
             if (plugin.OnRegister()) {
-                Plugins.Add(plugin.Name, plugin);
+                Plugins.Add(name, plugin);
             } else if (Application.isEditor) {
-                Debug.LogWarning($"Plugin {plugin.Name} registration failed: target plugin denied to register");
+                Debug.LogWarning($"Plugin {name} registration failed: target plugin denied to register");
             }
         }
 
@@ -46,12 +57,13 @@ namespace WADV.VisualNovel.Plugin {
         /// 注销一个插件
         /// </summary>
         /// <param name="plugin">要注销的插件</param>
-        public static void Unregister(VisualNovelPlugin plugin) {
-            if (Plugins.ContainsKey(plugin.Name)) {
+        public static void Unregister(IVisualNovelPlugin plugin) {
+            var name = AssemblyRegister.GetName(plugin.GetType(), plugin);
+            if (Plugins.ContainsKey(name)) {
                 if (plugin.OnUnregister(false)) {
-                    Plugins.Remove(plugin.Name);
-                }else if (Application.isEditor) {
-                    Debug.LogWarning($"Plugin {plugin.Name} unregisteration failed: target plugin denied to unregister");
+                    Plugins.Remove(name);
+                } else if (Application.isEditor) {
+                    Debug.LogWarning($"Plugin {name} unregisteration failed: target plugin denied to unregister");
                 }
             }
         }
@@ -61,7 +73,7 @@ namespace WADV.VisualNovel.Plugin {
         /// </summary>
         /// <param name="plugin">目标插件</param>
         /// <returns></returns>
-        public static bool Contains(VisualNovelPlugin plugin) {
+        public static bool Contains(IVisualNovelPlugin plugin) {
             return Plugins.ContainsValue(plugin);
         }
 

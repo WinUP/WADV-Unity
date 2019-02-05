@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Extensions;
+using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
 
@@ -10,11 +10,15 @@ namespace WADV.Plugins.Dialogue {
     /// <summary>
     /// <para>用于生成角色描述的插件</para>
     /// </summary>
-    [UsedImplicitly]
-    public class CharacterPlugin : VisualNovelPlugin {
-        public CharacterPlugin() : base("Character") { }
+    [UseStaticRegistration("Character")]
+    public class CharacterPlugin : IVisualNovelPlugin {
+        /// <inheritdoc />
+        public bool OnRegister() => true;
+
+        /// <inheritdoc />
+        public bool OnUnregister(bool isReplace) => true;
         
-        public override Task<SerializableValue> Execute(PluginExecuteContext context) {
+        public Task<SerializableValue> Execute(PluginExecuteContext context) {
             var character = new CharacterValue();
             foreach (var (key, value) in context.StringParameters) {
                 var stringValue = value as IStringConverter;

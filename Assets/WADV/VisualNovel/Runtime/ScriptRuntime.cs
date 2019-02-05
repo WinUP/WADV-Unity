@@ -470,7 +470,7 @@ namespace WADV.VisualNovel.Runtime {
             Script.ReadOperationCode();
         }
         
-        private VisualNovelPlugin FindPlugin() {
+        private IVisualNovelPlugin FindPlugin() {
             var pluginName = PopString();
             if (string.IsNullOrEmpty(pluginName)) throw new RuntimeException(_callStack, "Unable to find plugin: expected string name");
             var plugin = PluginManager.Find(pluginName);

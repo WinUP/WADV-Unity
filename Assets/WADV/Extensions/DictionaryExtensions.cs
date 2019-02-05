@@ -9,5 +9,11 @@ namespace WADV.Extensions {
             }
             return result;
         }
+
+        public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> e, TKey target) {
+            if (!e.ContainsKey(target)) return false;
+            e.Remove(target);
+            return true;
+        }
     }
 }

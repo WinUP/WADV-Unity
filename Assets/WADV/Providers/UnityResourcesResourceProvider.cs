@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using UnityEngine;
+using WADV.Reflection;
 using WADV.VisualNovel.Provider;
 
 namespace WADV.Providers {
@@ -7,13 +8,10 @@ namespace WADV.Providers {
     /// <summary>
     /// 用于读取Unity中Resource文件夹内容的资源提供器
     /// </summary>
-    public class UnityResourcesResourceProvider : ResourceProvider {
-        
+    [UseStaticRegistration("Resources")]
+    public class UnityResourcesResourceProvider : IResourceProvider {
         /// <inheritdoc />
-        public UnityResourcesResourceProvider() : base("Resources", 0) { }
-        
-        /// <inheritdoc />
-        public override Task<object> Load(string id) {
+        public Task<object> Load(string id) {
             return Task.FromResult((object) Resources.Load(id));
         }
     }

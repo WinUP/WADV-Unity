@@ -66,8 +66,6 @@
     <Compile Include="Assets\Game\RuntimeTester.cs" />
     <Compile Include="Assets\Game\UI\DialogueWindowShowHideListener.cs" />
     <Compile Include="Assets\Game\UI\InputBoxRenderer.cs" />
-    <Compile Include="Assets\WADV\Attributes\SkipAutoRegistrationAttribute.cs" />
-    <Compile Include="Assets\WADV\AutoRegister.cs" />
     <Compile Include="Assets\WADV\Easing.cs" />
     <Compile Include="Assets\WADV\EasingType.cs" />
     <Compile Include="Assets\WADV\Extensions\AwaitExtensions.cs" />
@@ -108,6 +106,7 @@
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\DialogueTextGeneratorType.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\EmptyDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\SimpleDialogueTextGenerator.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\EffectPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeIn.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeOut.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\IGraphicEffect.cs" />
@@ -118,11 +117,14 @@
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
-    <Compile Include="Assets\WADV\Plugins\SoundPlugin.cs" />
     <Compile Include="Assets\WADV\Providers\AssetBundleFileResourceProvider.cs" />
     <Compile Include="Assets\WADV\Providers\UnityPersistentResourceProvider.cs" />
     <Compile Include="Assets\WADV\Providers\UnityResourcesResourceProvider.cs" />
     <Compile Include="Assets\WADV\Providers\UnityStreamingAssetsResourceProvider.cs" />
+    <Compile Include="Assets\WADV\Reflection\AssemblyRegister.cs" />
+    <Compile Include="Assets\WADV\Reflection\IAssemblyRegister.cs" />
+    <Compile Include="Assets\WADV\Reflection\IDynamicRegistrationTarget.cs" />
+    <Compile Include="Assets\WADV\Reflection\UseStaticRegistration.cs" />
     <Compile Include="Assets\WADV\Thread\Dispatcher.cs" />
     <Compile Include="Assets\WADV\Thread\MainThreadPlaceholder.cs" />
     <Compile Include="Assets\WADV\Thread\TaskDelegator.cs" />
@@ -188,11 +190,11 @@
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\ISubtractOperator.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\SerializableValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Plugin\ContextMessageTemplate.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Plugin\IVisualNovelPlugin.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginExecuteContext.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginManager.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Plugin\VisualNovelPlugin.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Provider\BinaryData.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Provider\ResourceProvider.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Provider\IResourceProvider.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Provider\ResourceProviderManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\CallStack.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\ExtendedBinaryReader.cs" />

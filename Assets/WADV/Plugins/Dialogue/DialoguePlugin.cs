@@ -1,9 +1,9 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using WADV.Extensions;
 using WADV.MessageSystem;
+using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
@@ -13,17 +13,21 @@ using WADV.VisualNovel.Runtime.Utilities;
 // ! Not covered by current project
 
 namespace WADV.Plugins.Dialogue {
-    /// <inheritdoc cref="VisualNovelPlugin" />
+    /// <inheritdoc cref="IVisualNovelPlugin" />
     /// <summary>
     /// 对话解析插件
     /// </summary>
-    [UsedImplicitly]
-    public partial class DialoguePlugin : VisualNovelPlugin {
+    [UseStaticRegistration("Dialogue")]
+    public partial class DialoguePlugin : IVisualNovelPlugin {
         private static Regex CommandTester { get; } = new Regex(@"\s*([^=]+)\s*=\s*(\S+)\s*$");
         
-        public DialoguePlugin() : base("Dialogue") { }
+        /// <inheritdoc />
+        public bool OnRegister() => true;
+
+        /// <inheritdoc />
+        public bool OnUnregister(bool isReplace) => true;
         
-        public override async Task<SerializableValue> Execute(PluginExecuteContext context) {
+        public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var dialogue = new MessageIntegration.Content();
             foreach (var (name, value) in context.StringParameters) {
                 switch (name.ConvertToString(context.Language)) {

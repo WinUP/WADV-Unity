@@ -1,17 +1,19 @@
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
-using WADV.Attributes;
 using WADV.Extensions;
+using WADV.Reflection;
 using WADV.VisualNovel.Provider;
 
 namespace WADV.Providers {
-    /// <inheritdoc />
+    /// <inheritdoc cref="IResourceProvider" />
     /// <summary>
     /// 基于文件的AssetBundle资源提供器
     /// </summary>
-    [SkipAutoRegistration]
-    public class AssetBundleFileResourceProvider : ResourceProvider {
+    public class AssetBundleFileResourceProvider : IResourceProvider, IDynamicRegistrationTarget {
+        public string RegistrationName { get; }
+        public int RegistrationPriority { get; } = 0;
+        
         private readonly string _fileName;
         [CanBeNull] private AssetBundle _assetBundle;
 
@@ -20,14 +22,14 @@ namespace WADV.Providers {
         /// 创建一个AssetBundle资源提供器
         /// </summary>
         /// <param name="fileName">文件路径</param>
-        /// <param name="name">名称</param>
-        /// <param name="priority">加载优先级（越大越优先）</param>
-        public AssetBundleFileResourceProvider(string fileName, string name, int priority = 0) : base(name, priority) {
+        /// <param name="name">注册名</param>
+        public AssetBundleFileResourceProvider(string fileName, string name) {
             _fileName = fileName;
+            RegistrationName = name;
         }
         
         /// <inheritdoc />
-        public override async Task<object> Load(string id) {
+        public async Task<object> Load(string id) {
             if (_assetBundle != null) return await _assetBundle.LoadAssetAsync(id);
             await ReadAssetBundle();
             if (_assetBundle != null) return await _assetBundle.LoadAssetAsync(id);
@@ -39,5 +41,7 @@ namespace WADV.Providers {
         private async Task ReadAssetBundle() {
             _assetBundle = await AssetBundle.LoadFromFileAsync(_fileName);
         }
+
+        
     }
 }

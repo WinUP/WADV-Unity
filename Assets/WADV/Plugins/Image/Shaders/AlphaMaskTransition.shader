@@ -60,23 +60,26 @@ Shader "UI/Unlit/AlphaMaskTransition" {
             struct v2f {
                 float4 vertex : SV_POSITION;
                 float2 uv : TEXCOORD0;
+                float2 mask_uv : TEXCOORD2;
                 fixed4 color : COLOR;
                 float4 worldPosition : TEXCOORD1;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
             
-            float _Progress;
-            float _Threshold;
             sampler2D _MainTex;
             sampler2D _MaskTex;
+            float4 _MainTex_ST;
+            float4 _MaskTex_ST;
+            float _Progress;
+            float _Threshold;
             fixed4 _Color;
             fixed4 _TextureSampleAdd;
             float4 _ClipRect;
-            float4 _MainTex_ST;
 
             v2f vert (appdata v) {
                 v2f o;
                 UI_BASE_VERTEX(o, v);
+                o.mask_uv = TRANSFORM_TEX(v.uv, _MaskTex);
                 return o;
             }
 
@@ -89,7 +92,7 @@ Shader "UI/Unlit/AlphaMaskTransition" {
                 #ifdef UNITY_UI_ALPHACLIP
                 UI_ALPHACLIP(color);
                 #endif
-                half mask = to_grayscale(tex2D(_MaskTex, i.uv));
+                half mask = to_grayscale(tex2D(_MaskTex, i.mask_uv));
                 half offset = -_Threshold * (1 - _Progress);
                 if (mask > _Progress + _Threshold + offset) {
                     color.a = 0;

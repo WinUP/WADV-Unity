@@ -43,6 +43,7 @@ namespace WADV.Plugins.Dialogue.Renderer {
                 _textMesh.color = new Color(color.r, color.g, color.b, Mathf.Lerp(0.0F, color.a, time / 0.1F));
                 await Dispatcher.NextUpdate();
             }
+            _textMesh.color = color;
         }
 
         /// <inheritdoc />

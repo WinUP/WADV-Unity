@@ -2,6 +2,7 @@ using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using WADV.Extensions;
+using WADV.Reflection;
 using WADV.VisualNovel.Provider;
 
 namespace WADV.Providers {
@@ -9,12 +10,10 @@ namespace WADV.Providers {
     /// <summary>
     /// 用于读取Unity中Persistent目录内容的资源提供器
     /// </summary>
-    public class UnityPersistentResourceProvider : ResourceProvider {
+    [UseStaticRegistration("Persistent")]
+    public class UnityPersistentResourceProvider : IResourceProvider {
         /// <inheritdoc />
-        public UnityPersistentResourceProvider() : base("Persistent", 0) { }
-
-        /// <inheritdoc />
-        public override Task<object> Load(string id) {
+        public Task<object> Load(string id) {
             id = id.UnifySlash();
             var path = id.StartsWith("/") ? $"{Application.persistentDataPath}{id}" : $"{Application.persistentDataPath}/{id}";
             return File.Exists(path) ? Task.FromResult((object) new BinaryData(File.ReadAllBytes(path))) : null;

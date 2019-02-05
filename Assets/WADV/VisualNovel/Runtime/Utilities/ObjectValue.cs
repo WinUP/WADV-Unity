@@ -6,23 +6,26 @@ using WADV.Extensions;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
 using JetBrains.Annotations;
+using WADV.Reflection;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc />
     /// <summary>
     /// 为VNS提供对象支持（一定程度上可充当异构数组使用）
     /// </summary>
-    [UsedImplicitly]
-    public class ObjectPlugin : VisualNovelPlugin {
-        public ObjectPlugin() : base("Object") { }
-        
-        public override Task<SerializableValue> Execute(PluginExecuteContext context) {
+    [UseStaticRegistration("Object")]
+    public class ObjectPlugin : IVisualNovelPlugin {
+        public Task<SerializableValue> Execute(PluginExecuteContext context) {
             var result = new ObjectValue();
             foreach (var (key, value) in context.Parameters) {
                 result.Add(key, value);
             }
             return Task.FromResult<SerializableValue>(result);
         }
+
+        public bool OnRegister() => true;
+
+        public bool OnUnregister(bool isReplace) => true;
 
         /// <inheritdoc cref="SerializableValue" />
         /// <summary>

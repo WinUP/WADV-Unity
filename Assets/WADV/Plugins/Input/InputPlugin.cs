@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Extensions;
 using WADV.MessageSystem;
+using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
@@ -13,12 +13,10 @@ namespace WADV.Plugins.Input {
     /// <summary>
     /// 输入框插件
     /// </summary>
-    [UsedImplicitly]
-    public partial class InputPlugin : VisualNovelPlugin {
-        public InputPlugin() : base("Input") { }
-        
+    [UseStaticRegistration("Input")]
+    public partial class InputPlugin : IVisualNovelPlugin {
         /// <inheritdoc />
-        public override async Task<SerializableValue> Execute(PluginExecuteContext context) {
+        public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var description = new MessageIntegration.Content();
             foreach (var (name, value) in context.StringParameters) {
                 switch (name.ConvertToString(context.Language)) {
@@ -48,5 +46,11 @@ namespace WADV.Plugins.Input {
             var message = await MessageService.ProcessAsync(ContextMessage<MessageIntegration.Content>.Create(context, description, MessageIntegration.Mask, MessageIntegration.CreateInput));
             return message is Message<string> stringMessage ? new StringValue {Value = stringMessage.Content} : null;
         }
+
+        /// <inheritdoc />
+        public bool OnRegister() => true;
+
+        /// <inheritdoc />
+        public bool OnUnregister(bool isReplace) => true;
     }
 }
