@@ -25,7 +25,7 @@ namespace WADV.Plugins.Dialogue {
                 case NullValue _:
                     return null;
                 case IStringConverter stringCharacter:
-                    var variable = context.ActiveScope?.FindVariableValue<CharacterValue>(stringCharacter.ConvertToString(), true, VariableSearchMode.All);
+                    var variable = context.ActiveScope?.FindVariableValue<CharacterValue>(stringCharacter.ConvertToString(context.ActiveLanguage), true, VariableSearchMode.All);
                     if (variable == null) {
                         throw new ArgumentException($"Unable to create dialogue: no variable with name {stringCharacter} can be found to use as character");
                     }
@@ -40,17 +40,15 @@ namespace WADV.Plugins.Dialogue {
         /// </summary>
         /// <param name="runtime">脚本运行环境</param>
         /// <param name="raw">原始对话内容</param>
-        /// <param name="language">语言（不提供则使用脚本运行环境的语言）</param>
         /// <returns></returns>
-        public static (List<IDialogueItem> Content, bool NoWait, bool NoClear) CreateDialogueContent(ScriptRuntime runtime, IStringConverter raw, string language = null) {
+        public static (List<IDialogueItem> Content, bool NoWait, bool NoClear) CreateDialogueContent(ScriptRuntime runtime, IStringConverter raw) {
             var result = new List<IDialogueItem>();
             var content = new StringBuilder();
             var style = new StyleList();
             var noWait = false;
             var noClear = false;
             var i = -1;
-            language = language ?? runtime.ActiveLanguage;
-            var data = raw.ConvertToString(language);
+            var data = raw.ConvertToString(runtime.ActiveLanguage);
             if (data.StartsWith("[noclear]", StringComparison.OrdinalIgnoreCase)) {
                 noClear = true;
                 i = 8;
@@ -107,7 +105,7 @@ namespace WADV.Plugins.Dialogue {
                             if (constant == null) {
                                 ApplyDefault(command);
                             } else {
-                                content.Append(constant.Value is IStringConverter stringConverter ? stringConverter.ConvertToString() : constant.Value.ToString());
+                                content.Append(constant.Value is IStringConverter stringConverter ? stringConverter.ConvertToString(runtime.ActiveLanguage) : constant.Value.ToString());
                             }
                         } else if (command.StartsWith("@")) { // 变量
                             var variableName = command.Substring(1);
@@ -116,7 +114,7 @@ namespace WADV.Plugins.Dialogue {
                             if (variable == null) {
                                 ApplyDefault(command);
                             } else {
-                                content.Append(variable.Value is IStringConverter stringConverter ? stringConverter.ConvertToString() : variable.Value.ToString());
+                                content.Append(variable.Value is IStringConverter stringConverter ? stringConverter.ConvertToString(runtime.ActiveLanguage) : variable.Value.ToString());
                             }
                         } else {
                             var commandContent = command.ToLower().Trim();

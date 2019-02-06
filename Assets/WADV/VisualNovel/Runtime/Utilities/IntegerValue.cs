@@ -1,6 +1,7 @@
 using System;
 using WADV.VisualNovel.Interoperation;
 using UnityEngine;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
@@ -34,167 +35,99 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// 获取或设置内存堆栈值
         /// </summary>
         public int Value { get; set; }
-        
+
         /// <summary>
         /// 尝试将可序列化值解析为32为整数值
         /// </summary>
         /// <param name="value">目标内存值</param>
+        /// <param name="language">目标语言</param>
         /// <returns></returns>
-        public static int TryParse(SerializableValue value) {
+        public static int TryParse(SerializableValue value, string language = TranslationManager.DefaultLanguage) {
             switch (value) {
                 case IIntegerConverter intTarget:
-                    return intTarget.ConvertToInteger();
+                    return intTarget.ConvertToInteger(language);
                 case IFloatConverter floatTarget:
-                    return Mathf.RoundToInt(floatTarget.ConvertToFloat());
+                    return Mathf.RoundToInt(floatTarget.ConvertToFloat(language));
                 case IStringConverter stringTarget:
-                    var stringValue = stringTarget.ConvertToString();
+                    var stringValue = stringTarget.ConvertToString(language);
                     if (int.TryParse(stringValue, out var intValue)) return intValue;
                     if (float.TryParse(stringValue, out var floatValue)) return Mathf.RoundToInt(floatValue);
                     throw new NotSupportedException($"Unable to convert {stringValue} to integer: unsupported string format");
                 case IBooleanConverter boolTarget:
-                    return boolTarget.ConvertToBoolean() ? 1 : 0;
+                    return boolTarget.ConvertToBoolean(language) ? 1 : 0;
                 default:
                     throw new NotSupportedException($"Unable to convert {value} to integer: unsupported format");
             }
         }
 
-        /// <inheritdoc />
         public override SerializableValue Duplicate() {
             return new IntegerValue {Value = Value};
         }
 
-        /// <inheritdoc />
-        public bool ConvertToBoolean() {
+        public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
             return Value != 0;
         }
 
-        /// <inheritdoc />
-        public bool ConvertToBoolean(string language) {
-            return ConvertToBoolean();
-        }
-
-        /// <inheritdoc />
-        public int ConvertToInteger() {
+        public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
             return Value;
         }
 
-        /// <inheritdoc />
-        public int ConvertToInteger(string language) {
-            return ConvertToInteger();
-        }
-
-        /// <inheritdoc />
-        public float ConvertToFloat() {
+        public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
             return Value;
         }
-
-        /// <inheritdoc />
-        public float ConvertToFloat(string language) {
-            return ConvertToFloat();
-        }
-
-        /// <inheritdoc />
-        public string ConvertToString() {
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
             return Value.ToString();
         }
-        
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
-            return ConvertToString();
-        }
 
-        /// <inheritdoc />
         public override string ToString() {
             return ConvertToString();
         }
 
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue name) {
-            if (!(name is IStringConverter stringConverter))
-                throw new NotSupportedException($"Unable to get feature in integer value with feature id {name}: only string feature name is accepted");
-            var target = stringConverter.ConvertToString();
-            switch (target) {
+        public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            if (!(target is IStringConverter stringConverter))
+                throw new NotSupportedException($"Unable to get feature in integer value with feature id {target}: only string feature name is accepted");
+            var name = stringConverter.ConvertToString(language);
+            switch (name) {
                 case "ToBoolean":
-                    return new BooleanValue {Value = ConvertToBoolean()};
+                    return new BooleanValue {Value = ConvertToBoolean(language)};
                 case "ToNegative":
                     return new IntegerValue {Value = -Value};
                 case "ToFloat":
-                    return new FloatValue {Value = ConvertToFloat()};
+                    return new FloatValue {Value = ConvertToFloat(language)};
                 case "ToString":
-                    return new StringValue {Value = ConvertToString()};
+                    return new StringValue {Value = ConvertToString(language)};
                 default:
-                    throw new NotSupportedException($"Unable to get feature in integer value: unsupported feature {target}");
+                    throw new NotSupportedException($"Unable to get feature in integer value: unsupported feature {name}");
             }
         }
 
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue target, string language) {
-            return PickChild(target);
-        }
-
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target) {
+        public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             try {
-                return Value == TryParse(target);
+                return Value == TryParse(target, language);
             } catch {
                 return false;
             }
         }
 
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target, string language) {
-            return EqualsWith(target);
-        }
-
-        /// <inheritdoc />
-        public int CompareWith(SerializableValue target) {
-            var value = Value - FloatValue.TryParse(target);
+        public int CompareWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            var value = Value - FloatValue.TryParse(target, language);
             return value.Equals(0.0F) ? 0 : value < 0 ? -1 : 1;
         }
 
-        /// <inheritdoc />
-        public int CompareWith(SerializableValue target, string language) {
-            return CompareWith(target);
+        public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new IntegerValue {Value = Value + TryParse(target, language)};
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target) {
-            return new IntegerValue {Value = Value + TryParse(target)};
+        public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new IntegerValue {Value = Value - TryParse(target, language)};
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target, string language) {
-            return AddWith(target);
+        public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new IntegerValue {Value = Value * TryParse(target, language)};
         }
 
-        /// <inheritdoc />
-        public SerializableValue SubtractWith(SerializableValue target) {
-            return new IntegerValue {Value = Value - TryParse(target)};
-        }
-
-        /// <inheritdoc />
-        public SerializableValue SubtractWith(SerializableValue target, string language) {
-            return SubtractWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target) {
-            return new IntegerValue {Value = Value * TryParse(target)};
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target, string language) {
-            return MultiplyWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue DivideWith(SerializableValue target) {
-            return new IntegerValue {Value = Value / TryParse(target)};
-        }
-
-        /// <inheritdoc />
-        public SerializableValue DivideWith(SerializableValue target, string language) {
-            return DivideWith(target);
+        public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new IntegerValue {Value = Value / TryParse(target, language)};
         }
     }
 }

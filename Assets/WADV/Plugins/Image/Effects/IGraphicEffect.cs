@@ -1,4 +1,5 @@
-using UnityEngine.UI;
+using System.Collections.Generic;
+using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Image.Effects {
     /// <summary>
@@ -6,14 +7,9 @@ namespace WADV.Plugins.Image.Effects {
     /// </summary>
     public interface IGraphicEffect {
         /// <summary>
-        /// 初始化效果
+        /// 创建效果
         /// </summary>
-        /// <param name="graphics">目标元素</param>
-        void Initialize(Graphic[] graphics);
-
-        /// <summary>
-        /// 重置效果
-        /// </summary>
-        void Reset();
+        /// <param name="parameters">效果参数</param>
+        void CreateEffect(Dictionary<string, SerializableValue> parameters);
     }
 }

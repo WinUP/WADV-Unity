@@ -1,5 +1,6 @@
 using System;
 using WADV.VisualNovel.Interoperation;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
@@ -21,104 +22,48 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     [Serializable]
     public class NullValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
                              IEqualOperator {
-        /// <inheritdoc />
         public override SerializableValue Duplicate() {
             return new NullValue();
         }
 
-        /// <inheritdoc />
-        public bool ConvertToBoolean() {
+        public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
             return false;
         }
 
-        /// <inheritdoc />
-        public bool ConvertToBoolean(string language) {
-            return ConvertToBoolean();
-        }
-
-        /// <inheritdoc />
-        public float ConvertToFloat() {
+        public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
             return 0.0F;
         }
 
-        /// <inheritdoc />
-        public float ConvertToFloat(string language) {
-            return ConvertToFloat();
-        }
-
-        /// <inheritdoc />
-        public int ConvertToInteger() {
+        public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
             return 0;
         }
-
-        /// <inheritdoc />
-        public int ConvertToInteger(string language) {
-            return ConvertToInteger();
-        }
-
-        /// <inheritdoc />
-        public string ConvertToString() {
+        
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
             return "";
         }
-        
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
-            return ConvertToString();
-        }
 
-        /// <inheritdoc />
         public override string ToString() {
             return ConvertToString();
         }
 
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target) {
+        public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return target is NullValue;
         }
 
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target, string language) {
-            return EqualsWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target) {
+        public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return target.Duplicate();
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target, string language) {
-            return AddWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue SubtractWith(SerializableValue target) {
+        public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return target is NullValue ? new NullValue() : throw new NotSupportedException("Unable to subtract null with any other value except null");
         }
 
-        /// <inheritdoc />
-        public SerializableValue SubtractWith(SerializableValue target, string language) {
-            return SubtractWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target) {
+        public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return new NullValue();
         }
 
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target, string language) {
-            return MultiplyWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue DivideWith(SerializableValue target) {
+        public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return target is NullValue ? new NullValue() : throw new NotSupportedException("Unable to divide null with any other value except null");
-        }
-
-        /// <inheritdoc />
-        public SerializableValue DivideWith(SerializableValue target, string language) {
-            return DivideWith(target);
         }
     }
 }

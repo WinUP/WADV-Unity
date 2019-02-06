@@ -23,18 +23,11 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// </summary>
         public uint TranslationId { get; set; }
 
-        /// <inheritdoc />
         public override SerializableValue Duplicate() {
             return new TranslatableValue {ScriptId = ScriptId, TranslationId = TranslationId};
         }
-
-        /// <inheritdoc />
-        public string ConvertToString() {
-            return ConvertToString(TranslationManager.DefaultLanguage);
-        }
         
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
             return ScriptHeader.LoadSync(ScriptId).Header.GetTranslation(language, TranslationId);
         }
 
@@ -42,44 +35,20 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             return ConvertToString();
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target) {
-            return AddWith(target, TranslationManager.DefaultLanguage);
+        public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new StringValue {Value = ConvertToString(language)}.AddWith(target, language);
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target, string language) {
-            return new StringValue {Value = ConvertToString(language)}.AddWith(target);
+        public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new StringValue {Value = ConvertToString(language)}.SubtractWith(target, language);
         }
 
-        /// <inheritdoc />
-        public SerializableValue SubtractWith(SerializableValue target) {
-            return SubtractWith(target, TranslationManager.DefaultLanguage);
+        public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new StringValue {Value = ConvertToString(language)}.MultiplyWith(target, language);
         }
 
-        /// <inheritdoc />
-        public SerializableValue SubtractWith(SerializableValue target, string language) {
-            return new StringValue {Value = ConvertToString(language)}.SubtractWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target) {
-            return MultiplyWith(target, TranslationManager.DefaultLanguage);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target, string language) {
-            return new StringValue {Value = ConvertToString(language)}.MultiplyWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue DivideWith(SerializableValue target) {
-            return DivideWith(target, TranslationManager.DefaultLanguage);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue DivideWith(SerializableValue target, string language) {
-            return new StringValue {Value = ConvertToString(language)}.DivideWith(target);
+        public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new StringValue {Value = ConvertToString(language)}.DivideWith(target, language);
         }
     }
 }

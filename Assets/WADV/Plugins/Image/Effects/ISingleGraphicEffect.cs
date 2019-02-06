@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using WADV.VisualNovel.Interoperation;
+using UnityEngine.UI;
 
 namespace WADV.Plugins.Image.Effects {
     /// <inheritdoc />
@@ -9,12 +10,12 @@ namespace WADV.Plugins.Image.Effects {
     /// </summary>
     public interface ISingleGraphicEffect : IGraphicEffect {
         /// <summary>
-        /// 应用效果
+        /// 播放效果
         /// </summary>
+        /// <param name="targets">效果目标</param>
         /// <param name="totalTime">效果持续时间</param>
         /// <param name="easing">缓动函数</param>
-        /// <param name="parameters">效果参数</param>
         /// <returns></returns>
-        Task Apply(float totalTime, Func<float, float> easing, SerializableValue[] parameters);
+        Task PlayEffect(IEnumerable<Graphic> targets, float totalTime, Func<float, float> easing);
     }
 }

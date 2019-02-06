@@ -1,5 +1,6 @@
 using System;
 using WADV.VisualNovel.Interoperation;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.Plugins.Dialogue {
     /// <inheritdoc cref="SerializableValue" />
@@ -29,25 +30,15 @@ namespace WADV.Plugins.Dialogue {
         }
 
         /// <inheritdoc />
-        public string ConvertToString() {
-            return Name.ConvertToString();
-        }
-
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
             return Name.ConvertToString(language);
         }
 
         /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target) {
+        public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return target is CharacterValue characterValue
-                   && characterValue.Name.ConvertToString() == Name.ConvertToString()
-                   && characterValue.Avatar.ConvertToString() == Avatar.ConvertToString();
-        }
-
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target, string language) {
-            return EqualsWith(target);
+                   && characterValue.Name.ConvertToString(language) == Name.ConvertToString(language)
+                   && characterValue.Avatar.ConvertToString(language) == Avatar.ConvertToString(language);
         }
     }
 }

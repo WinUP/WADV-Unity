@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using WADV.VisualNovel.Interoperation;
 using UnityEngine;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
@@ -40,162 +41,95 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// 尝试将可序列化值解析为32为浮点数值
         /// </summary>
         /// <param name="value">目标内存值</param>
+        /// <param name="language">目标语言</param>
         /// <returns></returns>
-        public static float TryParse(SerializableValue value) {
+        public static float TryParse(SerializableValue value, string language = TranslationManager.DefaultLanguage) {
             switch (value) {
                 case IFloatConverter floatTarget:
-                    return floatTarget.ConvertToFloat();
+                    return floatTarget.ConvertToFloat(language);
                 case IIntegerConverter intTarget:
-                    return intTarget.ConvertToInteger();
+                    return intTarget.ConvertToInteger(language);
                 case IStringConverter stringTarget:
-                    var stringValue = stringTarget.ConvertToString();
+                    var stringValue = stringTarget.ConvertToString(language);
                     if (int.TryParse(stringValue, out var intValue)) return intValue;
                     if (float.TryParse(stringValue, out var floatValue)) return floatValue;
                     throw new NotSupportedException($"Unable to convert {stringValue} to float: unsupported string format");
                 case IBooleanConverter boolTarget:
-                    return boolTarget.ConvertToBoolean() ? 1.0F : 0.0F;
+                    return boolTarget.ConvertToBoolean(language) ? 1.0F : 0.0F;
                 default:
                     throw new NotSupportedException($"Unable to convert {value} to float: unsupported format");
             }
         }
         
-        /// <inheritdoc />
         public override SerializableValue Duplicate() {
             return new FloatValue {Value = Value};
         }
 
-        /// <inheritdoc />
-        public bool ConvertToBoolean() {
+        public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
             return !Value.Equals(0.0F);
         }
 
-        /// <inheritdoc />
-        public bool ConvertToBoolean(string language) {
-            return ConvertToBoolean();
-        }
-
-        /// <inheritdoc />
-        public float ConvertToFloat() {
+        public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
             return Value;
         }
 
-        /// <inheritdoc />
-        public float ConvertToFloat(string language) {
-            return ConvertToFloat();
-        }
-
-        /// <inheritdoc />
-        public int ConvertToInteger() {
+        public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
             return Mathf.RoundToInt(Value);
         }
-
-        /// <inheritdoc />
-        public int ConvertToInteger(string language) {
-            return ConvertToInteger();
-        }
-
-        /// <inheritdoc />
-        public string ConvertToString() {
+        
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
             return Value.ToString(CultureInfo.InvariantCulture);
         }
-        
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
-            return ConvertToString();
-        }
 
-        /// <inheritdoc />
         public override string ToString() {
             return ConvertToString();
         }
 
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue name) {
-            if (!(name is IStringConverter stringConverter))
-                throw new NotSupportedException($"Unable to get feature in float value with feature id {name}: only string feature name is accepted");
-            var target = stringConverter.ConvertToString();
-            switch (target) {
+        public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            if (!(target is IStringConverter stringConverter))
+                throw new NotSupportedException($"Unable to get feature in float value with feature id {target}: only string feature name is accepted");
+            var name = stringConverter.ConvertToString(language);
+            switch (name) {
                 case "ToBoolean":
-                    return new BooleanValue {Value = ConvertToBoolean()};
+                    return new BooleanValue {Value = ConvertToBoolean(language)};
                 case "ToNegative":
                     return new FloatValue {Value = -Value};
                 case "ToInteger":
-                    return new IntegerValue {Value = ConvertToInteger()};
+                    return new IntegerValue {Value = ConvertToInteger(language)};
                 case "ToString":
-                    return new StringValue {Value = ConvertToString()};
+                    return new StringValue {Value = ConvertToString(language)};
                 default:
-                    throw new NotSupportedException($"Unable to get feature in float value: unsupported feature {target}");
+                    throw new NotSupportedException($"Unable to get feature in float value: unsupported feature {name}");
             }
         }
 
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue target, string language) {
-            return PickChild(target);
-        }
-
-        /// <inheritdoc />
-        public int CompareWith(SerializableValue target) {
-            var value = Value - TryParse(target);
+        public int CompareWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            var value = Value - TryParse(target, language);
             return value.Equals(0.0F) ? 0 : value < 0 ? -1 : 1;
         }
 
-        /// <inheritdoc />
-        public int CompareWith(SerializableValue target, string language) {
-            return CompareWith(target);
-        }
-
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target) {
+        public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             try {
-                return Value.Equals(TryParse(target));
+                return Value.Equals(TryParse(target, language));
             } catch {
                 return false;
             }
         }
 
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target, string language) {
-            return EqualsWith(target);
+        public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new FloatValue {Value = Value + TryParse(target, language)};
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target) {
-            return new FloatValue {Value = Value + TryParse(target)};
+        public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new FloatValue {Value = Value - TryParse(target, language)};
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target, string language) {
-            return AddWith(target);
+        public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new FloatValue {Value = Value * TryParse(target, language)};
         }
 
-        /// <inheritdoc />
-        public SerializableValue SubtractWith(SerializableValue target) {
-            return new FloatValue {Value = Value - TryParse(target)};
-        }
-
-        /// <inheritdoc />
-        public SerializableValue SubtractWith(SerializableValue target, string language) {
-            return SubtractWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target) {
-            return new FloatValue {Value = Value * TryParse(target)};
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target, string language) {
-            return MultiplyWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue DivideWith(SerializableValue target) {
-            return new FloatValue {Value = Value / TryParse(target)};
-        }
-
-        /// <inheritdoc />
-        public SerializableValue DivideWith(SerializableValue target, string language) {
-            return DivideWith(target);
+        public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new FloatValue {Value = Value / TryParse(target, language)};
         }
     }
 }

@@ -7,6 +7,7 @@ using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
 using JetBrains.Annotations;
 using WADV.Reflection;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc />
@@ -18,7 +19,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
             var result = new ObjectValue();
             foreach (var (key, value) in context.Parameters) {
-                result.Add(key, value);
+                result.Add(key, value, context.Language);
             }
             return Task.FromResult<SerializableValue>(result);
         }
@@ -47,7 +48,6 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             private Dictionary<float, ReferenceValue> _floatValues = new Dictionary<float, ReferenceValue>();
             private Dictionary<int, ReferenceValue> _integerValues = new Dictionary<int, ReferenceValue>();
             
-            /// <inheritdoc />
             public override SerializableValue Duplicate() {
                 return new ObjectValue {
                     _stringValues = _stringValues.Duplicate(),
@@ -56,8 +56,15 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                 };
             }
 
+            /// <summary>
+            /// 添加新项目
+            /// </summary>
+            /// <param name="name">项名</param>
+            /// <param name="value">项值</param>
+            /// <param name="language">目标语言</param>
+            /// <returns></returns>
             [NotNull]
-            public ReferenceValue Add(SerializableValue name, SerializableValue value) {
+            public ReferenceValue Add(SerializableValue name, SerializableValue value, string language = TranslationManager.DefaultLanguage) {
                 ReferenceValue result;
                 switch (name) {
                     case FloatValue floatMemoryValue:
@@ -85,7 +92,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                         }
                         break;
                     case IFloatConverter floatConverter:
-                        var floatValue = floatConverter.ConvertToFloat();
+                        var floatValue = floatConverter.ConvertToFloat(language);
                         if (_floatValues.ContainsKey(floatValue)) {
                             result = _floatValues[floatValue];
                         } else {
@@ -94,7 +101,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                         }
                         break;
                     case IIntegerConverter integerConverter:
-                        var integerValue = integerConverter.ConvertToInteger();
+                        var integerValue = integerConverter.ConvertToInteger(language);
                         if (_integerValues.ContainsKey(integerValue)) {
                             result = _integerValues[integerValue];
                         } else {
@@ -103,7 +110,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                         }
                         break;
                     case IStringConverter stringConverter:
-                        var stringValue = stringConverter.ConvertToString();
+                        var stringValue = stringConverter.ConvertToString(language);
                         if (_stringValues.ContainsKey(stringValue)) {
                             result = _stringValues[stringValue];
                         } else {
@@ -124,11 +131,9 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                 return result;
             }
 
-            /// <inheritdoc />
-            [NotNull]
-            public SerializableValue PickChild(SerializableValue name) {
+            public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
                 SerializableValue result;
-                switch (name) {
+                switch (target) {
                     case FloatValue floatMemoryValue:
                         result = _floatValues.ContainsKey(floatMemoryValue.Value) ? _floatValues[floatMemoryValue.Value] : null;
                         break;
@@ -139,41 +144,30 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                         result = _stringValues.ContainsKey(stringMemoryValue.Value) ? _stringValues[stringMemoryValue.Value] : null;
                         break;
                     case IFloatConverter floatConverter:
-                        var floatValue = floatConverter.ConvertToFloat();
+                        var floatValue = floatConverter.ConvertToFloat(language);
                         result = _floatValues.ContainsKey(floatValue) ? _floatValues[floatValue] : null;
                         break;
                     case IIntegerConverter integerConverter:
-                        var integerValue = integerConverter.ConvertToInteger();
+                        var integerValue = integerConverter.ConvertToInteger(language);
                         result = _integerValues.ContainsKey(integerValue) ? _integerValues[integerValue] : null;
                         break;
                     case IStringConverter stringConverter:
-                        var stringValue = stringConverter.ConvertToString();
+                        var stringValue = stringConverter.ConvertToString(language);
                         result = _stringValues.ContainsKey(stringValue) ? _stringValues[stringValue] : null;
                         break;
                     default:
-                        var defaultStringValue = name.ToString();
+                        var defaultStringValue = target.ToString();
                         result = _stringValues.ContainsKey(defaultStringValue) ? _stringValues[defaultStringValue] : null;
                         break;
                 }
-                return result ?? Add(name, new NullValue());
+                return result ?? Add(target, new NullValue(), language);
             }
-
-            /// <inheritdoc />
-            public SerializableValue PickChild(SerializableValue target, string language) {
-                return PickChild(target);
-            }
-
-            /// <inheritdoc />
-            public string ConvertToString() {
+            
+            public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
                 var list = _floatValues.Values.ToList();
                 list.AddRange(_integerValues.Values.ToList());
                 list.AddRange(_stringValues.Values.ToList());
-                return $"{string.Join(", ", list.Select(e => e.Value).Select(e => e is IStringConverter stringConverter ? stringConverter.ConvertToString() : e.ToString()))}";
-            }
-            
-            /// <inheritdoc />
-            public string ConvertToString(string language) {
-                return ConvertToString();
+                return $"{string.Join(", ", list.Select(e => e.Value).Select(e => e is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : e.ToString()))}";
             }
         }
     }

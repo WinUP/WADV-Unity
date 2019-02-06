@@ -98,8 +98,9 @@ namespace WADV.VisualNovel.Provider {
         /// </list>
         /// </summary>
         /// <param name="address">资源地址</param>
+        /// <param name="language">目标语言</param>
         /// <returns></returns>
-        public static async Task<T> Load<T>(string address) where T : class {
+        public static async Task<T> Load<T>(string address, string language) where T : class {
             var result = await Load(address);
             if (result == null) return null;
             if (typeof(T) == typeof(string))
@@ -107,7 +108,7 @@ namespace WADV.VisualNovel.Provider {
                     case BinaryData binaryResult:
                         return binaryResult.Text as T;
                     case IStringConverter stringResult:
-                        return stringResult.ConvertToString() as T;
+                        return stringResult.ConvertToString(language) as T;
                     default:
                         return result.ToString() as T;
                 }

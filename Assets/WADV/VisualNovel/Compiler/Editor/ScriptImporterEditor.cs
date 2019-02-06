@@ -76,7 +76,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
                 return;
             }
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("ID", _option.Id);
+            EditorGUILayout.LabelField("ID", _option.id);
             if (!_editMode && GUILayout.Button("Refresh", EditorStyles.miniButton)) {
                 CompileConfigurationWindow.RescanScriptInformation(_option);
             }
@@ -95,7 +95,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
             if (!_option.HasSource()) {
                 EditorGUILayout.LabelField("Status", "Standalone Library");
             } else if (_option.HasBinary()) {
-                EditorGUILayout.LabelField("Status",_option.RecordedHash == _option.Hash ? "Compiled" : "Need Recompile");
+                EditorGUILayout.LabelField("Status",_option.recordedHash == _option.hash ? "Compiled" : "Need Recompile");
             } else {
                 EditorGUILayout.LabelField("Status", "Not Found");
             }
@@ -187,9 +187,9 @@ namespace WADV.VisualNovel.Compiler.Editor {
 
         private void OnSaveClicked() {
             if (string.IsNullOrEmpty(_customizedDistribution) || _customizedDistribution == CompileConfiguration.Content.DefaultRuntimeDistributionUri) {
-                _option.DistributionTarget = null;
+                _option.distributionTarget = null;
             } else {
-                _option.DistributionTarget = _customizedDistribution;
+                _option.distributionTarget = _customizedDistribution;
             }
             for (var i = -1; ++i < _customizedLanguage.Count;) {
                 var (key, value) = _customizedLanguage[i];

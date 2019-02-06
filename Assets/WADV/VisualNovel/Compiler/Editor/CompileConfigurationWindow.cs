@@ -64,9 +64,9 @@ namespace WADV.VisualNovel.Compiler.Editor {
             var source = option.SourceAssetPath();
             if (!string.IsNullOrEmpty(source)) {
                 if (File.Exists(source)) {
-                    option.Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(source, Encoding.UTF8).UnifyLineBreak()));
+                    option.hash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(source, Encoding.UTF8).UnifyLineBreak()));
                 } else {
-                    option.Hash = null;
+                    option.hash = null;
                 }
             }
             var binary = option.BinaryAssetPath();
@@ -75,14 +75,14 @@ namespace WADV.VisualNovel.Compiler.Editor {
                     var stream = new FileStream(binary, FileMode.Open);
                     var hash = ScriptInformation.ReadBinaryHash(stream);
                     stream.Close();
-                    option.RecordedHash = hash;
+                    option.recordedHash = hash;
                 } else {
-                    option.RecordedHash = null;
+                    option.recordedHash = null;
                 }
             }
             var detectedLanguage = new List<string>();
             foreach (var language in Directory.GetDirectories($"Assets/{CompileConfiguration.Content.TranslationFolder}").Select(Path.GetFileName)) {
-                if (File.Exists($"Assets/{CompileConfiguration.Content.TranslationFolder}/{language}/{option.Id}.txt")) {
+                if (File.Exists($"Assets/{CompileConfiguration.Content.TranslationFolder}/{language}/{option.id}.txt")) {
                     if (!option.Translations.ContainsKey(language)) {
                         option.Translations.Add(language, null);
                     }
@@ -103,7 +103,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
                 option.Translations.Remove(key);
             }
             if (!option.HasSource() && !option.HasBinary()) {
-                CompileConfiguration.Content.Scripts.Remove(option.Id);
+                CompileConfiguration.Content.Scripts.Remove(option.id);
             }
             if (save) {
                 CompileConfiguration.Save();
@@ -161,7 +161,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
                 if (!info.HasSource()) {
                     GUILayout.Label("Standalone Library", _centerLabel);
                 } else if (info.HasBinary()) {
-                    GUILayout.Label(info.RecordedHash == info.Hash ? "Compiled" : "Need Recompile", _centerLabel);
+                    GUILayout.Label(info.recordedHash == info.hash ? "Compiled" : "Need Recompile", _centerLabel);
                 } else {
                     GUILayout.Label("Not Found", _centerLabel);
                 }

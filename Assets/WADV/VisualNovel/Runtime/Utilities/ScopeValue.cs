@@ -4,6 +4,7 @@ using System.Linq;
 using WADV.Extensions;
 using WADV.VisualNovel.Interoperation;
 using JetBrains.Annotations;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
@@ -37,19 +38,12 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// </summary>
         public Dictionary<string, ReferenceValue> LocalVariables { get; private set; } = new Dictionary<string, ReferenceValue>();
         
-        /// <inheritdoc />
         public override SerializableValue Duplicate() {
             return new ScopeValue {Entrance = Entrance, ScriptId = ScriptId, ParentScope = ParentScope, LocalVariables = LocalVariables.Duplicate()};
         }
-
-        /// <inheritdoc />
-        public string ConvertToString() {
-            return $"ScopeValue {{ScriptId = {ScriptId}, Entrance = {Entrance}}}";
-        }
         
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
-            return ConvertToString();
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
+            return $"ScopeValue {{ScriptId = {ScriptId}, Entrance = {Entrance}}}";
         }
 
         public override string ToString() {

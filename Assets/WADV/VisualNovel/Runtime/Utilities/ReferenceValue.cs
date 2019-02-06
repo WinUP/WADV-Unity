@@ -1,5 +1,6 @@
 using System;
 using WADV.VisualNovel.Interoperation;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
@@ -35,37 +36,24 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         private SerializableValue _value;
 
-        /// <inheritdoc />
         public override SerializableValue Duplicate() {
             return new ReferenceValue {IsConstant = IsConstant, Value = Value.Duplicate()};
         }
-
-        /// <inheritdoc />
-        public string ConvertToString() {
-            return Value is IStringConverter stringConverter ? stringConverter.ConvertToString() : Value.ToString();
-        }
         
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
             return Value is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : Value.ToString();
         }
 
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue name) {
-            if (!(name is IStringConverter stringConverter))
-                throw new NotSupportedException($"Unable to get feature in variable with feature id {name}: only string feature name is accepted");
-            var target = stringConverter.ConvertToString();
-            switch (target) {
+        public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            if (!(target is IStringConverter stringConverter))
+                throw new NotSupportedException($"Unable to get feature in variable with feature id {target}: only string feature name is accepted");
+            var name = stringConverter.ConvertToString(language);
+            switch (name) {
                 case "ToString":
-                    return new StringValue {Value = ConvertToString()};
+                    return new StringValue {Value = ConvertToString(language)};
                 default:
-                    throw new NotSupportedException($"Unable to get feature in variable: unsupported feature {target}");
+                    throw new NotSupportedException($"Unable to get feature in variable: unsupported feature {name}");
             }
-        }
-
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue target, string language) {
-            return PickChild(target);
         }
     }
 }

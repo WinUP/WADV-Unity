@@ -149,7 +149,7 @@ namespace WADV.VisualNovel.Runtime {
                 ? CompileConfiguration.Content.Scripts[Id].LanguageUri(language)
                 : throw new KeyNotFoundException($"Unable to load translation for {Id}: missing runtime script information");
             if (string.IsNullOrEmpty(target)) return null;
-            var content = await ResourceManager.Load<string>(target);
+            var content = await ResourceManager.Load<string>(target, language);
             if (string.IsNullOrEmpty(content)) return null;
             var translation = new ScriptTranslation(content);
             Translations.Add(language, translation);

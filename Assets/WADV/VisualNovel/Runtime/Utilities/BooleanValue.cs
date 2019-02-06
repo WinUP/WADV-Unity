@@ -1,5 +1,6 @@
 using System;
 using WADV.VisualNovel.Interoperation;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
@@ -35,17 +36,18 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// 尝试将可序列化值解析为布尔值
         /// </summary>
         /// <param name="value">目标内存值</param>
+        /// <param name="language">目标语言</param>
         /// <returns></returns>
-        public static bool TryParse(SerializableValue value) {
+        public static bool TryParse(SerializableValue value, string language = TranslationManager.DefaultLanguage) {
             switch (value) {
                 case IBooleanConverter booleanConverter:
-                    return booleanConverter.ConvertToBoolean();
+                    return booleanConverter.ConvertToBoolean(language);
                 case IFloatConverter floatConverter:
-                    return !floatConverter.ConvertToFloat().Equals(0.0F);
+                    return !floatConverter.ConvertToFloat(language).Equals(0.0F);
                 case IIntegerConverter integerConverter:
-                    return integerConverter.ConvertToInteger() != 0;
+                    return integerConverter.ConvertToInteger(language) != 0;
                 case IStringConverter stringConverter:
-                    var upperValue = stringConverter.ConvertToString().ToUpper();
+                    var upperValue = stringConverter.ConvertToString(language).ToUpper();
                     if (upperValue == "F" || upperValue == "FALSE") return false;
                     if (int.TryParse(upperValue, out var intValue) && intValue == 0) return false;
                     return !(float.TryParse(upperValue, out var floatValue) && floatValue.Equals(0.0F));
@@ -54,107 +56,57 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             }
         }
 
-        /// <inheritdoc />
         public override SerializableValue Duplicate() {
             return new BooleanValue {Value = Value};
         }
 
-        /// <inheritdoc />
-        public bool ConvertToBoolean() {
+        public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
             return Value;
         }
 
-        /// <inheritdoc />
-        public bool ConvertToBoolean(string language) {
-            return ConvertToBoolean();
-        }
-
-        /// <inheritdoc />
-        public float ConvertToFloat() {
+        public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
             return Value ? 1.0F : 0.0F;
         }
 
-        /// <inheritdoc />
-        public float ConvertToFloat(string language) {
-            return ConvertToFloat();
-        }
-
-        /// <inheritdoc />
-        public int ConvertToInteger() {
+        public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
             return Value ? 1 : 0;
         }
 
-        /// <inheritdoc />
-        public int ConvertToInteger(string language) {
-            return ConvertToInteger();
-        }
-
-        /// <inheritdoc />
-        public string ConvertToString() {
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
             return Value ? "True" : "False";
         }
 
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
-            return ConvertToString();
-        }
-
-        /// <inheritdoc />
         public override string ToString() {
             return ConvertToString();
         }
 
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target) {
-            var value = TryParse(target);
+        public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            var value = TryParse(target, language);
             return value == Value;
         }
 
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target, string language) {
-            return EqualsWith(target);
+        public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new BooleanValue {Value = Value || TryParse(target, language)};
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target) {
-            return new BooleanValue {Value = Value || TryParse(target)};
+        public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new BooleanValue {Value = Value && TryParse(target, language)};
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target, string language) {
-            return AddWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target) {
-            return new BooleanValue {Value = Value && TryParse(target)};
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target, string language) {
-            return MultiplyWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue name) {
-            if (!(name is IStringConverter stringConverter))
-                throw new NotSupportedException($"Unable to get feature in boolean value with feature id {name}: only string feature name is accepted");
-            var target = stringConverter.ConvertToString();
-            switch (target) {
+        public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            if (!(target is IStringConverter stringConverter))
+                throw new NotSupportedException($"Unable to get feature in boolean value with feature id {target}: only string feature name is accepted");
+            var name = stringConverter.ConvertToString(language);
+            switch (name) {
                 case "Reverse":
                     return new BooleanValue {Value = !Value};
                 case "ToNumber":
-                    return new IntegerValue {Value = ConvertToInteger()};
+                    return new IntegerValue {Value = ConvertToInteger(language)};
                 case "ToString":
-                    return new StringValue {Value = ConvertToString()};
+                    return new StringValue {Value = ConvertToString(language)};
                 default:
-                    throw new NotSupportedException($"Unable to get feature in boolean value: unsupported feature {target}");
+                    throw new NotSupportedException($"Unable to get feature in boolean value: unsupported feature {name}");
             }
-        }
-
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue target, string language) {
-            return PickChild(target);
         }
     }
 }

@@ -113,8 +113,10 @@
     <Compile Include="Assets\WADV\Plugins\Image\Effects\IGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\ILoopGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\ISingleGraphicEffect.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Effects\ShaderGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\SingleShaderGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\EffectValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImageCanvas.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\IProgrammableImage.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
@@ -204,6 +206,8 @@
     <Compile Include="Assets\WADV\VisualNovel\Runtime\ScriptFile.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\ScriptHeader.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\ScriptRuntime.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Runtime\ScriptRuntimeExecutor.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Runtime\ScriptRuntimeSerializer.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\BooleanValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\FloatValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\IntegerValue.cs" />

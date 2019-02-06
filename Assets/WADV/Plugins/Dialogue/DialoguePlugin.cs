@@ -32,10 +32,10 @@ namespace WADV.Plugins.Dialogue {
             foreach (var (name, value) in context.StringParameters) {
                 switch (name.ConvertToString(context.Language)) {
                     case "Show":
-                        await ShowWindow(value);
+                        await ShowWindow(value, context.Language);
                         return new NullValue();
                     case "Hide":
-                        await HideWindow(value);
+                        await HideWindow(value, context.Language);
                         return new NullValue();
                     case "Character":
                         dialogue.Character = value;
@@ -53,20 +53,20 @@ namespace WADV.Plugins.Dialogue {
             return new NullValue();
         }
         
-        private static async Task ShowWindow(SerializableValue time) {
+        private static async Task ShowWindow(SerializableValue time, string language) {
             float showValue;
             try {
-                showValue = FloatValue.TryParse(time);
+                showValue = FloatValue.TryParse(time, language);
             } catch {
                 showValue = 0.0F;
             }
             await MessageService.ProcessAsync(Message<float>.Create(showValue, MessageIntegration.Mask, MessageIntegration.ShowDialogueBox));
         }
         
-        private static async Task HideWindow(SerializableValue time) {
+        private static async Task HideWindow(SerializableValue time, string language) {
             float hideValue;
             try {
-                hideValue = FloatValue.TryParse(time);
+                hideValue = FloatValue.TryParse(time, language);
             } catch {
                 hideValue = 0.0F;
             }
