@@ -13,7 +13,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// <summary>
     /// 为VNS提供对象支持（一定程度上可充当异构数组使用）
     /// </summary>
-    [UseStaticRegistration("Object")]
+    [StaticRegistrationInfo("Object")]
     public class ObjectPlugin : IVisualNovelPlugin {
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
             var result = new ObjectValue();

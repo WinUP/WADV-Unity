@@ -13,7 +13,7 @@ namespace WADV.Plugins.Input {
     /// <summary>
     /// 输入框插件
     /// </summary>
-    [UseStaticRegistration("Input")]
+    [StaticRegistrationInfo("Input")]
     public partial class InputPlugin : IVisualNovelPlugin {
         /// <inheritdoc />
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {

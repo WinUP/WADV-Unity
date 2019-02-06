@@ -92,7 +92,7 @@ namespace WADV.VisualNovel.Runtime {
             var option = CompileConfiguration.Content.Scripts.ContainsKey(id)
                 ? CompileConfiguration.Content.Scripts[id].DistributionTargetUri()
                 : throw new KeyNotFoundException($"Unable to load script {id}: missing runtime script information");
-            var code = await ResourceProviderManager.Load(option);
+            var code = await ResourceManager.Load(option);
             byte[] source;
             switch (code) {
                 case ScriptAsset scriptAsset:
@@ -149,7 +149,7 @@ namespace WADV.VisualNovel.Runtime {
                 ? CompileConfiguration.Content.Scripts[Id].LanguageUri(language)
                 : throw new KeyNotFoundException($"Unable to load translation for {Id}: missing runtime script information");
             if (string.IsNullOrEmpty(target)) return null;
-            var content = await ResourceProviderManager.Load<string>(target);
+            var content = await ResourceManager.Load<string>(target);
             if (string.IsNullOrEmpty(content)) return null;
             var translation = new ScriptTranslation(content);
             Translations.Add(language, translation);

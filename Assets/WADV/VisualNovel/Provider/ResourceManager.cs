@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Resources;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -15,18 +13,10 @@ namespace WADV.VisualNovel.Provider {
     /// <summary>
     /// 资源提供器管理器
     /// </summary>
-    public static class ResourceProviderManager {
+    public static class ResourceManager {
         private static readonly Dictionary<string, IResourceProvider> Providers = new Dictionary<string, IResourceProvider>();
-
-        public class AutoRegister : IAssemblyRegister {
-            public void RegisterType(Type target, UseStaticRegistration info, string name) {
-                if (target.GetInterfaces().Contains(typeof(IResourceProvider))) {
-                    Register((IResourceProvider) Activator.CreateInstance(target));
-                }
-            }
-        }
         
-        static ResourceProviderManager() {
+        static ResourceManager() {
             AssemblyRegister.Load(Assembly.GetExecutingAssembly());
         }
 
@@ -143,6 +133,14 @@ namespace WADV.VisualNovel.Provider {
                 }
             }
             return null;
+        }
+        
+        private class AutoRegister : IAssemblyRegister {
+            public void RegisterType(Type target, StaticRegistrationInfo info) {
+                if (target.HasInterface(typeof(IResourceProvider))) {
+                    Register((IResourceProvider) Activator.CreateInstance(target));
+                }
+            }
         }
     }
 }

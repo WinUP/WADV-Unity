@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 using UnityEngine;
+using WADV.Extensions;
 using WADV.Reflection;
 
 namespace WADV.VisualNovel.Plugin {
@@ -12,14 +12,6 @@ namespace WADV.VisualNovel.Plugin {
     /// </summary>
     public static class PluginManager {
         private static readonly Dictionary<string, IVisualNovelPlugin> Plugins = new Dictionary<string, IVisualNovelPlugin>();
-        
-        public class AutoRegister : IAssemblyRegister {
-            public void RegisterType(Type target, UseStaticRegistration info, string name) {
-                if (target.GetInterfaces().Contains(typeof(IVisualNovelPlugin))) {
-                    Register((IVisualNovelPlugin) Activator.CreateInstance(target));
-                }
-            }
-        }
 
         static PluginManager() {
             AssemblyRegister.Load(Assembly.GetExecutingAssembly());
@@ -84,6 +76,15 @@ namespace WADV.VisualNovel.Plugin {
         /// <returns></returns>
         public static bool Contains(string name) {
             return Plugins.ContainsKey(name);
+        }
+        
+        [UsedImplicitly]
+        private class AutoRegister : IAssemblyRegister {
+            public void RegisterType(Type target, StaticRegistrationInfo info) {
+                if (target.HasInterface(typeof(IVisualNovelPlugin))) {
+                    Register((IVisualNovelPlugin) Activator.CreateInstance(target));
+                }
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ namespace WADV.Plugins.Dialogue {
     /// <summary>
     /// 对话解析插件
     /// </summary>
-    [UseStaticRegistration("Dialogue")]
+    [StaticRegistrationInfo("Dialogue")]
     public partial class DialoguePlugin : IVisualNovelPlugin {
         private static Regex CommandTester { get; } = new Regex(@"\s*([^=]+)\s*=\s*(\S+)\s*$");
         

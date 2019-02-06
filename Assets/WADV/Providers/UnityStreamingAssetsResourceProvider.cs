@@ -6,7 +6,7 @@ using WADV.Reflection;
 using WADV.VisualNovel.Provider;
 
 namespace WADV.Providers {
-    [UseStaticRegistration("StreamingAssets")]
+    [StaticRegistrationInfo("StreamingAssets")]
     public class UnityStreamingAssetsResourceProvider : IResourceProvider {
         public Task<object> Load(string id) {
             id = id.UnifySlash();

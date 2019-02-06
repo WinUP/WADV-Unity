@@ -10,7 +10,7 @@ namespace WADV.Plugins.Dialogue {
     /// <summary>
     /// <para>用于生成角色描述的插件</para>
     /// </summary>
-    [UseStaticRegistration("Character")]
+    [StaticRegistrationInfo("Character")]
     public class CharacterPlugin : IVisualNovelPlugin {
         /// <inheritdoc />
         public bool OnRegister() => true;

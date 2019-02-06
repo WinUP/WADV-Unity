@@ -12,7 +12,6 @@ namespace WADV.Providers {
     /// </summary>
     public class AssetBundleFileResourceProvider : IResourceProvider, IDynamicRegistrationTarget {
         public string RegistrationName { get; }
-        public int RegistrationPriority { get; } = 0;
         
         private readonly string _fileName;
         [CanBeNull] private AssetBundle _assetBundle;
@@ -34,7 +33,7 @@ namespace WADV.Providers {
             await ReadAssetBundle();
             if (_assetBundle != null) return await _assetBundle.LoadAssetAsync(id);
             Debug.LogError($"Unable to load {id}: cannot load asset bundle {_fileName} (resource provider will be unregistered)");
-            ResourceProviderManager.Unregister(this);
+            ResourceManager.Unregister(this);
             return null;
         }
 

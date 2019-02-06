@@ -2,15 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
 using JetBrains.Annotations;
-using UnityEngine;
-using WADV.VisualNovel.Plugin;
-using WADV.VisualNovel.Provider;
+using WADV.Extensions;
 
 namespace WADV.Reflection {
     /// <summary>
-    /// 自动注册器
+    /// 程序集自动注册器
     /// </summary>
     public static class AssemblyRegister {
         private static readonly List<string> LoadedAssemblies = new List<string>();
@@ -18,8 +15,8 @@ namespace WADV.Reflection {
 
         static AssemblyRegister() {
             var registerType = typeof(IAssemblyRegister);
-            foreach (var item in Assembly.GetExecutingAssembly().GetTypes().Where(e => e.IsClass && !e.IsAbstract && e.GetInterfaces().Contains(registerType))) {
-                Registers.Add(Activator.CreateInstance(item) as IAssemblyRegister);
+            foreach (var item in Assembly.GetExecutingAssembly().GetTypes().Where(e => e.IsClass && !e.IsAbstract && e.HasInterface(registerType))) {
+                Registers.Add((IAssemblyRegister) Activator.CreateInstance(item));
             }
         }
         
@@ -30,9 +27,23 @@ namespace WADV.Reflection {
         public static void Load(Assembly assembly) {
             if (LoadedAssemblies.Contains(assembly.FullName)) return;
             LoadedAssemblies.Add(assembly.FullName);
-            foreach (var item in assembly.GetTypes().Where(e => e.IsClass && !e.IsAbstract && e.GetCustomAttribute<UseStaticRegistration>() != null)) {
+            var targets = new List<(Type Item, StaticRegistrationInfo Information)>();
+            foreach (var item in assembly.GetTypes().Where(e => e.IsClass && !e.IsAbstract && e.GetCustomAttribute<StaticRegistrationInfo>() != null)) {
+                var info = item.GetCustomAttribute<StaticRegistrationInfo>();
+                if (targets.Any()) {
+                    var index = targets.FindIndex(e => e.Information.Priority <= info.Priority);
+                    if (index < 0) {
+                        targets.Add((item, info));
+                    } else {
+                        targets.Insert(index, (item, info));
+                    }
+                } else {
+                    targets.Add((item, info));
+                }
+            }
+            foreach (var (item, information) in targets) {
                 foreach (var register in Registers) {
-                    register.RegisterType(item, item.GetCustomAttribute<UseStaticRegistration>(), GetName(item));
+                    register.RegisterType(item, information);
                 }
             }
         }
@@ -45,17 +56,8 @@ namespace WADV.Reflection {
         /// <returns></returns>
         public static string GetName(Type target, [CanBeNull] object instance = null) {
             if (instance != null && instance is IDynamicRegistrationTarget dynamicRegisterTarget) return dynamicRegisterTarget.RegistrationName;
-            var description = target.GetCustomAttribute<UseStaticRegistration>();
+            var description = target.GetCustomAttribute<StaticRegistrationInfo>();
             return description == null ? target.Name : description.Name;
-        }
-
-        public static bool HasBase(Type target, Type targetBase) {
-            var baseType = target;
-            do {
-                baseType = baseType.BaseType;
-                if (baseType != null && baseType == targetBase) return true;
-            } while (baseType != null);
-            return false;
         }
     }
 }

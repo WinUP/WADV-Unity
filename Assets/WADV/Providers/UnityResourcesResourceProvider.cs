@@ -8,7 +8,7 @@ namespace WADV.Providers {
     /// <summary>
     /// 用于读取Unity中Resource文件夹内容的资源提供器
     /// </summary>
-    [UseStaticRegistration("Resources")]
+    [StaticRegistrationInfo("Resources")]
     public class UnityResourcesResourceProvider : IResourceProvider {
         /// <inheritdoc />
         public Task<object> Load(string id) {

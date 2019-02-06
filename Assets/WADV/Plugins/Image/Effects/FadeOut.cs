@@ -1,7 +1,9 @@
 using UnityEngine;
+using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Image.Effects {
+    [StaticRegistrationInfo("FadeOut")]
     public class FadeOut : ShaderGraphicEffect {
         private static readonly int Alpha = Shader.PropertyToID("_Alpha");
         

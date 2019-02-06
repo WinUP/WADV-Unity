@@ -10,7 +10,7 @@ namespace WADV.Providers {
     /// <summary>
     /// 用于读取Unity中Persistent目录内容的资源提供器
     /// </summary>
-    [UseStaticRegistration("Persistent")]
+    [StaticRegistrationInfo("Persistent")]
     public class UnityPersistentResourceProvider : IResourceProvider {
         /// <inheritdoc />
         public Task<object> Load(string id) {

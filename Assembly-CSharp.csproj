@@ -76,6 +76,7 @@
     <Compile Include="Assets\WADV\Extensions\ListExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\StringExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\TaskExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\TypeExtensions.cs" />
     <Compile Include="Assets\WADV\GraphicColorFade.cs" />
     <Compile Include="Assets\WADV\Intents\ChangeLanguageIntent.cs" />
     <Compile Include="Assets\WADV\LinkedTreeNode.cs" />
@@ -124,7 +125,7 @@
     <Compile Include="Assets\WADV\Reflection\AssemblyRegister.cs" />
     <Compile Include="Assets\WADV\Reflection\IAssemblyRegister.cs" />
     <Compile Include="Assets\WADV\Reflection\IDynamicRegistrationTarget.cs" />
-    <Compile Include="Assets\WADV\Reflection\UseStaticRegistration.cs" />
+    <Compile Include="Assets\WADV\Reflection\StaticRegistrationInfo.cs" />
     <Compile Include="Assets\WADV\Thread\Dispatcher.cs" />
     <Compile Include="Assets\WADV\Thread\MainThreadPlaceholder.cs" />
     <Compile Include="Assets\WADV\Thread\TaskDelegator.cs" />
@@ -195,7 +196,7 @@
     <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Provider\BinaryData.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Provider\IResourceProvider.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Provider\ResourceProviderManager.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Provider\ResourceManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\CallStack.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\ExtendedBinaryReader.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\RuntimeException.cs" />
