@@ -79,6 +79,7 @@
     <Compile Include="Assets\WADV\Extensions\TypeExtensions.cs" />
     <Compile Include="Assets\WADV\GraphicColorFade.cs" />
     <Compile Include="Assets\WADV\Intents\ChangeLanguageIntent.cs" />
+    <Compile Include="Assets\WADV\Intents\DumpRuntimeIntent.cs" />
     <Compile Include="Assets\WADV\LinkedTreeNode.cs" />
     <Compile Include="Assets\WADV\MessageSystem\CoreConstant.cs" />
     <Compile Include="Assets\WADV\MessageSystem\DebugLogMessenger.cs" />
@@ -113,6 +114,8 @@
     <Compile Include="Assets\WADV\Plugins\Image\Effects\IGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\ILoopGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\ISingleGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\LoopShaderGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\ShaderGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\SingleShaderGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\EffectValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImageCanvas.cs" />

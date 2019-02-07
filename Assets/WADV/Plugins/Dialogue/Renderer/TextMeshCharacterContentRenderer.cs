@@ -32,16 +32,17 @@ namespace WADV.Plugins.Dialogue.Renderer {
             var color = _textMesh.color;
             var time = 0.0F;
             while (time < fadeTime) {
-                time += Time.deltaTime;
                 _textMesh.color = new Color(color.r, color.g, color.b, Mathf.Lerp(color.a, 0.0F, time / 0.1F));
                 await Dispatcher.NextUpdate();
+                time += Time.deltaTime;
             }
+            _textMesh.color = new Color(color.r, color.g, color.b, 0.0F);
             _textMesh.text = text;
             time = 0.0F;
             while (time < fadeTime) {
-                time += Time.deltaTime;
                 _textMesh.color = new Color(color.r, color.g, color.b, Mathf.Lerp(0.0F, color.a, time / 0.1F));
                 await Dispatcher.NextUpdate();
+                time += Time.deltaTime;
             }
             _textMesh.color = color;
         }

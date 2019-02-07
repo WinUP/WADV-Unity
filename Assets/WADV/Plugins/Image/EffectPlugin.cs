@@ -20,30 +20,29 @@ namespace WADV.Plugins.Image {
             AssemblyRegister.Load(Assembly.GetExecutingAssembly());
         }
         
-        /// <inheritdoc />
         public bool OnRegister() => true;
 
-        /// <inheritdoc />
         public bool OnUnregister(bool isReplace) => true;
         
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
             var parameters = new Dictionary<string, SerializableValue>();
-            IGraphicEffect effect = null;
-            string name = null;
+            string effectName = null;
             foreach (var (key, value) in context.StringParameters) {
-                name = key.ConvertToString(context.Language);
+                var name = key.ConvertToString(context.Language);
                 if (name == "Type") {
-                    effect = Create(name);
-                    if (effect == null) {
-                        throw new KeyNotFoundException($"Unable to create effect: expected effect name {name} not existed");
-                    }
+                    effectName = value is IStringConverter stringConverter
+                        ? stringConverter.ConvertToString(context.Language)
+                        : throw new NotSupportedException("");
                 } else {
                     parameters.Add(name, value);
                 }
             }
-            if (effect == null) throw new NotSupportedException($"Unable to create effect: missing effect type");
-            effect.CreateEffect(parameters);
-            return Task.FromResult<SerializableValue>(new EffectValue(name, parameters) {Effect = effect});
+            if (string.IsNullOrEmpty(effectName)) throw new NotSupportedException($"Unable to create effect: missing effect type");
+            var result = new EffectValue(effectName, parameters);
+            if (result.Effect == null) {
+                throw new KeyNotFoundException($"Unable to create effect: expected effect name {effectName} not existed");
+            }
+            return Task.FromResult<SerializableValue>(result);
         }
 
         [CanBeNull]

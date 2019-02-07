@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
+using JetBrains.Annotations;
 using WADV.Plugins.Image.Effects;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Translation;
@@ -9,45 +10,44 @@ using WADV.VisualNovel.Translation;
 namespace WADV.Plugins.Image {
     [Serializable]
     public class EffectValue : SerializableValue, ISerializable, IEqualOperator, IStringConverter {
-        public IGraphicEffect Effect { get; set; }
+        [CanBeNull] public IGraphicEffect Effect { get; }
+        
+        public string EffectType { get; }
 
-        private readonly string _name;
         private readonly Dictionary<string, SerializableValue> _parameters;
 
-        public EffectValue(string name, Dictionary<string, SerializableValue> parameters) {
-            _name = name;
+        public EffectValue(string effectType, Dictionary<string, SerializableValue> parameters) {
+            EffectType = effectType;
             _parameters = parameters;
+            Effect = EffectPlugin.Create(EffectType);
+            Effect?.SetEffect(parameters);
         }
         
         protected EffectValue(SerializationInfo info, StreamingContext context) {
-            _name = info.GetString("name");
+            EffectType = info.GetString("name");
             _parameters = (Dictionary<string, SerializableValue>) info.GetValue("parameters", typeof(Dictionary<string, SerializableValue>));
-            Effect = EffectPlugin.Create(_name);
-            if (Effect == null)
-                throw new KeyNotFoundException($"Unable to create effect: expected effect name {_name} not existed");
-            Effect.CreateEffect(_parameters);
+            Effect = EffectPlugin.Create(EffectType);
+            Effect?.SetEffect(_parameters);
         }
         
         public override SerializableValue Duplicate() {
-            return new EffectValue(_name, _parameters) {
-                Effect = Effect
-            };
+            return new EffectValue(EffectType, _parameters);
         }
 
         [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
             info.AddValue("parameters", _parameters);
-            info.AddValue("name", _name);
+            info.AddValue("name", EffectType);
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return target is EffectValue characterValue
-                   && characterValue._name == _name
+                   && characterValue.EffectType == EffectType
                    && characterValue._parameters.Equals(_parameters);
         }
 
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return _name;
+            return EffectType;
         }
     }
 }

@@ -10,6 +10,6 @@ namespace WADV.Plugins.Image.Effects {
         /// 创建效果
         /// </summary>
         /// <param name="parameters">效果参数</param>
-        void CreateEffect(Dictionary<string, SerializableValue> parameters);
+        void SetEffect(Dictionary<string, SerializableValue> parameters);
     }
 }
