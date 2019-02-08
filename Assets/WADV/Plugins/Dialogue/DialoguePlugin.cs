@@ -49,7 +49,7 @@ namespace WADV.Plugins.Dialogue {
                         break;
                 }
             }
-            await MessageService.ProcessAsync(ContextMessage<MessageIntegration.Content>.Create(context, dialogue, MessageIntegration.Mask, MessageIntegration.NewDialogue));
+            await MessageService.ProcessAsync(ContextMessage<MessageIntegration.Content>.Create(MessageIntegration.Mask, MessageIntegration.NewDialogue, dialogue, context));
             return new NullValue();
         }
         
@@ -60,7 +60,7 @@ namespace WADV.Plugins.Dialogue {
             } catch {
                 showValue = 0.0F;
             }
-            await MessageService.ProcessAsync(Message<float>.Create(showValue, MessageIntegration.Mask, MessageIntegration.ShowDialogueBox));
+            await MessageService.ProcessAsync(Message<float>.Create(MessageIntegration.Mask, MessageIntegration.ShowDialogueBox, showValue));
         }
         
         private static async Task HideWindow(SerializableValue time, string language) {
@@ -70,7 +70,7 @@ namespace WADV.Plugins.Dialogue {
             } catch {
                 hideValue = 0.0F;
             }
-            await MessageService.ProcessAsync(Message<float>.Create(hideValue, MessageIntegration.Mask, MessageIntegration.HideDialogueBox));
+            await MessageService.ProcessAsync(Message<float>.Create(MessageIntegration.Mask, MessageIntegration.HideDialogueBox, hideValue));
         }
     }
 }

@@ -18,14 +18,16 @@ namespace WADV.VisualNovel.Runtime {
             if (Script == null) {
                 throw new NotSupportedException("Unable to execute bytecode: no active script detected");
             }
-            _callStack.Clear();
-            _callStack.Push(Script);
+            if (_callStack.Count == 0) {
+                _callStack.Push(Script);
+            }
             while (await ExecuteSingleLine()) {
                 if (_stopRequest == null) continue;
                 _stopRequest.Complete();
                 _stopRequest = null;
                 break;
             }
+            _callStack.Clear();
         }
 
         private async Task<bool> ExecuteSingleLine() {
@@ -496,10 +498,17 @@ namespace WADV.VisualNovel.Runtime {
         }
 
         private async Task Load() {
-            var scriptId = PopString();
-            if (string.IsNullOrEmpty(scriptId)) throw new RuntimeException(_callStack, $"Unable to load script: script id {scriptId} is not string value");
-            var runtime = new ScriptRuntime(scriptId, _callStack) {ActiveLanguage = ActiveLanguage};
+            ScriptRuntime runtime;
+            if (_loadingScript == null) {
+                var scriptId = PopString();
+                if (string.IsNullOrEmpty(scriptId)) throw new RuntimeException(_callStack, $"Unable to load script: script id {scriptId} is not string value");
+                runtime = new ScriptRuntime(scriptId, _callStack) {ActiveLanguage = ActiveLanguage};
+                _loadingScript = runtime;
+            } else {
+                runtime = _loadingScript;
+            }
             await runtime.ExecuteScript();
+            _loadingScript = null;
             var result = new ObjectPlugin.ObjectValue();
             foreach (var (name, value) in runtime.Exported) {
                 result.Add(new StringValue {Value = name}, value);

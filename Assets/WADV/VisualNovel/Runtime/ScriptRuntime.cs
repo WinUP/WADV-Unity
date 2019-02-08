@@ -10,8 +10,6 @@ using WADV.VisualNovel.Runtime.Utilities;
 using WADV.VisualNovel.Translation;
 using JetBrains.Annotations;
 
-// ! 为求效率，VNB运行环境在文件头正确的情况下假设文件格式绝对正确，只会做运行时数据检查，不会进行任何格式检查
-
 namespace WADV.VisualNovel.Runtime {
     /// <summary>
     /// 脚本运行环境
@@ -47,34 +45,71 @@ namespace WADV.VisualNovel.Runtime {
             set {
                 if (_activeLanguage == value) return;
                 if (!TranslationManager.CheckLanguageName(value)) throw new RuntimeException(_callStack, $"Unable to change language: {value} is not legal language name");
-                var message = MessageService.Process(new Message<ChangeLanguageIntent>(new ChangeLanguageIntent {Runtime = this, NewLanguage = value}, CoreConstant.Mask, CoreConstant.PrepareLanguageChange));
+                var message = MessageService.Process(Message<ChangeLanguageIntent>.Create(CoreConstant.Mask, CoreConstant.PrepareLanguageChange, new ChangeLanguageIntent {Runtime = this, NewLanguage = value}));
                 switch (message) {
                     case Message<ChangeLanguageIntent> result:
                         _activeLanguage = result.Content.NewLanguage;
                         if (!TranslationManager.CheckLanguageName(_activeLanguage)) throw new RuntimeException(_callStack, $"Unable to change language: {_activeLanguage} is not legal language name");
                         break;
                     default:
-                        throw new RuntimeException(_callStack, $"Unable to change language: Message was modified to non-string type during broadcast");
+                        throw new RuntimeException(_callStack, $"Unable to change language: message was modified to non-string type during broadcast");
                 }
                 Script.UseTranslation(_activeLanguage).Wait();
-                MessageService.Process(Message<ChangeLanguageIntent>.Create(new ChangeLanguageIntent {Runtime = this, NewLanguage = _activeLanguage}, CoreConstant.Mask, CoreConstant.LanguageChange));
+                MessageService.Process(Message<ChangeLanguageIntent>.Create(CoreConstant.Mask, CoreConstant.LanguageChange, new ChangeLanguageIntent {Runtime = this, NewLanguage = _activeLanguage}));
             }
         }
         
+        /// <summary>
+        /// 记录当前激活的语言
+        /// </summary>
         private string _activeLanguage = TranslationManager.DefaultLanguage;
+        /// <summary>
+        /// 记录调用堆栈
+        /// </summary>
         private readonly CallStack _callStack = new CallStack();
+        /// <summary>
+        /// 记录RET使用的历史作用域
+        /// </summary>
         private readonly Stack<ScopeValue> _historyScope = new Stack<ScopeValue>();
+        /// <summary>
+        /// 记录用于停止执行的主线程占位符
+        /// </summary>
         [CanBeNull] private MainThreadPlaceholder _stopRequest;
+        /// <summary>
+        /// 记录LOAD指令正在处理的目标运行环境
+        /// </summary>
+        [CanBeNull] private ScriptRuntime _loadingScript;
 
+        /// <summary>
+        /// 新建一个脚本运行环境
+        /// </summary>
+        /// <param name="script">目标脚本</param>
         public ScriptRuntime(ScriptFile script) {
             Script = script ?? throw new ArgumentException("Unable to load script: expected script is not existed", nameof(script));
             Script.UseTranslation(ActiveLanguage).Wait();
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// 新建一个脚本运行环境
+        /// </summary>
+        /// <param name="scriptId">目标脚本的ID</param>
         public ScriptRuntime(string scriptId) : this(ScriptFile.LoadSync(scriptId)) { }
 
-        public ScriptRuntime(string scriptId, IEnumerable<CallStack.StackItem> initialCallStack) : this(ScriptFile.LoadSync(scriptId), initialCallStack) { }
+        /// <inheritdoc />
+        /// <summary>
+        /// 新建一个脚本运行环境
+        /// </summary>
+        /// <param name="scriptId">目标脚本的ID</param>
+        /// <param name="initialCallStack">初始调用堆栈</param>
+        private ScriptRuntime(string scriptId, IEnumerable<CallStack.StackItem> initialCallStack) : this(ScriptFile.LoadSync(scriptId), initialCallStack) { }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// 新建一个脚本运行环境
+        /// </summary>
+        /// <param name="script">目标脚本</param>
+        /// <param name="initialCallStack">初始调用堆栈</param>
         private ScriptRuntime(ScriptFile script, IEnumerable<CallStack.StackItem> initialCallStack) : this(script) {
             _callStack.Push(initialCallStack);
         }

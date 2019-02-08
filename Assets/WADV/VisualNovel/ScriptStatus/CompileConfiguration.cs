@@ -87,7 +87,7 @@ namespace WADV.VisualNovel.ScriptStatus {
             var formatter = new BinaryFormatter();
             formatter.Serialize(file, Content);
             file.Close();
-            MessageService.Process(new Message {Mask = CoreConstant.Mask, Tag = CoreConstant.RepaintCompileOptionEditor});
+            MessageService.Process(Message.Create(CoreConstant.Mask, CoreConstant.RepaintCompileOptionEditor));
         }
         
         /// <summary>

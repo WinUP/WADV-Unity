@@ -4,6 +4,7 @@ namespace WADV.VisualNovel.Compiler {
     /// <summary>
     /// 用于VNS的8位汇编指令集
     /// </summary>
+    /// <remarks>原则上没有特别标注的指令都是原子指令，不过依据操作符和转换器的实现，C#代码也可以强行令任何与C#交互的指令失去原子性</remarks>
     public enum OperationCode : byte {
         /// <summary>
         /// 入栈32位整数0
@@ -223,7 +224,7 @@ namespace WADV.VisualNovel.Compiler {
         /// </summary>
         LDF,
         /// <summary>
-        /// 调用栈顶元素所指的插件
+        /// 调用栈顶元素所指的插件（非原子指令）
         /// <para>格式：<code>2B</code></para>
         /// <para>栈结构要求：栈顶元素描述插件名或插件本身，第二个元素描述参数数目，之后的元素以参数名、参数值的顺序描述每个参数</para>
         /// </summary>
@@ -234,7 +235,7 @@ namespace WADV.VisualNovel.Compiler {
         /// </summary>
         POP,
         /// <summary>
-        /// 生成快速对话
+        /// 生成快速对话（非原子指令）
         /// <para>格式：<code>2D</code></para>
         /// <para>栈结构要求：栈顶元素描述角色，第二个元素描述对话内容</para>
         /// </summary>
@@ -362,7 +363,7 @@ namespace WADV.VisualNovel.Compiler {
         /// </summary>
         BR,
         /// <summary>
-        /// 导入脚本执行结果
+        /// 导入脚本执行结果（非原子指令）
         /// <para>格式：<code>43</code></para>
         /// <para>栈结构要求：栈顶元素描述目标脚本路径</para>
         /// </summary>

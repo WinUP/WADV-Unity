@@ -66,6 +66,7 @@
     <Compile Include="Assets\Game\RuntimeTester.cs" />
     <Compile Include="Assets\Game\UI\DialogueWindowShowHideListener.cs" />
     <Compile Include="Assets\Game\UI\InputBoxRenderer.cs" />
+    <Compile Include="Assets\WADV\DumpManager.cs" />
     <Compile Include="Assets\WADV\Easing.cs" />
     <Compile Include="Assets\WADV\EasingType.cs" />
     <Compile Include="Assets\WADV\Extensions\AwaitExtensions.cs" />
