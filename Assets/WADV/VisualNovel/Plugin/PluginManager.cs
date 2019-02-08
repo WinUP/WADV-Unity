@@ -35,14 +35,11 @@ namespace WADV.VisualNovel.Plugin {
         public static void Register([NotNull] IVisualNovelPlugin plugin) {
             var name = AssemblyRegister.GetName(plugin.GetType(), plugin);
             if (Plugins.ContainsKey(name)) {
-                if (!plugin.OnUnregister(true)) throw new NotSupportedException($"Plugin {name} registration failed: conflict plugin denied to unregister");
+                plugin.OnUnregister(true);
                 Plugins.Remove(name);
             }
-            if (plugin.OnRegister()) {
-                Plugins.Add(name, plugin);
-            } else if (Application.isEditor) {
-                Debug.LogWarning($"Plugin {name} registration failed: target plugin denied to register");
-            }
+            plugin.OnRegister();
+            Plugins.Add(name, plugin);
         }
 
         /// <summary>
@@ -51,13 +48,9 @@ namespace WADV.VisualNovel.Plugin {
         /// <param name="plugin">要注销的插件</param>
         public static void Unregister(IVisualNovelPlugin plugin) {
             var name = AssemblyRegister.GetName(plugin.GetType(), plugin);
-            if (Plugins.ContainsKey(name)) {
-                if (plugin.OnUnregister(false)) {
-                    Plugins.Remove(name);
-                } else if (Application.isEditor) {
-                    Debug.LogWarning($"Plugin {name} unregisteration failed: target plugin denied to unregister");
-                }
-            }
+            if (!Plugins.ContainsKey(name)) return;
+            plugin.OnUnregister(false);
+            Plugins.Remove(name);
         }
 
         /// <summary>

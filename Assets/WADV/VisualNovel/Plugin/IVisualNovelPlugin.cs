@@ -16,12 +16,12 @@ namespace WADV.VisualNovel.Plugin {
         /// <summary>
         /// 检查是否允许插件被注册
         /// </summary>
-        bool OnRegister();
+        void OnRegister();
 
         /// <summary>
         /// 检查是否允许插件被注销
         /// </summary>
         /// <param name="isReplace">是否由于同名插件注册使得此插件被注销</param>
-        bool OnUnregister(bool isReplace);
+        void OnUnregister(bool isReplace);
     }
 }

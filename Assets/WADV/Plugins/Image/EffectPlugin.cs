@@ -20,9 +20,9 @@ namespace WADV.Plugins.Image {
             AssemblyRegister.Load(Assembly.GetExecutingAssembly());
         }
         
-        public bool OnRegister() => true;
+        public void OnRegister() { }
 
-        public bool OnUnregister(bool isReplace) => true;
+        public void OnUnregister(bool isReplace) { }
         
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
             var parameters = new Dictionary<string, SerializableValue>();

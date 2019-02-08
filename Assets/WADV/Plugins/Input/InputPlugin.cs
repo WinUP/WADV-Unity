@@ -48,9 +48,9 @@ namespace WADV.Plugins.Input {
         }
 
         /// <inheritdoc />
-        public bool OnRegister() => true;
+        public void OnRegister() { }
 
         /// <inheritdoc />
-        public bool OnUnregister(bool isReplace) => true;
+        public void OnUnregister(bool isReplace) { }
     }
 }

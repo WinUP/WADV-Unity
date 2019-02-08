@@ -22,10 +22,10 @@ namespace WADV.Plugins.Dialogue {
         private static Regex CommandTester { get; } = new Regex(@"\s*([^=]+)\s*=\s*(\S+)\s*$");
         
         /// <inheritdoc />
-        public bool OnRegister() => true;
+        public void OnRegister() { }
 
         /// <inheritdoc />
-        public bool OnUnregister(bool isReplace) => true;
+        public void OnUnregister(bool isReplace) { }
         
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var dialogue = new MessageIntegration.Content();

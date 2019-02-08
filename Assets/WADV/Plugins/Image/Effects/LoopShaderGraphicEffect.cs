@@ -30,16 +30,14 @@ namespace WADV.Plugins.Image.Effects {
         }
 
         public void UpdateEffectFrame(Graphic[] targets) {
-            var (_, materials) = FindMaterials(targets);
-            foreach (var material in materials) {
+            foreach (var material in FindMaterials(targets)) {
                 PlayFrameEffect(material);
             }
         }
 
         public async Task EndEffect(Graphic[] targets) {
-            var (graphics, materials) = FindMaterials(targets);
-            await Dispatcher.WaitAll(materials.Select(PlayEndEffect).ToArray());
-            foreach (var graphic in graphics) {
+            await Dispatcher.WaitAll(FindMaterials(targets).Select(PlayEndEffect).ToArray());
+            foreach (var graphic in targets) {
                 PlayingTargets.Remove(graphic);
             }
         }
@@ -50,16 +48,15 @@ namespace WADV.Plugins.Image.Effects {
 
         protected abstract Task PlayEndEffect(Material material);
 
-        private static (Graphic[] Targets, Material[] Materials) FindMaterials(IEnumerable<Graphic> targets) {
-            var graphics = targets.Where(e => PlayingTargets.ContainsKey(e)).ToArray();
+        private static IEnumerable<Material> FindMaterials(IEnumerable<Graphic> targets) {
             var materials = new List<Material>();
-            foreach (var graphic in graphics) {
+            foreach (var graphic in targets) {
                 var material = PlayingTargets[graphic];
                 if (!materials.Contains(material)) {
                     materials.Add(material);
                 }
             }
-            return (graphics, materials.ToArray());
+            return materials;
         }
     }
 }

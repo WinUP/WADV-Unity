@@ -24,9 +24,9 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             return Task.FromResult<SerializableValue>(result);
         }
 
-        public bool OnRegister() => true;
+        public void OnRegister() { }
 
-        public bool OnUnregister(bool isReplace) => true;
+        public void OnUnregister(bool isReplace) { }
 
         /// <inheritdoc cref="SerializableValue" />
         /// <summary>

@@ -13,10 +13,10 @@ namespace WADV.Plugins.Dialogue {
     [StaticRegistrationInfo("Character")]
     public class CharacterPlugin : IVisualNovelPlugin {
         /// <inheritdoc />
-        public bool OnRegister() => true;
+        public void OnRegister() { }
 
         /// <inheritdoc />
-        public bool OnUnregister(bool isReplace) => true;
+        public void OnUnregister(bool isReplace) { }
         
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
             var character = new CharacterValue();
