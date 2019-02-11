@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using JetBrains.Annotations;
 using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Vector2 {
@@ -10,13 +9,12 @@ namespace WADV.Plugins.Vector2 {
         
         public Vector2Value() { }
         
-        [UsedImplicitly]
         protected Vector2Value(SerializationInfo info, StreamingContext context) {
-            Value = new UnityEngine.Vector2 {x = info.GetSingle("x"), y = info.GetSingle("y")};
+            Value = new UnityEngine.Vector2(info.GetSingle("x"), info.GetSingle("y"));
         }
         
         public override SerializableValue Duplicate() {
-            return new Vector2Value {Value = new UnityEngine.Vector2 {x = Value.x, y = Value.y}};
+            return new Vector2Value {Value = new UnityEngine.Vector2(Value.x, Value.y)};
         }
 
         public void GetObjectData(SerializationInfo info, StreamingContext context) {

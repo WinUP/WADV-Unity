@@ -4,29 +4,34 @@ using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
+    /// <inheritdoc cref="IBooleanConverter" />
+    /// <inheritdoc cref="IFloatConverter" />
+    /// <inheritdoc cref="IIntegerConverter" />
+    /// <inheritdoc cref="IStringConverter" />
+    /// <inheritdoc cref="IAddOperator" />
+    /// <inheritdoc cref="IMultiplyOperator" />
+    /// <inheritdoc cref="INegativeOperator" />
+    /// <inheritdoc cref="IEqualOperator" />
     /// <summary>
-    /// <para>表示一个布尔内存值</para>
+    /// <para>表示一个布尔可序列化内存值</para>
     /// <list type="bullet">
-    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
     ///     <item><description>浮点转换器</description></item>
     ///     <item><description>整数转换器</description></item>
     ///     <item><description>字符串转换器</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>加法互操作器</description></item>
     ///     <item><description>乘法互操作器</description></item>
     ///     <item><description>取反互操作器</description></item>
-    ///     <item><description>比较互操作器</description></item>
-    /// </list>
-    /// <list type="bullet">
-    ///     <listheader><description>子元素/特性支持</description></listheader>
-    ///     <item><description>Reverse</description></item>
-    ///     <item><description>ToNumber</description></item>
-    ///     <item><description>ToString</description></item>
+    ///     <item><description>相等比较互操作器</description></item>
     /// </list>
     /// </summary>
     [Serializable]
     public class BooleanValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, IMultiplyOperator,
-                                IPickChildOperator, IEqualOperator, INegativeOperator {
+                                INegativeOperator, IEqualOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
@@ -95,22 +100,6 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return new BooleanValue {Value = Value && TryParse(target, language)};
-        }
-
-        public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            if (!(target is IStringConverter stringConverter))
-                throw new NotSupportedException($"Unable to get feature in boolean value with feature id {target}: only string feature name is accepted");
-            var name = stringConverter.ConvertToString(language);
-            switch (name) {
-                case "Reverse":
-                    return new BooleanValue {Value = !Value};
-                case "ToNumber":
-                    return new IntegerValue {Value = ConvertToInteger(language)};
-                case "ToString":
-                    return new StringValue {Value = ConvertToString(language)};
-                default:
-                    throw new NotSupportedException($"Unable to get feature in boolean value: unsupported feature {name}");
-            }
         }
     }
 }

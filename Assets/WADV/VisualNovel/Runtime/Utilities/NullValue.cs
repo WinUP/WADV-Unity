@@ -4,25 +4,38 @@ using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
+    /// <inheritdoc cref="IBooleanConverter" />
+    /// <inheritdoc cref="IFloatConverter" />
+    /// <inheritdoc cref="IIntegerConverter" />
+    /// <inheritdoc cref="IStringConverter" />
+    /// <inheritdoc cref="IAddOperator" />
+    /// <inheritdoc cref="ISubtractOperator" />
+    /// <inheritdoc cref="IMultiplyOperator" />
+    /// <inheritdoc cref="IDivideOperator" />
+    /// <inheritdoc cref="INegativeOperator" />
+    /// <inheritdoc cref="IEqualOperator" />
     /// <summary>
     /// <para>表示一个空内存值</para>
     /// <list type="bullet">
-    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
     ///     <item><description>浮点转换器</description></item>
     ///     <item><description>整数转换器</description></item>
     ///     <item><description>字符串转换器</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>加法互操作器</description></item>
     ///     <item><description>减法互操作器</description></item>
     ///     <item><description>乘法互操作器</description></item>
     ///     <item><description>除法互操作器</description></item>
     ///     <item><description>取反互操作器</description></item>
-    ///     <item><description>真值比较互操作器</description></item>
+    ///     <item><description>相等比较互操作器</description></item>
     /// </list>
     /// </summary>
     [Serializable]
     public class NullValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                             IEqualOperator, INegativeOperator {
+                             INegativeOperator, IEqualOperator {
         public override SerializableValue Duplicate() {
             return new NullValue();
         }

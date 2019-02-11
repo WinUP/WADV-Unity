@@ -6,30 +6,38 @@ using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
+    /// <inheritdoc cref="IBooleanConverter" />
+    /// <inheritdoc cref="IFloatConverter" />
+    /// <inheritdoc cref="IIntegerConverter" />
+    /// <inheritdoc cref="IStringConverter" />
+    /// <inheritdoc cref="IAddOperator" />
+    /// <inheritdoc cref="ISubtractOperator" />
+    /// <inheritdoc cref="IMultiplyOperator" />
+    /// <inheritdoc cref="IDivideOperator" />
+    /// <inheritdoc cref="INegativeOperator" />
+    /// <inheritdoc cref="IEqualOperator" />
     /// <summary>
     /// <para>表示一个字符串内存值</para>
     /// <list type="bullet">
-    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
     ///     <item><description>浮点转换器</description></item>
     ///     <item><description>整数转换器</description></item>
     ///     <item><description>字符串转换器</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>加法互操作器</description></item>
     ///     <item><description>减法互操作器</description></item>
     ///     <item><description>乘法互操作器</description></item>
     ///     <item><description>除法互操作器</description></item>
     ///     <item><description>取反互操作器</description></item>
-    ///     <item><description>真值比较互操作器</description></item>
-    /// </list>
-    /// <list type="bullet">
-    ///     <listheader><description>子元素/特性支持</description></listheader>
-    ///     <item><description>ToBoolean</description></item>
-    ///     <item><description>ToNumber</description></item>
+    ///     <item><description>相等比较互操作器</description></item>
     /// </list>
     /// </summary>
     [Serializable]
     public class StringValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                               IEqualOperator, IPickChildOperator, INegativeOperator {
+                               IEqualOperator, INegativeOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
@@ -114,20 +122,6 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                     return new StringValue {Value = boolTarget.ConvertToBoolean(language) ? Value : ""};
                 default:
                     throw new NotSupportedException($"Unable to divide string constant with unsupported value {target}");
-            }
-        }
-        
-        public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            if (!(target is IStringConverter stringConverter))
-                throw new NotSupportedException($"Unable to get feature in string value with feature id {target}: only string feature name is accepted");
-            var name = stringConverter.ConvertToString(language);
-            switch (name) {
-                case "ToBoolean":
-                    return new BooleanValue {Value = ConvertToBoolean(language)};
-                case "ToNumber":
-                    return new IntegerValue {Value = ConvertToInteger(language)};
-                default:
-                    throw new NotSupportedException($"Unable to get feature in string value: unsupported feature {name}");
             }
         }
 

@@ -4,25 +4,38 @@ using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
+    /// <inheritdoc cref="IBooleanConverter" />
+    /// <inheritdoc cref="IFloatConverter" />
+    /// <inheritdoc cref="IIntegerConverter" />
+    /// <inheritdoc cref="IStringConverter" />
+    /// <inheritdoc cref="IAddOperator" />
+    /// <inheritdoc cref="ISubtractOperator" />
+    /// <inheritdoc cref="IMultiplyOperator" />
+    /// <inheritdoc cref="IDivideOperator" />
+    /// <inheritdoc cref="INegativeOperator" />
+    /// <inheritdoc cref="IEqualOperator" />
     /// <summary>
-    /// <para>表示一个可翻译内存值</para>
+    /// <para>表示一个可翻译字符串内存值</para>
     /// <list type="bullet">
-    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
     ///     <item><description>浮点转换器</description></item>
     ///     <item><description>整数转换器</description></item>
     ///     <item><description>字符串转换器</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>加法互操作器</description></item>
     ///     <item><description>减法互操作器</description></item>
     ///     <item><description>乘法互操作器</description></item>
     ///     <item><description>除法互操作器</description></item>
     ///     <item><description>取反互操作器</description></item>
-    ///     <item><description>真值比较互操作器</description></item>
+    ///     <item><description>相等比较互操作器</description></item>
     /// </list>
     /// </summary>
     [Serializable]
-    public class TranslatableValue : SerializableValue, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                                     INegativeOperator, IBooleanConverter, IIntegerConverter, IFloatConverter {
+    public class TranslatableValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
+                                     IEqualOperator, INegativeOperator  {
         /// <summary>
         /// 获取或设置翻译所在的脚本ID
         /// </summary>
@@ -43,6 +56,17 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         public override string ToString() {
             return ConvertToString();
+        }
+
+        public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            switch (target) {
+                case TranslatableValue translatableValue:
+                    return translatableValue.ScriptId == ScriptId && translatableValue.TranslationId == TranslationId;
+                case IStringConverter stringConverter:
+                    return stringConverter.ConvertToString(language) == ConvertToString(language);
+                default:
+                    return false;
+            }
         }
 
         public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {

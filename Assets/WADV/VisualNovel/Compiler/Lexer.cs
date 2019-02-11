@@ -122,23 +122,23 @@ namespace WADV.VisualNovel.Compiler {
                     file.MoveToNext();
                     position = position.NextColumn();
                     var index = file.IndexOf(' ', '\n');
-                    if (file.StartsWith(Keywords.SyntaxFunction)) {
+                    if (file.StartsWith(Keywords.Function)) {
                         tokens.Add(new BasicToken(TokenType.Function, position));
-                    } else if (file.StartsWith(Keywords.SyntaxIf)) {
+                    } else if (file.StartsWith(Keywords.If)) {
                         tokens.Add(new BasicToken(TokenType.If, position));
-                    } else if (file.StartsWith(Keywords.SyntaxElseIf)) {
+                    } else if (file.StartsWith(Keywords.ElseIf)) {
                         tokens.Add(new BasicToken(TokenType.ElseIf, position));
-                    } else if (file.StartsWith(Keywords.SyntaxElse)) {
+                    } else if (file.StartsWith(Keywords.Else)) {
                         tokens.Add(new BasicToken(TokenType.Else, position));
-                    } else if (file.StartsWith(Keywords.SyntaxWhileLoop + ' ')) {
+                    } else if (file.StartsWith(Keywords.WhileLoop + ' ')) {
                         tokens.Add(new BasicToken(TokenType.Loop, position));
-                    } else if (file.StartsWith(Keywords.SyntaxReturn)) {
+                    } else if (file.StartsWith(Keywords.Return)) {
                         tokens.Add(new BasicToken(TokenType.Return, position));
-                    } else if (file.StartsWith(Keywords.SyntaxCall)) {
+                    } else if (file.StartsWith(Keywords.Call)) {
                         tokens.Add(new BasicToken(TokenType.FunctionCall, position));
-                    } else if (file.StartsWith(Keywords.SyntaxImport)) {
+                    } else if (file.StartsWith(Keywords.Import)) {
                         tokens.Add(new BasicToken(TokenType.Import, position));
-                    } else if (file.StartsWith(Keywords.SyntaxExport)) {
+                    } else if (file.StartsWith(Keywords.Export)) {
                         tokens.Add(new BasicToken(TokenType.Export, position));
                     } else {
                         throw new CompileException(identifier, position, $"Unknown keyword {file.CopyContent(index)}");

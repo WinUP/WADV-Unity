@@ -7,6 +7,7 @@ using WADV.VisualNovel.Compiler.Expressions;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
+using WADV.VisualNovel.Runtime.Utilities.Object;
 
 namespace WADV.VisualNovel.Runtime {
     public partial class ScriptRuntime {
@@ -519,7 +520,7 @@ namespace WADV.VisualNovel.Runtime {
             }
             await runtime.ExecuteScript();
             _loadingScript = null;
-            var result = new ObjectPlugin.ObjectValue();
+            var result = new ObjectValue();
             foreach (var (name, value) in runtime.Exported) {
                 result.Add(new StringValue {Value = name}, value);
             }
