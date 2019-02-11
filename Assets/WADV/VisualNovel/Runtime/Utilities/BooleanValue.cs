@@ -14,7 +14,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     ///     <item><description>字符串转换器</description></item>
     ///     <item><description>加法互操作器</description></item>
     ///     <item><description>乘法互操作器</description></item>
-    ///     <item><description>取子元素互操作器</description></item>
+    ///     <item><description>取反互操作器</description></item>
     ///     <item><description>比较互操作器</description></item>
     /// </list>
     /// <list type="bullet">
@@ -26,7 +26,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// </summary>
     [Serializable]
     public class BooleanValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, IMultiplyOperator,
-                                IPickChildOperator, IEqualOperator {
+                                IPickChildOperator, IEqualOperator, INegativeOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
@@ -78,6 +78,10 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         public override string ToString() {
             return ConvertToString();
+        }
+
+        public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
+            return new BooleanValue {Value = !Value};
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {

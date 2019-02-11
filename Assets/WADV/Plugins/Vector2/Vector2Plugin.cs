@@ -10,8 +10,8 @@ namespace WADV.Plugins.Vector2 {
             throw new System.NotImplementedException();
         }
 
-        public void OnRegister() => true;
+        public void OnRegister() { }
 
-        public void OnUnregister(bool isReplace) => true;
+        public void OnUnregister(bool isReplace) { }
     }
 }

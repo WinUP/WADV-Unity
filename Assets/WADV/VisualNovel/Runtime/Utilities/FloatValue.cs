@@ -18,6 +18,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     ///     <item><description>减法互操作器</description></item>
     ///     <item><description>乘法互操作器</description></item>
     ///     <item><description>除法互操作器</description></item>
+    ///     <item><description>取反互操作器</description></item>
     ///     <item><description>比较互操作器</description></item>
     ///     <item><description>真值比较互操作器</description></item>
     /// </list>
@@ -31,7 +32,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// </summary>
     [Serializable]
     public class FloatValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                              IEqualOperator, ICompareOperator, IPickChildOperator {
+                              IEqualOperator, ICompareOperator, IPickChildOperator, INegativeOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
@@ -83,6 +84,10 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         public override string ToString() {
             return ConvertToString();
+        }
+
+        public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
+            return new FloatValue {Value = -Value};
         }
 
         public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {

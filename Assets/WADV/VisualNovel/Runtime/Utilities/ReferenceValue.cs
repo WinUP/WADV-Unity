@@ -9,7 +9,6 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     ///  <list type="bullet">
     ///     <listheader><description>互操作支持</description></listheader>
     ///     <item><description>字符串转换器</description></item>
-    ///     <item><description>取子元素互操作器</description></item>
     /// </list>
     /// <list type="bullet">
     ///     <listheader><description>子元素/特性支持</description></listheader>

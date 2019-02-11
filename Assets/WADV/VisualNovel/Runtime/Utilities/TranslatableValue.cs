@@ -8,11 +8,21 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// <para>表示一个可翻译内存值</para>
     /// <list type="bullet">
     ///     <listheader><description>互操作支持</description></listheader>
+    ///     <item><description>布尔转换器</description></item>
+    ///     <item><description>浮点转换器</description></item>
+    ///     <item><description>整数转换器</description></item>
     ///     <item><description>字符串转换器</description></item>
+    ///     <item><description>加法互操作器</description></item>
+    ///     <item><description>减法互操作器</description></item>
+    ///     <item><description>乘法互操作器</description></item>
+    ///     <item><description>除法互操作器</description></item>
+    ///     <item><description>取反互操作器</description></item>
+    ///     <item><description>真值比较互操作器</description></item>
     /// </list>
     /// </summary>
     [Serializable]
-    public class TranslatableValue : SerializableValue, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator {
+    public class TranslatableValue : SerializableValue, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
+                                     INegativeOperator, IBooleanConverter, IIntegerConverter, IFloatConverter {
         /// <summary>
         /// 获取或设置翻译所在的脚本ID
         /// </summary>
@@ -33,6 +43,22 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         public override string ToString() {
             return ConvertToString();
+        }
+
+        public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
+            return new StringValue {Value = ConvertToString(language)}.ConvertToFloat(language);
+        }
+
+        public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
+            return new StringValue {Value = ConvertToString(language)}.ConvertToInteger(language);
+        }
+
+        public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
+            return new StringValue {Value = ConvertToString(language)}.ConvertToBoolean(language);
+        }
+
+        public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
+            return new StringValue {Value = ConvertToString(language)}.ToNegative(language);
         }
 
         public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {

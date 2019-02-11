@@ -100,7 +100,7 @@ namespace WADV.VisualNovel.Compiler {
                                 break;
                             case OperatorType.LogicNotEqualsTo:
                                 context.File.OperationCode(OperationCode.EQL, binaryExpression.Position);
-                                context.File.OperationCode(OperationCode.NOT, binaryExpression.Position);
+                                context.File.OperationCode(OperationCode.NEGATIVE, binaryExpression.Position);
                                 break;
                         }
                     }
@@ -217,7 +217,7 @@ namespace WADV.VisualNovel.Compiler {
                     break;
                 case LogicNotExpression logicNotExpression:
                     Generate(context, logicNotExpression.Content);
-                    context.File.OperationCode(OperationCode.NOT, logicNotExpression.Position);
+                    context.File.OperationCode(OperationCode.NEGATIVE, logicNotExpression.Position);
                     break;
                 case LoopExpression loopExpression:
                     var loopStartLabel = context.NextLabelId;

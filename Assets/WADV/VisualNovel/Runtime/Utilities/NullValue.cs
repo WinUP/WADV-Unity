@@ -16,12 +16,13 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     ///     <item><description>减法互操作器</description></item>
     ///     <item><description>乘法互操作器</description></item>
     ///     <item><description>除法互操作器</description></item>
+    ///     <item><description>取反互操作器</description></item>
     ///     <item><description>真值比较互操作器</description></item>
     /// </list>
     /// </summary>
     [Serializable]
     public class NullValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                             IEqualOperator {
+                             IEqualOperator, INegativeOperator {
         public override SerializableValue Duplicate() {
             return new NullValue();
         }
@@ -44,6 +45,10 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         public override string ToString() {
             return ConvertToString();
+        }
+
+        public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
+            return new BooleanValue {Value = true};
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {

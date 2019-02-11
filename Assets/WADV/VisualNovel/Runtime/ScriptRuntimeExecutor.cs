@@ -127,8 +127,8 @@ namespace WADV.VisualNovel.Runtime {
                 case OperationCode.DIV:
                     CreateBinaryOperation(OperatorType.Divide);
                     break;
-                case OperationCode.NOT:
-                    CreateToBoolean(true);
+                case OperationCode.NEGATIVE:
+                    CreateToNegative();
                     break;
                 case OperationCode.EQL:
                     CreateBinaryOperation(OperatorType.EqualsTo);
@@ -373,13 +373,23 @@ namespace WADV.VisualNovel.Runtime {
             })) ?? new NullValue());
         }
 
-        private void CreateToBoolean(bool reverse = false) {
+        private void CreateToNegative() {
+            var rawValue = MemoryStack.Pop();
+            if (rawValue is INegativeOperator negativeOperator) {
+                try {
+                    MemoryStack.Push(negativeOperator.ToNegative(ActiveLanguage));
+                } catch (Exception ex) {
+                    throw new RuntimeException(_callStack, ex);
+                }
+            } else {
+                throw new RuntimeException(_callStack, $"Unable to get negative value of {rawValue}: target expression has no negative operator implementation");
+            }
+        }
+
+        private void CreateToBoolean() {
             var rawValue = MemoryStack.Pop();
             try {
                 var result = new BooleanValue {Value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean(ActiveLanguage) : rawValue != null};
-                if (reverse) {
-                    result.Value = !result.Value;
-                }
                 MemoryStack.Push(result);
             } catch (Exception ex) {
                 throw new RuntimeException(_callStack, ex);
@@ -401,7 +411,7 @@ namespace WADV.VisualNovel.Runtime {
                             throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStack, $"Unable to pick {valueRight} from {valueLeft}: Parent expression has no pick child operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to pick {valueRight} from {valueLeft}: parent expression has no pick child operator implementation");
                     }
                     break;
                 case OperatorType.Add:
@@ -412,7 +422,7 @@ namespace WADV.VisualNovel.Runtime {
                             throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStack, $"Unable to add {valueLeft} and {valueRight}: Left expression has no add operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to add {valueLeft} and {valueRight}: left expression has no add operator implementation");
                     }
                     break;
                 case OperatorType.Minus:
@@ -423,7 +433,7 @@ namespace WADV.VisualNovel.Runtime {
                             throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStack, $"Unable to subtract {valueLeft} and {valueRight}: Left expression has no subtract operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to subtract {valueLeft} and {valueRight}: left expression has no subtract operator implementation");
                     }
                     break;
                 case OperatorType.Multiply:
@@ -434,7 +444,7 @@ namespace WADV.VisualNovel.Runtime {
                             throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStack, $"Unable to multiply {valueLeft} and {valueRight}: Left expression has no multiply operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to multiply {valueLeft} and {valueRight}: left expression has no multiply operator implementation");
                     }
                     break;
                 case OperatorType.Divide:
@@ -445,7 +455,7 @@ namespace WADV.VisualNovel.Runtime {
                             throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStack, $"Unable to divide {valueLeft} and {valueRight}: Left expression has no divide operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to divide {valueLeft} and {valueRight}: left expression has no divide operator implementation");
                     }
                     break;
                 case OperatorType.GreaterThan:
@@ -466,7 +476,7 @@ namespace WADV.VisualNovel.Runtime {
                             throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStack, $"Unable to compare {valueLeft} and {valueRight}: Left expression has no compare operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to compare {valueLeft} and {valueRight}: left expression has no compare operator implementation");
                     }
                     break;
                 case OperatorType.LogicEqualsTo:
@@ -482,7 +492,7 @@ namespace WADV.VisualNovel.Runtime {
                             throw new RuntimeException(_callStack, ex);
                         }
                     } else {
-                        throw new RuntimeException(_callStack, $"Unable to compare {valueLeft} and {valueRight}: Left expression has no equal operator implementation");
+                        throw new RuntimeException(_callStack, $"Unable to compare {valueLeft} and {valueRight}: left expression has no equal operator implementation");
                     }
                     break;
             }

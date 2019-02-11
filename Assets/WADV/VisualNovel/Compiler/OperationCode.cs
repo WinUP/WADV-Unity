@@ -271,11 +271,11 @@ namespace WADV.VisualNovel.Compiler {
         /// </summary>
         DIV,
         /// <summary>
-        /// 取出栈顶元素并放入该元素的真值取反值
+        /// 取出栈顶元素并放入该元素取反值
         /// <para>格式：<code>33</code></para>
         /// <para>栈结构要求：栈不能为空</para>
         /// </summary>
-        NOT,
+        NEGATIVE,
         /// <summary>
         /// 取出栈顶两个元素并放入其真值比较结果
         /// <para>格式：<code>34</code></para>
