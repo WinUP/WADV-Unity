@@ -101,12 +101,12 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                     return new StringValue {Value = Value.Repeat(intTarget.ConvertToInteger(language))};
                 case IFloatConverter floatTarget:
                     return new StringValue {Value = Value.Repeat(Mathf.RoundToInt(floatTarget.ConvertToFloat(language)))};
-                case IStringConverter _:
-                    throw new NotSupportedException("Unable to multiply string constant with string constant");
+                case IStringConverter stringConverter:
+                    throw new NotSupportedException($"Unable to multiply string {Value} with {stringConverter.ConvertToString(language)}: string cannot multiply with string");
                 case IBooleanConverter boolTarget:
                     return new StringValue {Value = boolTarget.ConvertToBoolean(language) ? Value : ""};
                 default:
-                    throw new NotSupportedException($"Unable to multiply string constant with unsupported value {target}");
+                    throw new NotSupportedException($"Unable to multiply string {Value} with {target}: type unrecognized");
             }
         }
 
@@ -116,18 +116,18 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                     return new StringValue {Value = DivideString(Value, intTarget.ConvertToInteger(language))};
                 case IFloatConverter floatTarget:
                     return new StringValue {Value = DivideString(Value, Mathf.RoundToInt(floatTarget.ConvertToFloat(language)))};
-                case IStringConverter _:
-                    throw new NotSupportedException("Unable to divide string constant with string constant");
+                case IStringConverter stringConverter:
+                    throw new NotSupportedException($"Unable to divide string {Value} with {stringConverter.ConvertToString(language)}: string cannot divide with string");
                 case IBooleanConverter boolTarget:
                     return new StringValue {Value = boolTarget.ConvertToBoolean(language) ? Value : ""};
                 default:
-                    throw new NotSupportedException($"Unable to divide string constant with unsupported value {target}");
+                    throw new NotSupportedException($"Unable to multiply {Value} with {target}: type unrecognized");
             }
         }
 
         private static string DivideString(string source, int length) {
             if (length == source.Length) return source;
-            if (length > source.Length) throw new NotSupportedException($"Unable to divide string to target length {length}");
+            if (length > source.Length) throw new NotSupportedException($"Unable to divide string {source}: length {length} unreached");
             var endIndex = Mathf.RoundToInt(source.Length / (float) length);
             if (endIndex > source.Length) {
                 endIndex = source.Length;

@@ -3,7 +3,7 @@ using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
 
-namespace WADV.Plugins.Vector2 {
+namespace WADV.Plugins.Vector {
     [StaticRegistrationInfo("Vector2")]
     public class Vector2Plugin : IVisualNovelPlugin {
         public Task<SerializableValue> Execute(PluginExecuteContext context) {

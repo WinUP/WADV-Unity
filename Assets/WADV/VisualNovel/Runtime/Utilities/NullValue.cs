@@ -73,7 +73,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return target is NullValue ? new NullValue() : throw new NotSupportedException("Unable to subtract null with any other value except null");
+            return target is NullValue ? new NullValue() : throw new NotSupportedException($"Unable to subtract null with {target}: only null can subtract null");
         }
 
         public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
@@ -81,7 +81,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return target is NullValue ? new NullValue() : throw new NotSupportedException("Unable to divide null with any other value except null");
+            return target is NullValue ? new NullValue() : throw new NotSupportedException($"Unable to divide null with {target}: only null can divide null");
         }
     }
 }

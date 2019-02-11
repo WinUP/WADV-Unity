@@ -125,8 +125,9 @@
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
-    <Compile Include="Assets\WADV\Plugins\Vector2\Vector2Plugin.cs" />
-    <Compile Include="Assets\WADV\Plugins\Vector2\Vector2Value.cs" />
+    <Compile Include="Assets\WADV\Plugins\Vector\Vector2Plugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Vector\Vector2Value.cs" />
+    <Compile Include="Assets\WADV\Plugins\Vector\Vector3Value.cs" />
     <Compile Include="Assets\WADV\Providers\AssetBundleFileResourceProvider.cs" />
     <Compile Include="Assets\WADV\Providers\UnityPersistentResourceProvider.cs" />
     <Compile Include="Assets\WADV\Providers\UnityResourcesResourceProvider.cs" />

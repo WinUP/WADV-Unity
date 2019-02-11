@@ -20,7 +20,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         public SerializableValue Value { get => _value;
             set {
                 if (value == _value) return;
-                if (IsConstant) throw new NotSupportedException("Cannot assign value to constant variable");
+                if (IsConstant) throw new NotSupportedException($"Unable to change variable value {value}: cannot assign value to constant variable");
                 _value = value ?? new NullValue();
                 OnValueChanged?.Invoke(this, _value);
             }
