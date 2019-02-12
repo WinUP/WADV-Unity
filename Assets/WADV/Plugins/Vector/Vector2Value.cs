@@ -139,7 +139,8 @@ namespace WADV.Plugins.Vector {
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return target is Vector2Value vector2 && Value.Equals(vector2.Value);
+            return target is Vector2Value vector2 && Value.Equals(vector2.Value) ||
+                   target is Vector3Value vector3 && vector3.Value.z.Equals(0.0F) && Value.Equals(new Vector2(vector3.Value.x, vector3.Value.y));
         }
     }
 }

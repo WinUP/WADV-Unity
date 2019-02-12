@@ -90,6 +90,7 @@
     <Compile Include="Assets\WADV\MessageSystem\MessageService.cs" />
     <Compile Include="Assets\WADV\MessageSystem\MonoMessengerBehaviour.cs" />
     <Compile Include="Assets\WADV\ParallaxController.cs" />
+    <Compile Include="Assets\WADV\Plugins\Converter\IntegerPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\CharacterPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\CharacterValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\DialogueCreator.cs" />
@@ -127,6 +128,7 @@
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Vector2Plugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Vector2Value.cs" />
+    <Compile Include="Assets\WADV\Plugins\Vector\Vector3Plugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Vector3Value.cs" />
     <Compile Include="Assets\WADV\Providers\AssetBundleFileResourceProvider.cs" />
     <Compile Include="Assets\WADV\Providers\UnityPersistentResourceProvider.cs" />

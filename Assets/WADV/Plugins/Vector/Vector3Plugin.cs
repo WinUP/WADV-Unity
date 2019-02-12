@@ -6,10 +6,10 @@ using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
 
 namespace WADV.Plugins.Vector {
-    [StaticRegistrationInfo("Vector2")]
-    public class Vector2Plugin : IVisualNovelPlugin {
+    [StaticRegistrationInfo("Vector3")]
+    public class Vector3Plugin : IVisualNovelPlugin {
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
-            float x = 0.0F, y = 0.0F;
+            float x = 0.0F, y = 0.0F, z = 0.0F;
             foreach (var (key, value) in context.StringParameters) {
                 var name = key.ConvertToString(context.Language);
                 switch (name) {
@@ -19,9 +19,13 @@ namespace WADV.Plugins.Vector {
                     case "Y":
                         y = FloatValue.TryParse(value);
                         break;
+                    case "Z":
+                        z = FloatValue.TryParse(value);
+                        break;
+                        
                 }
             }
-            return Task.FromResult<SerializableValue>(new Vector2Value(x, y));
+            return Task.FromResult<SerializableValue>(new Vector3Value(x, y, z));
         }
 
         public void OnRegister() { }
