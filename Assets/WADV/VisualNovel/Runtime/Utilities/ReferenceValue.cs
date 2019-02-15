@@ -17,12 +17,11 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// <summary>
         /// 获取或设置变量值
         /// </summary>
-        public SerializableValue Value { get => _value;
+        public virtual SerializableValue ReferenceTarget { get => _referenceTarget;
             set {
-                if (value == _value) return;
+                if (value == _referenceTarget) return;
                 if (IsConstant) throw new NotSupportedException($"Unable to change variable value {value}: cannot assign value to constant variable");
-                _value = value ?? new NullValue();
-                OnValueChanged?.Invoke(this, _value);
+                _referenceTarget = value ?? new NullValue();
             }
         }
         
@@ -31,19 +30,20 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// </summary>
         public bool IsConstant { get; set; }
 
-        private SerializableValue _value;
+        private SerializableValue _referenceTarget;
+        
+        public ReferenceValue() { }
 
-        /// <summary>
-        /// 值变化后通知事件
-        /// </summary>
-        public event Action<ReferenceValue, SerializableValue> OnValueChanged; 
+        public ReferenceValue(SerializableValue referenceTarget) {
+            _referenceTarget = referenceTarget;
+        }
 
         public override SerializableValue Duplicate() {
-            return new ReferenceValue {IsConstant = IsConstant, Value = Value.Duplicate()};
+            return new ReferenceValue {IsConstant = IsConstant, ReferenceTarget = ReferenceTarget.Duplicate()};
         }
         
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return Value is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : Value.ToString();
+            return ReferenceTarget is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : ReferenceTarget.ToString();
         }
     }
 }

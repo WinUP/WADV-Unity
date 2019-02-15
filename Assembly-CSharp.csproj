@@ -111,6 +111,7 @@
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\EmptyDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\SimpleDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\EffectPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\EffectContext.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeIn.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeOut.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\IGraphicEffect.cs" />
@@ -126,6 +127,10 @@
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
+    <Compile Include="Assets\WADV\Plugins\Vector\Area2Plugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Vector\Area2Value.cs" />
+    <Compile Include="Assets\WADV\Plugins\Vector\Rect2Plugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Vector\Rect2Value.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Vector2Plugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Vector2Value.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Vector3Plugin.cs" />
@@ -229,6 +234,7 @@
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\ScopeValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\StringValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\TranslatableValue.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\WriteBackReferenceValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\VariableSearchMode.cs" />
     <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\CompileConfiguration.cs" />
     <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\RelativePath.cs" />

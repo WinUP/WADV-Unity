@@ -35,7 +35,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
-        public bool Value { get; set; }
+        public bool value;
 
         /// <summary>
         /// 尝试将可序列化值解析为布尔值
@@ -62,23 +62,23 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         public override SerializableValue Duplicate() {
-            return new BooleanValue {Value = Value};
+            return new BooleanValue {value = value};
         }
 
         public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
-            return Value;
+            return value;
         }
 
         public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
-            return Value ? 1.0F : 0.0F;
+            return value ? 1.0F : 0.0F;
         }
 
         public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
-            return Value ? 1 : 0;
+            return value ? 1 : 0;
         }
 
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return Value ? "True" : "False";
+            return value ? "True" : "False";
         }
 
         public override string ToString() {
@@ -86,20 +86,19 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
-            return new BooleanValue {Value = !Value};
+            return new BooleanValue {value = !value};
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            var value = TryParse(target, language);
-            return value == Value;
+            return TryParse(target, language) == value;
         }
 
         public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return new BooleanValue {Value = Value || TryParse(target, language)};
+            return new BooleanValue {value = value || TryParse(target, language)};
         }
 
         public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return new BooleanValue {Value = Value && TryParse(target, language)};
+            return new BooleanValue {value = value && TryParse(target, language)};
         }
     }
 }

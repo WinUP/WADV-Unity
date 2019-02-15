@@ -46,10 +46,10 @@ namespace WADV.VisualNovel.Runtime {
                 case OperationCode.LDC_I4_6:
                 case OperationCode.LDC_I4_7:
                 case OperationCode.LDC_I4_8:
-                    MemoryStack.Push(new IntegerValue {Value = (byte) code - (byte) OperationCode.LDC_I4_0});
+                    MemoryStack.Push(new IntegerValue {value = (byte) code - (byte) OperationCode.LDC_I4_0});
                     break;
                 case OperationCode.LDC_I4:
-                    MemoryStack.Push(new IntegerValue {Value = Script.ReadInteger()});
+                    MemoryStack.Push(new IntegerValue {value = Script.ReadInteger()});
                     break;
                 case OperationCode.LDC_R4_0:
                 case OperationCode.LDC_R4_025:
@@ -75,13 +75,13 @@ namespace WADV.VisualNovel.Runtime {
                 case OperationCode.LDC_R4_525:
                 case OperationCode.LDC_R4_55:
                 case OperationCode.LDC_R4_575:
-                    MemoryStack.Push(new FloatValue {Value = ((byte) code - (byte) OperationCode.LDC_R4_0) * 0.25F});
+                    MemoryStack.Push(new FloatValue {value = ((byte) code - (byte) OperationCode.LDC_R4_0) * 0.25F});
                     break;
                 case OperationCode.LDC_R4:
-                    MemoryStack.Push(new FloatValue {Value = Script.ReadFloat()});
+                    MemoryStack.Push(new FloatValue {value = Script.ReadFloat()});
                     break;
                 case OperationCode.LDSTR:
-                    MemoryStack.Push(new StringValue {Value = Script.ReadStringConstant()});
+                    MemoryStack.Push(new StringValue {value = Script.ReadStringConstant()});
                     break;
                 case OperationCode.LDENTRY:
                     LoadEntrance();
@@ -99,10 +99,10 @@ namespace WADV.VisualNovel.Runtime {
                     LoadVariable(VariableSearchMode.OnlyConstant);
                     break;
                 case OperationCode.LDT:
-                    MemoryStack.Push(new BooleanValue {Value = true});
+                    MemoryStack.Push(new BooleanValue {value = true});
                     break;
                 case OperationCode.LDF:
-                    MemoryStack.Push(new BooleanValue {Value = false});
+                    MemoryStack.Push(new BooleanValue {value = false});
                     break;
                 case OperationCode.CALL:
                     await CreatePluginCall();
@@ -199,7 +199,7 @@ namespace WADV.VisualNovel.Runtime {
         private void SetVariable(VariableSearchMode mode) {
             var name = PopString();
             var value = MemoryStack.Pop();
-            value = value is ReferenceValue referenceValue ? referenceValue.Value : value;
+            value = value is ReferenceValue referenceValue ? referenceValue.ReferenceTarget : value;
             if (string.IsNullOrEmpty(name)) throw new RuntimeException(_callStack, $"Unable to set variable: expected name {name} is not string value");
             var variable = ActiveScope?.FindVariableAndScope(name, true, mode);
             if (name.Equals("true", StringComparison.InvariantCultureIgnoreCase) || name.Equals("false", StringComparison.InvariantCultureIgnoreCase))
@@ -209,13 +209,13 @@ namespace WADV.VisualNovel.Runtime {
                     if (value == null || value is NullValue) {
                         variable.Value.Scope.LocalVariables.Remove(name);
                     } else {
-                        variable.Value.Target.Value = value;
+                        variable.Value.Target.ReferenceTarget = value;
                     }
                 } catch (Exception ex) {
                     throw new RuntimeException(_callStack, ex);
                 }
             } else if (value != null && !(value is NullValue)) {
-                ActiveScope?.LocalVariables.Add(name, new ReferenceValue {Value = value, IsConstant = mode == VariableSearchMode.OnlyConstant});
+                ActiveScope?.LocalVariables.Add(name, new ReferenceValue {ReferenceTarget = value, IsConstant = mode == VariableSearchMode.OnlyConstant});
             }
             MemoryStack.Push(value);
         }
@@ -224,8 +224,8 @@ namespace WADV.VisualNovel.Runtime {
             var target = MemoryStack.Pop();
             var value = MemoryStack.Pop();
             if (target is ReferenceValue referenceTarget) {
-                value = value is ReferenceValue referenceValue ? referenceValue.Value : value;
-                referenceTarget.Value = value;
+                value = value is ReferenceValue referenceValue ? referenceValue.ReferenceTarget : value;
+                referenceTarget.ReferenceTarget = value;
             } else {
                 throw new RuntimeException(_callStack, $"Unable to set memory: expected target {target} is not reference/variable value");
             }
@@ -234,14 +234,14 @@ namespace WADV.VisualNovel.Runtime {
         
         private void LoadEntrance() {
             MemoryStack.Push(new ScopeValue {
-                ScriptId = Script.Header.Id,
-                Entrance = Script.ReadLabelOffset(),
-                ParentScope = ActiveScope?.Duplicate() as ScopeValue
+                scriptId = Script.Header.Id,
+                entrance = Script.ReadLabelOffset(),
+                parentScope = ActiveScope?.Duplicate() as ScopeValue
             });
         }
 
         private void LoadTranslate() {
-            MemoryStack.Push(new TranslatableValue {TranslationId = Script.ReadUInt32(), ScriptId = Script.Header.Id});
+            MemoryStack.Push(new TranslatableValue {translationId = Script.ReadUInt32(), scriptId = Script.Header.Id});
         }
 
         private void LoadNull() {
@@ -251,21 +251,21 @@ namespace WADV.VisualNovel.Runtime {
         private void LoadVariable(VariableSearchMode mode) {
             string name;
             if (MemoryStack.Peek() is ReferenceValue referenceValue) {
-                name = PopString(referenceValue.Value);
+                name = PopString(referenceValue.ReferenceTarget);
                 MemoryStack.Pop();
             } else {
                 name = PopString();
             }
             if (name.Equals("true", StringComparison.InvariantCultureIgnoreCase)) {
-                MemoryStack.Push(new BooleanValue {Value = true});
+                MemoryStack.Push(new BooleanValue {value = true});
             } else if (name.Equals("false", StringComparison.InvariantCultureIgnoreCase)) {
-                MemoryStack.Push(new BooleanValue {Value = false});
+                MemoryStack.Push(new BooleanValue {value = false});
             } else {
                 var target = ActiveScope?.FindVariable(name, true, mode);
                 if (target == null) {
                     LoadNull();
                 } else {
-                    MemoryStack.Push(target.Value);
+                    MemoryStack.Push(target.ReferenceTarget);
                 }
             }
         }
@@ -281,9 +281,9 @@ namespace WADV.VisualNovel.Runtime {
         }
 
         private void CreateScope() {
-            var newScope = new ScopeValue {ScriptId = Script.Header.Id, Entrance = Script.CurrentPosition};
+            var newScope = new ScopeValue {scriptId = Script.Header.Id, entrance = Script.CurrentPosition};
             if (ActiveScope != null) {
-                ActiveScope.ParentScope = newScope;
+                ActiveScope.parentScope = newScope;
             }
             ActiveScope = newScope;
         }
@@ -291,7 +291,7 @@ namespace WADV.VisualNovel.Runtime {
         private async Task CreateFunctionCall() {
             var functionName = MemoryStack.Pop();
             while (functionName is ReferenceValue referenceFunction) {
-                functionName = referenceFunction.Value;
+                functionName = referenceFunction.ReferenceTarget;
             }
             ScopeValue functionBody;
             if (functionName is ScopeValue directBody) {
@@ -299,24 +299,24 @@ namespace WADV.VisualNovel.Runtime {
             } else {
                 if (!(functionName is IStringConverter stringConverter)) throw new RuntimeException(_callStack, $"Unable to call scene: name {functionName} is not string value");
                 var function = ActiveScope?.FindVariable(stringConverter.ConvertToString(ActiveLanguage), true, VariableSearchMode.All);
-                if (function == null || !(function.Value is ScopeValue scopeValue)) {
+                if (function == null || !(function.ReferenceTarget is ScopeValue scopeValue)) {
                     throw new RuntimeException(_callStack, $"Unable to call function: expected function {stringConverter.ConvertToString(ActiveLanguage)} not existed in current scope");
                 }
                 functionBody = scopeValue;
             }
             // 生成形参
-            var paramCount = ((IntegerValue) MemoryStack.Pop()).Value;
+            var paramCount = ((IntegerValue) MemoryStack.Pop()).value;
             for (var i = -1; ++i < paramCount;) {
                 var paramName = PopString();
                 if (string.IsNullOrEmpty(paramName)) throw new RuntimeException(_callStack, $"Unable to call {functionName}: expected parameter name {paramName} is not string value");
-                functionBody.LocalVariables.Add(paramName, new ReferenceValue {Value = MemoryStack.Pop()});
+                functionBody.LocalVariables.Add(paramName, new ReferenceValue {ReferenceTarget = MemoryStack.Pop()});
             }
             // 切换作用域
             _historyScope.Push(ActiveScope);
             ActiveScope = functionBody;
             // 重定向执行位置
-            Script = await ScriptFile.Load(ActiveScope.ScriptId);
-            Script.MoveTo(ActiveScope.Entrance);
+            Script = await ScriptFile.Load(ActiveScope.scriptId);
+            Script.MoveTo(ActiveScope.entrance);
             await Script.UseTranslation(ActiveLanguage);
             _callStack.Push(Script);
         }
@@ -325,7 +325,7 @@ namespace WADV.VisualNovel.Runtime {
             if (ActiveScope == null) throw new RuntimeException(_callStack, "Unable to leave scope: No scope activated");
             // 清空局部作用域
             ActiveScope?.LocalVariables.Clear();
-            ActiveScope = ActiveScope.ParentScope;
+            ActiveScope = ActiveScope.parentScope;
         }
 
         private async Task ReturnToPreviousScript() {
@@ -369,8 +369,8 @@ namespace WADV.VisualNovel.Runtime {
                 throw new RuntimeException(_callStack, "Unable to create dialogue: no dialogue plugin registered");
             }
             MemoryStack.Push(await plugin.Execute(PluginExecuteContext.Create(this, new Dictionary<SerializableValue, SerializableValue> {
-                {new StringValue {Value = "Character"}, MemoryStack.Pop()},
-                {new StringValue {Value = "Content"}, MemoryStack.Pop()}
+                {new StringValue {value = "Character"}, MemoryStack.Pop()},
+                {new StringValue {value = "Content"}, MemoryStack.Pop()}
             })) ?? new NullValue());
         }
 
@@ -390,7 +390,7 @@ namespace WADV.VisualNovel.Runtime {
         private void CreateToBoolean() {
             var rawValue = MemoryStack.Pop();
             try {
-                var result = new BooleanValue {Value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean(ActiveLanguage) : rawValue != null};
+                var result = new BooleanValue {value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean(ActiveLanguage) : rawValue != null};
                 MemoryStack.Push(result);
             } catch (Exception ex) {
                 throw new RuntimeException(_callStack, ex);
@@ -467,11 +467,11 @@ namespace WADV.VisualNovel.Runtime {
                         try {
                             var compareResult = leftCompare.CompareWith(valueRight, ActiveLanguage);
                             if (compareResult < 0) {
-                                MemoryStack.Push(new BooleanValue {Value = operatorType == OperatorType.LesserThan || operatorType == OperatorType.NotGreaterThan});
+                                MemoryStack.Push(new BooleanValue {value = operatorType == OperatorType.LesserThan || operatorType == OperatorType.NotGreaterThan});
                             } else if (compareResult == 0) {
-                                MemoryStack.Push(new BooleanValue {Value = operatorType == OperatorType.NotLessThan || operatorType == OperatorType.NotGreaterThan});
+                                MemoryStack.Push(new BooleanValue {value = operatorType == OperatorType.NotLessThan || operatorType == OperatorType.NotGreaterThan});
                             } else {
-                                MemoryStack.Push(new BooleanValue {Value = operatorType == OperatorType.GreaterThan || operatorType == OperatorType.NotLessThan});
+                                MemoryStack.Push(new BooleanValue {value = operatorType == OperatorType.GreaterThan || operatorType == OperatorType.NotLessThan});
                             }
                         } catch (Exception ex) {
                             throw new RuntimeException(_callStack, ex);
@@ -484,9 +484,9 @@ namespace WADV.VisualNovel.Runtime {
                 case OperatorType.LogicNotEqualsTo:
                     if (valueLeft is IEqualOperator leftEqual) {
                         try {
-                            var result = new BooleanValue {Value = leftEqual.EqualsWith(valueRight, ActiveLanguage)};
+                            var result = new BooleanValue {value = leftEqual.EqualsWith(valueRight, ActiveLanguage)};
                             if (operatorType == OperatorType.LogicNotEqualsTo) {
-                                result.Value = !result.Value;
+                                result.value = !result.value;
                             }
                             MemoryStack.Push(result);
                         } catch (Exception ex) {
@@ -522,7 +522,7 @@ namespace WADV.VisualNovel.Runtime {
             _loadingScript = null;
             var result = new ObjectValue();
             foreach (var (name, value) in runtime.Exported) {
-                result.Add(new StringValue {Value = name}, value);
+                result.Add(new StringValue {value = name}, value);
             }
             MemoryStack.Push(result);
         }

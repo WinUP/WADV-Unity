@@ -13,21 +13,24 @@ namespace WADV.VisualNovel.Runtime.Utilities.Object {
     /// <summary>
     /// 表示一个对象内存值
     /// <para>VNS对象是键值对存储序列，可以使用32位浮点数、32位整数或字符串作为键值存储任意可序列化值并对可转换键值按上述优先级转换后查找元素</para>
+    /// <list type="bullet">
+    ///     <listheader><description>类型转换支持</description></listheader>
+    ///     <item><description>字符串转换器</description></item>
+    /// </list>
     ///<list type="bullet">
     ///     <listheader><description>互操作支持</description></listheader>
-    ///     <item><description>字符串转换器</description></item>
     ///     <item><description>取子元素互操作器</description></item>
     /// </list>
     /// <list type="bullet">
-    ///     <listheader><description>子元素/特性支持</description></listheader>
+    ///     <listheader><description>子元素描述</description></listheader>
     ///     <item><description>使用任意可识别数字/字符串（按浮点->整数->字符串的顺序解析）作为键存储可序列化值</description></item>
     /// </list>
     /// </summary>
     [Serializable]
     public class ObjectValue : SerializableValue, IPickChildOperator, IStringConverter {
-        private Dictionary<string, ReferenceValue> _stringValues = new Dictionary<string, ReferenceValue>();
-        private Dictionary<float, ReferenceValue> _floatValues = new Dictionary<float, ReferenceValue>();
-        private Dictionary<int, ReferenceValue> _integerValues = new Dictionary<int, ReferenceValue>();
+        private Dictionary<string, WriteBackReferenceValue> _stringValues = new Dictionary<string, WriteBackReferenceValue>();
+        private Dictionary<float, WriteBackReferenceValue> _floatValues = new Dictionary<float, WriteBackReferenceValue>();
+        private Dictionary<int, WriteBackReferenceValue> _integerValues = new Dictionary<int, WriteBackReferenceValue>();
 
         public override SerializableValue Duplicate() {
             return new ObjectValue {
@@ -46,30 +49,30 @@ namespace WADV.VisualNovel.Runtime.Utilities.Object {
         /// <returns></returns>
         [NotNull]
         public ReferenceValue Add(SerializableValue name, SerializableValue value, string language = TranslationManager.DefaultLanguage) {
-            ReferenceValue result;
+            WriteBackReferenceValue result;
             switch (name) {
                 case FloatValue floatMemoryValue:
-                    if (_floatValues.ContainsKey(floatMemoryValue.Value)) {
-                        result = _floatValues[floatMemoryValue.Value];
+                    if (_floatValues.ContainsKey(floatMemoryValue.value)) {
+                        result = _floatValues[floatMemoryValue.value];
                     } else {
-                        result = new ReferenceValue {Value = value};
-                        _floatValues.Add(floatMemoryValue.Value, result);
+                        result = new WriteBackReferenceValue(OnReferenceValueChanged) {ReferenceTarget = value};
+                        _floatValues.Add(floatMemoryValue.value, result);
                     }
                     break;
                 case IntegerValue integerMemoryValue:
-                    if (_integerValues.ContainsKey(integerMemoryValue.Value)) {
-                        result = _integerValues[integerMemoryValue.Value];
+                    if (_integerValues.ContainsKey(integerMemoryValue.value)) {
+                        result = _integerValues[integerMemoryValue.value];
                     } else {
-                        result = new ReferenceValue {Value = value};
-                        _integerValues.Add(integerMemoryValue.Value, result);
+                        result = new WriteBackReferenceValue(OnReferenceValueChanged) {ReferenceTarget = value};
+                        _integerValues.Add(integerMemoryValue.value, result);
                     }
                     break;
                 case StringValue stringMemoryValue:
-                    if (_stringValues.ContainsKey(stringMemoryValue.Value)) {
-                        result = _stringValues[stringMemoryValue.Value];
+                    if (_stringValues.ContainsKey(stringMemoryValue.value)) {
+                        result = _stringValues[stringMemoryValue.value];
                     } else {
-                        result = new ReferenceValue {Value = value};
-                        _stringValues.Add(stringMemoryValue.Value, result);
+                        result = new WriteBackReferenceValue(OnReferenceValueChanged) {ReferenceTarget = value};
+                        _stringValues.Add(stringMemoryValue.value, result);
                     }
                     break;
                 case IFloatConverter floatConverter:
@@ -77,7 +80,7 @@ namespace WADV.VisualNovel.Runtime.Utilities.Object {
                     if (_floatValues.ContainsKey(floatValue)) {
                         result = _floatValues[floatValue];
                     } else {
-                        result = new ReferenceValue {Value = value};
+                        result = new WriteBackReferenceValue(OnReferenceValueChanged) {ReferenceTarget = value};
                         _floatValues.Add(floatValue, result);
                     }
                     break;
@@ -86,7 +89,7 @@ namespace WADV.VisualNovel.Runtime.Utilities.Object {
                     if (_integerValues.ContainsKey(integerValue)) {
                         result = _integerValues[integerValue];
                     } else {
-                        result = new ReferenceValue {Value = value};
+                        result = new WriteBackReferenceValue(OnReferenceValueChanged) {ReferenceTarget = value};
                         _integerValues.Add(integerValue, result);
                     }
                     break;
@@ -95,7 +98,7 @@ namespace WADV.VisualNovel.Runtime.Utilities.Object {
                     if (_stringValues.ContainsKey(stringValue)) {
                         result = _stringValues[stringValue];
                     } else {
-                        result = new ReferenceValue {Value = value};
+                        result = new WriteBackReferenceValue(OnReferenceValueChanged) {ReferenceTarget = value};
                         _stringValues.Add(stringValue, result);
                     }
                     break;
@@ -104,12 +107,11 @@ namespace WADV.VisualNovel.Runtime.Utilities.Object {
                     if (_stringValues.ContainsKey(defaultStringValue)) {
                         result = _stringValues[defaultStringValue];
                     } else {
-                        result = new ReferenceValue {Value = value};
+                        result = new WriteBackReferenceValue(OnReferenceValueChanged) {ReferenceTarget = value};
                         _stringValues.Add(defaultStringValue, result);
                     }
                     break;
             }
-            result.OnValueChanged += OnReferenceValueChanged;
             return result;
         }
 
@@ -117,13 +119,13 @@ namespace WADV.VisualNovel.Runtime.Utilities.Object {
             SerializableValue result;
             switch (target) {
                 case FloatValue floatMemoryValue:
-                    result = _floatValues.ContainsKey(floatMemoryValue.Value) ? _floatValues[floatMemoryValue.Value] : null;
+                    result = _floatValues.ContainsKey(floatMemoryValue.value) ? _floatValues[floatMemoryValue.value] : null;
                     break;
                 case IntegerValue integerMemoryValue:
-                    result = _integerValues.ContainsKey(integerMemoryValue.Value) ? _integerValues[integerMemoryValue.Value] : null;
+                    result = _integerValues.ContainsKey(integerMemoryValue.value) ? _integerValues[integerMemoryValue.value] : null;
                     break;
                 case StringValue stringMemoryValue:
-                    result = _stringValues.ContainsKey(stringMemoryValue.Value) ? _stringValues[stringMemoryValue.Value] : null;
+                    result = _stringValues.ContainsKey(stringMemoryValue.value) ? _stringValues[stringMemoryValue.value] : null;
                     break;
                 case IFloatConverter floatConverter:
                     var floatValue = floatConverter.ConvertToFloat(language);
@@ -149,19 +151,18 @@ namespace WADV.VisualNovel.Runtime.Utilities.Object {
             var list = _floatValues.Values.ToList();
             list.AddRange(_integerValues.Values.ToList());
             list.AddRange(_stringValues.Values.ToList());
-            return $"{string.Join(", ", list.Select(e => e.Value).Select(e => e is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : e.ToString()))}";
+            return $"{string.Join(", ", list.Select(e => e.ReferenceTarget).Select(e => e is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : e.ToString()))}";
         }
 
-        private void OnReferenceValueChanged(ReferenceValue target, SerializableValue value) {
-            if (value != null && !(value is NullValue)) return;
-            target.OnValueChanged -= OnReferenceValueChanged;
-            foreach (var (key, _) in _floatValues.Where(e => e.Value == value).ToList()) {
+        private void OnReferenceValueChanged(WriteBackReferenceValue target) {
+            if (target.ReferenceTarget != null && !(target.ReferenceTarget is NullValue)) return;
+            foreach (var (key, _) in _floatValues.Where(e => e.Value == target).ToList()) {
                 _floatValues.Remove(key);
             }
-            foreach (var (key, _) in _integerValues.Where(e => e.Value == value).ToList()) {
+            foreach (var (key, _) in _integerValues.Where(e => e.Value == target).ToList()) {
                 _integerValues.Remove(key);
             }
-            foreach (var (key, _) in _stringValues.Where(e => e.Value == value).ToList()) {
+            foreach (var (key, _) in _stringValues.Where(e => e.Value == target).ToList()) {
                 _stringValues.Remove(key);
             }
         }

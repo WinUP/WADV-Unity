@@ -41,31 +41,31 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
-        public string Value { get; set; }
+        public string value;
 
         public override SerializableValue Duplicate() {
-            return new StringValue {Value = Value};
+            return new StringValue {value = value};
         }
 
         public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
-            var upperValue = Value.ToUpper();
+            var upperValue = value.ToUpper();
             if (upperValue == "F" || upperValue == "FALSE") return false;
             if (int.TryParse(upperValue, out var intValue) && intValue == 0) return false;
             return !(float.TryParse(upperValue, out var floatValue) && floatValue.Equals(0.0F));
         }
 
         public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
-            if (float.TryParse(Value, out var floatValue)) return floatValue;
-            return Value == "" ? 0.0F : 1.0F;
+            if (float.TryParse(value, out var floatValue)) return floatValue;
+            return value == "" ? 0.0F : 1.0F;
         }
 
         public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
-            if (int.TryParse(Value, out var intValue)) return intValue;
-            return Value == "" ? 0 : 1;
+            if (int.TryParse(value, out var intValue)) return intValue;
+            return value == "" ? 0 : 1;
         }
         
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return Value;
+            return value;
         }
 
         public override string ToString() {
@@ -73,13 +73,13 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
-            return new BooleanValue {Value = !ConvertToBoolean(language)};
+            return new BooleanValue {value = !ConvertToBoolean(language)};
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             switch (target) {
                 case IStringConverter stringConverter:
-                    return stringConverter.ConvertToString(language) == Value;
+                    return stringConverter.ConvertToString(language) == value;
                 default:
                     return false;
             }
@@ -87,41 +87,41 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             var targetString = target is IStringConverter stringTarget ? stringTarget.ConvertToString(language) : target.ToString();
-            return new StringValue {Value = $"{Value}{targetString}"};
+            return new StringValue {value = $"{value}{targetString}"};
         }
 
         public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             var targetString = target is IStringConverter stringTarget ? stringTarget.ConvertToString(language) : target.ToString();
-            return new StringValue {Value = Value.Replace(targetString, "")};
+            return new StringValue {value = value.Replace(targetString, "")};
         }
 
         public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             switch (target) {
                 case IIntegerConverter intTarget:
-                    return new StringValue {Value = Value.Repeat(intTarget.ConvertToInteger(language))};
+                    return new StringValue {value = value.Repeat(intTarget.ConvertToInteger(language))};
                 case IFloatConverter floatTarget:
-                    return new StringValue {Value = Value.Repeat(Mathf.RoundToInt(floatTarget.ConvertToFloat(language)))};
+                    return new StringValue {value = value.Repeat(Mathf.RoundToInt(floatTarget.ConvertToFloat(language)))};
                 case IStringConverter stringConverter:
-                    throw new NotSupportedException($"Unable to multiply string {Value} with {stringConverter.ConvertToString(language)}: string cannot multiply with string");
+                    throw new NotSupportedException($"Unable to multiply string {value} with {stringConverter.ConvertToString(language)}: string cannot multiply with string");
                 case IBooleanConverter boolTarget:
-                    return new StringValue {Value = boolTarget.ConvertToBoolean(language) ? Value : ""};
+                    return new StringValue {value = boolTarget.ConvertToBoolean(language) ? value : ""};
                 default:
-                    throw new NotSupportedException($"Unable to multiply string {Value} with {target}: type unrecognized");
+                    throw new NotSupportedException($"Unable to multiply string {value} with {target}: type unrecognized");
             }
         }
 
         public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             switch (target) {
                 case IIntegerConverter intTarget:
-                    return new StringValue {Value = DivideString(Value, intTarget.ConvertToInteger(language))};
+                    return new StringValue {value = DivideString(value, intTarget.ConvertToInteger(language))};
                 case IFloatConverter floatTarget:
-                    return new StringValue {Value = DivideString(Value, Mathf.RoundToInt(floatTarget.ConvertToFloat(language)))};
+                    return new StringValue {value = DivideString(value, Mathf.RoundToInt(floatTarget.ConvertToFloat(language)))};
                 case IStringConverter stringConverter:
-                    throw new NotSupportedException($"Unable to divide string {Value} with {stringConverter.ConvertToString(language)}: string cannot divide with string");
+                    throw new NotSupportedException($"Unable to divide string {value} with {stringConverter.ConvertToString(language)}: string cannot divide with string");
                 case IBooleanConverter boolTarget:
-                    return new StringValue {Value = boolTarget.ConvertToBoolean(language) ? Value : ""};
+                    return new StringValue {value = boolTarget.ConvertToBoolean(language) ? value : ""};
                 default:
-                    throw new NotSupportedException($"Unable to multiply {Value} with {target}: type unrecognized");
+                    throw new NotSupportedException($"Unable to multiply {value} with {target}: type unrecognized");
             }
         }
 

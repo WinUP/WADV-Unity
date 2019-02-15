@@ -61,7 +61,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
-            return new BooleanValue {Value = true};
+            return new BooleanValue {value = true};
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {

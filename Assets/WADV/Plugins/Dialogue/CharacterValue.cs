@@ -17,28 +17,28 @@ namespace WADV.Plugins.Dialogue {
         /// <summary>
         /// 获取或设置角色名称
         /// </summary>
-        public IStringConverter Name { get; set; }
-            
+        public IStringConverter name;
+
         /// <summary>
         /// 获取或设置角色头像资源路径
         /// </summary>
-        public IStringConverter Avatar { get; set; }
+        public IStringConverter avatar;
             
         /// <inheritdoc />
         public override SerializableValue Duplicate() {
-            return new CharacterValue {Name = Name, Avatar = Avatar};
+            return new CharacterValue {name = name, avatar = avatar};
         }
 
         /// <inheritdoc />
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return Name.ConvertToString(language);
+            return name.ConvertToString(language);
         }
 
         /// <inheritdoc />
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return target is CharacterValue characterValue
-                   && characterValue.Name.ConvertToString(language) == Name.ConvertToString(language)
-                   && characterValue.Avatar.ConvertToString(language) == Avatar.ConvertToString(language);
+                   && characterValue.name.ConvertToString(language) == name.ConvertToString(language)
+                   && characterValue.avatar.ConvertToString(language) == avatar.ConvertToString(language);
         }
     }
 }

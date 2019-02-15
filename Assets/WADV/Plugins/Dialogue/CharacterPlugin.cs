@@ -27,14 +27,14 @@ namespace WADV.Plugins.Dialogue {
                         if (stringValue == null) {
                             Debug.LogWarning($"Skip parameter Name when creating Character: {value} is not string value");
                         } else {
-                            character.Name = stringValue;
+                            character.name = stringValue;
                         }
                         break;
                     case "Avatar":
                         if (stringValue == null) {
                             Debug.LogWarning($"Skip parameter Avatar when creating Character: {value} is not string value");
                         } else {
-                            character.Avatar = stringValue;
+                            character.avatar = stringValue;
                         }
                         break;
                     default:

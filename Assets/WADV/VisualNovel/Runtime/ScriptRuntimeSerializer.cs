@@ -18,7 +18,7 @@ namespace WADV.VisualNovel.Runtime {
             _loadingScript = (ScriptRuntime) info.GetValue("loading", typeof(ScriptRuntime));
             ActiveScope = (ScopeValue) info.GetValue("scope", typeof(ScopeValue));
             if (ActiveScope != null) {
-                Script = ScriptFile.LoadSync(ActiveScope.ScriptId);
+                Script = ScriptFile.LoadSync(ActiveScope.scriptId);
                 Script.MoveTo(info.GetInt64("offset"));
                 Script.UseTranslation(ActiveLanguage).Wait();
             }

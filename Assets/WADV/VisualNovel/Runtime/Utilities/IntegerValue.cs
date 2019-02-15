@@ -42,7 +42,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
-        public int Value { get; set; }
+        public int value;
 
         /// <summary>
         /// 尝试将可序列化值解析为32位整数值
@@ -69,22 +69,22 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         public override SerializableValue Duplicate() {
-            return new IntegerValue {Value = Value};
+            return new IntegerValue {value = value};
         }
 
         public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
-            return Value != 0;
+            return value != 0;
         }
 
         public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
-            return Value;
+            return value;
         }
 
         public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
-            return Value;
+            return value;
         }
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return Value.ToString();
+            return value.ToString();
         }
 
         public override string ToString() {
@@ -92,36 +92,36 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
-            return new IntegerValue {Value = -Value};
+            return new IntegerValue {value = -value};
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             try {
-                return Value == TryParse(target, language);
+                return value == TryParse(target, language);
             } catch {
                 return false;
             }
         }
 
         public int CompareWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            var value = Value - FloatValue.TryParse(target, language);
-            return value.Equals(0.0F) ? 0 : value < 0 ? -1 : 1;
+            var targetValue = value - FloatValue.TryParse(target, language);
+            return targetValue.Equals(0.0F) ? 0 : targetValue < 0 ? -1 : 1;
         }
 
         public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return new IntegerValue {Value = Value + TryParse(target, language)};
+            return new IntegerValue {value = value + TryParse(target, language)};
         }
 
         public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return new IntegerValue {Value = Value - TryParse(target, language)};
+            return new IntegerValue {value = value - TryParse(target, language)};
         }
 
         public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return new IntegerValue {Value = Value * TryParse(target, language)};
+            return new IntegerValue {value = value * TryParse(target, language)};
         }
 
         public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return new IntegerValue {Value = Value / TryParse(target, language)};
+            return new IntegerValue {value = value / TryParse(target, language)};
         }
     }
 }

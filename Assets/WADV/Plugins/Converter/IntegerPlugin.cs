@@ -13,10 +13,10 @@ namespace WADV.Plugins.Converter {
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
             foreach (var (key, value) in context.Parameters) {
                 return key is IStringConverter stringKey && stringKey.ConvertToString(context.Language) == "Value"
-                    ? Task.FromResult<SerializableValue>(new IntegerValue {Value = value is IIntegerConverter integerValue ? integerValue.ConvertToInteger(context.Language) : 0})
-                    : Task.FromResult<SerializableValue>(new IntegerValue {Value = key is IIntegerConverter integerKey ? integerKey.ConvertToInteger(context.Language) : 0});
+                    ? Task.FromResult<SerializableValue>(new IntegerValue {value = value is IIntegerConverter integerValue ? integerValue.ConvertToInteger(context.Language) : 0})
+                    : Task.FromResult<SerializableValue>(new IntegerValue {value = key is IIntegerConverter integerKey ? integerKey.ConvertToInteger(context.Language) : 0});
             }
-            return Task.FromResult<SerializableValue>(new IntegerValue {Value = 0});
+            return Task.FromResult<SerializableValue>(new IntegerValue {value = 0});
         }
 
         public void OnRegister() { } 

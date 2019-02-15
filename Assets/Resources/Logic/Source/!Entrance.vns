@@ -103,13 +103,38 @@
 [Image
     Name=Background
     Priority=0
-    X=0
-    Y=0
-    AnchorX=0
-    AnchorY=0
+    
+    AnchorMinX=0
+    AnchorMonY=0
+    AnchorMin=[Vector2 X=0 Y=0]
+    
+    AnchorMaxX=0
+    AnchorMaxY=0
+    AnchorMax=[Vector2 X=0 Y=0]
+    
+    PositionX=0
+    PositionY=0
+    Position=[Vector2 X=0 Y=0]
+    
+    PivotX=0
+    PivotY=0
+    Pivot=[Vector2 X=0 Y=0]
+    
+    ScaleX=1
+    ScaleY=1
+    Scale=[Vector2 X=1 Y=1]
+    
+    RotateX=0
+    RotateY=0
+    Rotate=[Vector3 X=0 Y=0]
+    
     Color=0xFFFFFF
     FlipX
     FlipY
     UV=[Rect X=0 Y=0 Size=[Vector2 X=100 Y=100]]
     Effect=@Utilities->RoundFadeToLeft1.0Linear
-    Source='Resources://Classroom 2']
+    Source='Resources://Classroom 2'
+    
+    DefaultPivot=[Vector2 X=0.5 Y=0.5]
+    DefaultAnchorMin=[Vector2 X=0 Y=0]
+    DefaultAnchorMax=[Vector 2 X=0 Y=0]]

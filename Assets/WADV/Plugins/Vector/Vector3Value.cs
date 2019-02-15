@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Runtime.Serialization;
 using UnityEngine;
 using WADV.VisualNovel.Interoperation;
@@ -14,10 +15,11 @@ namespace WADV.Plugins.Vector {
     /// <inheritdoc cref="IMultiplyOperator" />
     /// <inheritdoc cref="IDivideOperator" />
     /// <inheritdoc cref="INegativeOperator" />
+    /// <inheritdoc cref="IPickChildOperator" />
     /// <inheritdoc cref="ICompareOperator" />
     /// <inheritdoc cref="IEqualOperator" />
     /// <summary>
-    /// <para>表示一个32位整数内存值</para>
+    /// <para>表示一个三维向量</para>
     /// <list type="bullet">
     ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
@@ -33,65 +35,86 @@ namespace WADV.Plugins.Vector {
     ///     <item><description>大小比较互操作器</description></item>
     ///     <item><description>相等比较互操作器</description></item>
     /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>特性支持</description></listheader>
+    ///     <item><description>X：获取X分量</description></item>
+    ///     <item><description>Y：获取Y分量</description></item>
+    ///     <item><description>Z：获取Z分量</description></item>
+    /// </list>
     /// </summary>
     [Serializable]
     public class Vector3Value : SerializableValue, ISerializable, IBooleanConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                                INegativeOperator, ICompareOperator, IEqualOperator {
-        public Vector3 Value { get; set; }
+                                INegativeOperator, IPickChildOperator, ICompareOperator, IEqualOperator {
+        public Vector3 value;
         
         public Vector3Value() { }
         
         public Vector3Value(float x, float y, float z) {
-            Value = new Vector3(x, y, z);
+            value = new Vector3(x, y, z);
         }
         
         protected Vector3Value(SerializationInfo info, StreamingContext context) {
-            Value = new Vector3(info.GetSingle("x"), info.GetSingle("y"), info.GetSingle("z"));
+            value = new Vector3(info.GetSingle("x"), info.GetSingle("y"), info.GetSingle("z"));
         }
         
         public override SerializableValue Duplicate() {
-            return new Vector2Value {Value = new Vector3(Value.x, Value.y, Value.z)};
+            return new Vector2Value {value = new Vector3(value.x, value.y, value.z)};
         }
 
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
-            info.AddValue("x", Value.x);
-            info.AddValue("y", Value.y);
-            info.AddValue("z", Value.z);
+            info.AddValue("x", value.x);
+            info.AddValue("y", value.y);
+            info.AddValue("z", value.z);
         }
         
         public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
-            return !Value.x.Equals(0.0F) && !Value.y.Equals(0.0F) && !Value.z.Equals(0.0F);
+            return !value.x.Equals(0.0F) && !value.y.Equals(0.0F) && !value.z.Equals(0.0F);
         }
 
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return $"Vector3 {{X={Value.x}, Y={Value.y}, Z={Value.z}}}";
+            return $"Vector3 {{X={value.x.ToString(CultureInfo.InvariantCulture)}, Y={value.y.ToString(CultureInfo.InvariantCulture)}, Z={value.z.ToString(CultureInfo.InvariantCulture)}}}";
         }
 
         public override string ToString() {
             return ConvertToString();
         }
 
+        public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            if (!(target is IStringConverter stringConverter)) throw new NotSupportedException($"Unable to pick child {target} from Vector3: only string is supported");
+            var name = stringConverter.ConvertToString(language);
+            switch (name) {
+                case "X":
+                    return new WriteBackReferenceValue(new FloatValue {value = value.x}, WriteXBack);
+                case "Y":
+                    return new WriteBackReferenceValue(new FloatValue {value = value.y}, WriteYBack);
+                case "Z":
+                    return new WriteBackReferenceValue(new FloatValue {value = value.z}, WriteZBack);
+                default:
+                    throw new NotSupportedException($"Unable to pick child {name} from Vector2: unrecognized command {name}");
+            }
+        }
+
         public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             switch (target) {
                 case Vector3Value vector3Value:
-                    return new Vector3Value(Value.x + vector3Value.Value.x, Value.y + vector3Value.Value.y, Value.z + vector3Value.Value.z);
+                    return new Vector3Value(value.x + vector3Value.value.x, value.y + vector3Value.value.y, value.z + vector3Value.value.z);
                 case Vector2Value vector2Value:
-                    return new Vector3Value(Value.x + vector2Value.Value.x, Value.y + vector2Value.Value.y, Value.z);
+                    return new Vector3Value(value.x + vector2Value.value.x, value.y + vector2Value.value.y, value.z);
                 default:
-                    var number = FloatValue.TryParse(target);
-                    return new Vector3Value(Value.x + number, Value.y + number, Value.z + number);
+                    var number = FloatValue.TryParse(target, language);
+                    return new Vector3Value(value.x + number, value.y + number, value.z + number);
             }
         }
 
         public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             switch (target) {
                 case Vector3Value vector3Value:
-                    return new Vector3Value(Value.x - vector3Value.Value.x, Value.y - vector3Value.Value.y, Value.z - vector3Value.Value.z);
+                    return new Vector3Value(value.x - vector3Value.value.x, value.y - vector3Value.value.y, value.z - vector3Value.value.z);
                 case Vector2Value vector2Value:
-                    return new Vector3Value(Value.x - vector2Value.Value.x, Value.y - vector2Value.Value.y, Value.z);
+                    return new Vector3Value(value.x - vector2Value.value.x, value.y - vector2Value.value.y, value.z);
                 default:
-                    var number = FloatValue.TryParse(target);
-                    return new Vector3Value(Value.x - number, Value.y - number, Value.z - number);
+                    var number = FloatValue.TryParse(target, language);
+                    return new Vector3Value(value.x - number, value.y - number, value.z - number);
             }
         }
 
@@ -99,48 +122,66 @@ namespace WADV.Plugins.Vector {
             switch (target) {
                 case Vector3Value vector3Value:
                     return new Vector3Value(
-                        Value.y * vector3Value.Value.z - Value.z * vector3Value.Value.y,
-                        Value.z * vector3Value.Value.x - Value.x * vector3Value.Value.z,
-                        Value.x * vector3Value.Value.y - Value.y * vector3Value.Value.x);
+                        value.y * vector3Value.value.z - value.z * vector3Value.value.y,
+                        value.z * vector3Value.value.x - value.x * vector3Value.value.z,
+                        value.x * vector3Value.value.y - value.y * vector3Value.value.x);
                 case Vector2Value vector2Value:
                     return new Vector3Value(
-                        -Value.z * vector2Value.Value.y,
-                        Value.z * vector2Value.Value.x,
-                        Value.x * vector2Value.Value.y - Value.y * vector2Value.Value.x);
+                        -value.z * vector2Value.value.y,
+                        value.z * vector2Value.value.x,
+                        value.x * vector2Value.value.y - value.y * vector2Value.value.x);
                 default:
-                    var number = FloatValue.TryParse(target);
-                    return new Vector3Value(Value.x * number, Value.y * number, Value.z * number);
+                    var number = FloatValue.TryParse(target, language);
+                    return new Vector3Value(value.x * number, value.y * number, value.z * number);
             }
         }
 
         public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            var number = FloatValue.TryParse(target);
-            return new Vector3Value(Value.x / number, Value.y / number, Value.z / number);
+            var number = FloatValue.TryParse(target, language);
+            return new Vector3Value(value.x / number, value.y / number, value.z / number);
         }
 
         public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
-            return new Vector3Value(-Value.x, -Value.y, -Value.z);
+            return new Vector3Value(-value.x, -value.y, -value.z);
         }
 
         public int CompareWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             float result;
             switch (target) {
                 case Vector3Value vector3Value:
-                    result = Value.sqrMagnitude - vector3Value.Value.sqrMagnitude;
+                    result = value.sqrMagnitude - vector3Value.value.sqrMagnitude;
                     break;
                 case Vector2Value vector2Value:
-                    result = Value.sqrMagnitude - vector2Value.Value.sqrMagnitude;
+                    result = value.sqrMagnitude - vector2Value.value.sqrMagnitude;
                     break;
                 default:
-                    result = Value.magnitude - FloatValue.TryParse(target);
+                    result = value.magnitude - FloatValue.TryParse(target, language);
                     break;
             }
             return result > 0 ? 1 : result < 0 ? -1 : 0;
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return target is Vector3Value vector3 && Value.Equals(vector3.Value) ||
-                   target is Vector2Value vector2 && Value.z.Equals(0.0F) && new Vector2(Value.x, Value.y).Equals(vector2.Value);
+            return target is Vector3Value vector3 && value.Equals(vector3.value) ||
+                   target is Vector2Value vector2 && value.z.Equals(0.0F) && new Vector2(value.x, value.y).Equals(vector2.value);
+        }
+        
+        private void WriteXBack(WriteBackReferenceValue target) {
+            if (target.ReferenceTarget is IFloatConverter floatConverter) {
+                value.x = floatConverter.ConvertToFloat();
+            }
+        }
+        
+        private void WriteYBack(WriteBackReferenceValue target) {
+            if (target.ReferenceTarget is IFloatConverter floatConverter) {
+                value.y = floatConverter.ConvertToFloat();
+            }
+        }
+        
+        private void WriteZBack(WriteBackReferenceValue target) {
+            if (target.ReferenceTarget is IFloatConverter floatConverter) {
+                value.z = floatConverter.ConvertToFloat();
+            }
         }
     }
 }

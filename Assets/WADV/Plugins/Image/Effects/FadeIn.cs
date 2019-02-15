@@ -10,7 +10,7 @@ namespace WADV.Plugins.Image.Effects {
         
         public FadeIn() : base("UI/Unlit/Fade") { }
 
-        protected override Material CreateMaterial(Dictionary<string, SerializableValue> parameters) {
+        protected override Material CreateMaterial(Dictionary<string, SerializableValue> parameters, Texture2D targetTexrure) {
             var material = new Material(EffectShader);
             material.SetFloat(Alpha, 0.0F);
             return material;

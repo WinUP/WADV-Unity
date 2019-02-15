@@ -20,9 +20,9 @@ namespace Game {
         public async void UseInput() {
             await MessageService.ProcessAsync(Message<float>.Create(DialoguePlugin.MessageIntegration.Mask,
                                                              DialoguePlugin.MessageIntegration.HideDialogueBox, 0.3F));
-            var title = new StringValue {Value = "输入姓和名（空格隔开）"};
-            var defaultText = new StringValue {Value = "诹访部 翔平"};
-            var confirmText = new StringValue {Value = "继续"};
+            var title = new StringValue {value = "输入姓和名（空格隔开）"};
+            var defaultText = new StringValue {value = "诹访部 翔平"};
+            var confirmText = new StringValue {value = "继续"};
             var context = PluginExecuteContext.Create(new ScriptRuntime("Utilities"));
             var message = await MessageService.ProcessAsync(ContextMessage<InputPlugin.MessageIntegration.Content>.Create(
                                                                 InputPlugin.MessageIntegration.Mask,

@@ -21,8 +21,8 @@ namespace WADV.Plugins.Image.Effects {
         /// <param name="shaderName">Shader名称</param>
         protected SingleShaderGraphicEffect(string shaderName) : base(shaderName) { }
         
-        public async Task PlayEffect(IEnumerable<Graphic> targets, float totalTime, Func<float, float> easing) {
-            var material = CreateMaterial(Parameters);
+        public async Task PlayEffect(IEnumerable<Graphic> targets, float totalTime, Func<float, float> easing, Texture2D targetTexture) {
+            var material = CreateMaterial(Parameters, targetTexture);
             foreach (var target in targets) {
                 target.material = material;
             }

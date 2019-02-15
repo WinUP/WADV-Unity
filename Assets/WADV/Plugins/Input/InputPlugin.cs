@@ -44,7 +44,7 @@ namespace WADV.Plugins.Input {
                 }
             }
             var message = await MessageService.ProcessAsync(ContextMessage<MessageIntegration.Content>.Create(MessageIntegration.Mask, MessageIntegration.CreateInput, description, context));
-            return message is Message<string> stringMessage ? new StringValue {Value = stringMessage.Content} : null;
+            return message is Message<string> stringMessage ? new StringValue {value = stringMessage.Content} : null;
         }
 
         /// <inheritdoc />

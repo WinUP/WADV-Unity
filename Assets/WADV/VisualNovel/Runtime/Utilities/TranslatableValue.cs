@@ -35,23 +35,23 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// </summary>
     [Serializable]
     public class TranslatableValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                                     IEqualOperator, INegativeOperator  {
+                                     IEqualOperator, INegativeOperator {
         /// <summary>
         /// 获取或设置翻译所在的脚本ID
         /// </summary>
-        public string ScriptId { get; set; }
-        
+        public string scriptId;
+
         /// <summary>
         /// 获取说设置翻译ID
         /// </summary>
-        public uint TranslationId { get; set; }
+        public uint translationId;
 
         public override SerializableValue Duplicate() {
-            return new TranslatableValue {ScriptId = ScriptId, TranslationId = TranslationId};
+            return new TranslatableValue {scriptId = scriptId, translationId = translationId};
         }
         
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return ScriptHeader.LoadSync(ScriptId).Header.GetTranslation(language, TranslationId);
+            return ScriptHeader.LoadSync(scriptId).Header.GetTranslation(language, translationId);
         }
 
         public override string ToString() {
@@ -61,7 +61,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             switch (target) {
                 case TranslatableValue translatableValue:
-                    return translatableValue.ScriptId == ScriptId && translatableValue.TranslationId == TranslationId;
+                    return translatableValue.scriptId == scriptId && translatableValue.translationId == translationId;
                 case IStringConverter stringConverter:
                     return stringConverter.ConvertToString(language) == ConvertToString(language);
                 default:
@@ -70,35 +70,35 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
-            return new StringValue {Value = ConvertToString(language)}.ConvertToFloat(language);
+            return new StringValue {value = ConvertToString(language)}.ConvertToFloat(language);
         }
 
         public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
-            return new StringValue {Value = ConvertToString(language)}.ConvertToInteger(language);
+            return new StringValue {value = ConvertToString(language)}.ConvertToInteger(language);
         }
 
         public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
-            return new StringValue {Value = ConvertToString(language)}.ConvertToBoolean(language);
+            return new StringValue {value = ConvertToString(language)}.ConvertToBoolean(language);
         }
 
         public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
-            return new StringValue {Value = ConvertToString(language)}.ToNegative(language);
+            return new StringValue {value = ConvertToString(language)}.ToNegative(language);
         }
 
         public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return new StringValue {Value = ConvertToString(language)}.AddWith(target, language);
+            return new StringValue {value = ConvertToString(language)}.AddWith(target, language);
         }
 
         public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return new StringValue {Value = ConvertToString(language)}.SubtractWith(target, language);
+            return new StringValue {value = ConvertToString(language)}.SubtractWith(target, language);
         }
 
         public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return new StringValue {Value = ConvertToString(language)}.MultiplyWith(target, language);
+            return new StringValue {value = ConvertToString(language)}.MultiplyWith(target, language);
         }
 
         public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return new StringValue {Value = ConvertToString(language)}.DivideWith(target, language);
+            return new StringValue {value = ConvertToString(language)}.DivideWith(target, language);
         }
     }
 }

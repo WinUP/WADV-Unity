@@ -105,7 +105,7 @@ namespace WADV.Plugins.Dialogue {
                             if (constant == null) {
                                 ApplyDefault(command);
                             } else {
-                                content.Append(constant.Value is IStringConverter stringConverter ? stringConverter.ConvertToString(runtime.ActiveLanguage) : constant.Value.ToString());
+                                content.Append(constant.ReferenceTarget is IStringConverter stringConverter ? stringConverter.ConvertToString(runtime.ActiveLanguage) : constant.ReferenceTarget.ToString());
                             }
                         } else if (command.StartsWith("@")) { // 变量
                             var variableName = command.Substring(1);
@@ -114,7 +114,7 @@ namespace WADV.Plugins.Dialogue {
                             if (variable == null) {
                                 ApplyDefault(command);
                             } else {
-                                content.Append(variable.Value is IStringConverter stringConverter ? stringConverter.ConvertToString(runtime.ActiveLanguage) : variable.Value.ToString());
+                                content.Append(variable.ReferenceTarget is IStringConverter stringConverter ? stringConverter.ConvertToString(runtime.ActiveLanguage) : variable.ReferenceTarget.ToString());
                             }
                         } else {
                             var commandContent = command.ToLower().Trim();

@@ -21,18 +21,18 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// <summary>
         /// 获取或设置偏移量
         /// </summary>
-        public long Entrance { get; set; }
-        
+        public long entrance;
+
         /// <summary>
         /// 获取或设置目标脚本ID
         /// </summary>
-        public string ScriptId { get; set; }
-        
+        public string scriptId;
+
         /// <summary>
         /// 获取或设置父函数
         /// </summary>
         [CanBeNull]
-        public ScopeValue ParentScope { get; set; }
+        public ScopeValue parentScope;
         
         /// <summary>
         /// 获取局部变量列表
@@ -40,11 +40,11 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         public Dictionary<string, ReferenceValue> LocalVariables { get; private set; } = new Dictionary<string, ReferenceValue>();
         
         public override SerializableValue Duplicate() {
-            return new ScopeValue {Entrance = Entrance, ScriptId = ScriptId, ParentScope = ParentScope, LocalVariables = LocalVariables.Duplicate()};
+            return new ScopeValue {entrance = entrance, scriptId = scriptId, parentScope = parentScope, LocalVariables = LocalVariables.Duplicate()};
         }
         
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return $"ScopeValue {{ScriptId = {ScriptId}, Entrance = {Entrance}}}";
+            return $"ScopeValue {{ScriptId = {scriptId}, Entrance = {entrance}}}";
         }
 
         public override string ToString() {
@@ -77,7 +77,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             }
             var result = items.Where(e => e.Key == name).ToList();
             if (result.Any()) return (result.First().Value, this);
-            return includeParent ? ParentScope?.FindVariableAndScope(name, true, mode) : null;
+            return includeParent ? parentScope?.FindVariableAndScope(name, true, mode) : null;
         }
 
         /// <summary>
@@ -102,8 +102,8 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         [CanBeNull]
         public T FindVariableValue<T>(string name, bool includeParent, VariableSearchMode mode) where T : SerializableValue {
             var variable = FindVariable(name, includeParent, mode);
-            if (variable == null || variable.Value.GetType() != typeof(T)) return null;
-            return (T) variable.Value;
+            if (variable == null || variable.ReferenceTarget.GetType() != typeof(T)) return null;
+            return (T) variable.ReferenceTarget;
         }
     }
 }

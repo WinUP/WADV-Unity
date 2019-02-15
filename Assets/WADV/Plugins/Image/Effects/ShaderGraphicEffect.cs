@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using JetBrains.Annotations;
 using UnityEngine;
 using WADV.VisualNovel.Interoperation;
 
@@ -30,12 +31,13 @@ namespace WADV.Plugins.Image.Effects {
         public void SetEffect(Dictionary<string, SerializableValue> parameters) {
             Parameters = parameters;
         }
-        
+
         /// <summary>
         /// 初始化材质
         /// </summary>
         /// <param name="parameters">效果参数</param>
+        /// <param name="targetTexture">播放完成后要显示的纹理</param>
         /// <returns></returns>
-        protected abstract Material CreateMaterial(Dictionary<string, SerializableValue> parameters);
+        protected abstract Material CreateMaterial(Dictionary<string, SerializableValue> parameters, [CanBeNull] Texture2D targetTexture);
     }
 }
