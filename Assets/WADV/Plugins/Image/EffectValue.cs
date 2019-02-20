@@ -10,24 +10,23 @@ using WADV.VisualNovel.Translation;
 namespace WADV.Plugins.Image {
     [Serializable]
     public class EffectValue : SerializableValue, ISerializable, IEqualOperator, IStringConverter {
-        [CanBeNull] public IGraphicEffect Effect { get; }
+        public GraphicEffect Effect { get; }
         
         public string EffectType { get; }
 
-        private readonly Dictionary<string, SerializableValue> _parameters;
 
-        public EffectValue(string effectType, Dictionary<string, SerializableValue> parameters) {
-            EffectType = effectType;
-            _parameters = parameters;
-            Effect = EffectPlugin.Create(EffectType);
-            Effect?.SetEffect(parameters);
+        public EffectValue(GraphicEffect effect) {
+            Effect = effect;
         }
         
         protected EffectValue(SerializationInfo info, StreamingContext context) {
             EffectType = info.GetString("name");
-            _parameters = (Dictionary<string, SerializableValue>) info.GetValue("parameters", typeof(Dictionary<string, SerializableValue>));
-            Effect = EffectPlugin.Create(EffectType);
-            Effect?.SetEffect(_parameters);
+            Effect = EffectPlugin.Create(
+                EffectType,
+                info.GetSingle("duration"),
+                (EasingType) info.GetInt32("easing"),
+                (Dictionary<string, SerializableValue>) info.GetValue("parameters", typeof(Dictionary<string, SerializableValue>))
+            );
         }
         
         public override SerializableValue Duplicate() {
@@ -36,8 +35,11 @@ namespace WADV.Plugins.Image {
 
         [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
-            info.AddValue("parameters", _parameters);
+            var (duration, easing, parameters) = Effect.GetParameters();
             info.AddValue("name", EffectType);
+            info.AddValue("parameters", parameters);
+            info.AddValue("easing", easing);
+            info.AddValue("duration", duration);
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {

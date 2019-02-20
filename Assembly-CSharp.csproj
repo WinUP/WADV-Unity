@@ -114,7 +114,7 @@
     <Compile Include="Assets\WADV\Plugins\Image\Effects\EffectContext.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeIn.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeOut.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Effects\IGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\GraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\ILoopGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\ISingleGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\LoopShaderGraphicEffect.cs" />

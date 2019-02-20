@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using WADV.Extensions;
 using WADV.VisualNovel.Interoperation;
 using UnityEngine;
@@ -42,6 +43,30 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// 获取或设置内存堆栈值
         /// </summary>
         public string value;
+        
+        /// <summary>
+        /// 尝试将可序列化值解析为32为浮点数值
+        /// </summary>
+        /// <param name="value">目标内存值</param>
+        /// <param name="language">目标语言</param>
+        /// <returns></returns>
+        public static string TryParse(SerializableValue value, string language = TranslationManager.DefaultLanguage) {
+            switch (value) {
+                case IFloatConverter floatTarget:
+                    return floatTarget.ConvertToFloat(language).ToString(CultureInfo.InvariantCulture);
+                case IIntegerConverter intTarget:
+                    return intTarget.ConvertToInteger(language);
+                case IStringConverter stringTarget:
+                    var stringValue = stringTarget.ConvertToString(language);
+                    if (int.TryParse(stringValue, out var intValue)) return intValue;
+                    if (float.TryParse(stringValue, out var floatValue)) return floatValue;
+                    throw new NotSupportedException($"Unable to convert {stringValue} to float: unsupported string format");
+                case IBooleanConverter boolTarget:
+                    return boolTarget.ConvertToBoolean(language) ? 1.0F : 0.0F;
+                default:
+                    throw new NotSupportedException($"Unable to convert {value} to float: unsupported format");
+            }
+        }
 
         public override SerializableValue Duplicate() {
             return new StringValue {value = value};
