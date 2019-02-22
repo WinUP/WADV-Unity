@@ -86,12 +86,6 @@ Shader "UI/Unlit/AlphaMaskTransition" {
             fixed4 frag (v2f i) : SV_Target {
                 half4 color;
                 UI_BASE_FREAGEMENT(color, i);
-                #ifdef UNITY_UI_CLIP_RECT
-                UI_CLIP_RECT(color, i, _ClipRect)
-                #endif
-                #ifdef UNITY_UI_ALPHACLIP
-                UI_ALPHACLIP(color);
-                #endif
                 half mask = to_grayscale(tex2D(_MaskTex, i.mask_uv));
                 half offset = -_Threshold * (1 - _Progress);
                 if (mask > _Progress + _Threshold + offset) {
@@ -101,6 +95,12 @@ Shader "UI/Unlit/AlphaMaskTransition" {
                 } else {
                     color.a = 1;
                 }
+                #ifdef UNITY_UI_CLIP_RECT
+                UI_CLIP_RECT(color, i, _ClipRect)
+                #endif
+                #ifdef UNITY_UI_ALPHACLIP
+                UI_ALPHACLIP(color);
+                #endif
                 return color;
             }
             ENDCG

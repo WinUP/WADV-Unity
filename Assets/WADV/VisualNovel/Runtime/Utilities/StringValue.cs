@@ -55,16 +55,13 @@ namespace WADV.VisualNovel.Runtime.Utilities {
                 case IFloatConverter floatTarget:
                     return floatTarget.ConvertToFloat(language).ToString(CultureInfo.InvariantCulture);
                 case IIntegerConverter intTarget:
-                    return intTarget.ConvertToInteger(language);
+                    return intTarget.ConvertToInteger(language).ToString(CultureInfo.InvariantCulture);
                 case IStringConverter stringTarget:
-                    var stringValue = stringTarget.ConvertToString(language);
-                    if (int.TryParse(stringValue, out var intValue)) return intValue;
-                    if (float.TryParse(stringValue, out var floatValue)) return floatValue;
-                    throw new NotSupportedException($"Unable to convert {stringValue} to float: unsupported string format");
+                    return stringTarget.ConvertToString(language);
                 case IBooleanConverter boolTarget:
-                    return boolTarget.ConvertToBoolean(language) ? 1.0F : 0.0F;
+                    return boolTarget.ConvertToBoolean(language) ? "True" : "False";
                 default:
-                    throw new NotSupportedException($"Unable to convert {value} to float: unsupported format");
+                    throw new NotSupportedException($"Unable to convert {value} to string: unsupported format");
             }
         }
 

@@ -12,9 +12,11 @@ namespace WADV.Plugins.Converter {
     public class IntegerPlugin : IVisualNovelPlugin {
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
             foreach (var (key, value) in context.Parameters) {
-                return key is IStringConverter stringKey && stringKey.ConvertToString(context.Language) == "Value"
-                    ? Task.FromResult<SerializableValue>(new IntegerValue {value = value is IIntegerConverter integerValue ? integerValue.ConvertToInteger(context.Language) : 0})
-                    : Task.FromResult<SerializableValue>(new IntegerValue {value = key is IIntegerConverter integerKey ? integerKey.ConvertToInteger(context.Language) : 0});
+                return Task.FromResult<SerializableValue>(new IntegerValue {
+                    value = IntegerValue.TryParse(
+                        key is IStringConverter stringKey && stringKey.ConvertToString(context.Language) == "Value" ? value : key
+                    )
+                });
             }
             return Task.FromResult<SerializableValue>(new IntegerValue {value = 0});
         }

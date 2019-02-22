@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using WADV.Extensions;
 using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Provider {
     /// <summary>
@@ -91,7 +92,7 @@ namespace WADV.VisualNovel.Provider {
         /// 读取资源并按如下优先级尝试进行格式转换
         /// <list type="bullet">
         ///   <item><description>如果要求返回字符串，且提供器返回BinaryData，则取该对象的UTF-8文本表示</description></item>
-        ///   <item><description>如果要求返回字符串，且提供器返回IStringConverter，则取该对象在默认语言下的值</description></item>
+        ///   <item><description>如果要求返回字符串，且提供器返回IStringConverter，则取该对象在给定语言下的值</description></item>
         ///   <item><description>如果要求返回字符串，且提供器没有返回上述对象，则强制转换为字符串</description></item>
         ///   <item><description>如果提供器返回的对象可以强制转换为目标对象则进行强制转换</description></item>
         ///   <item><description>如果读取到BinaryData或byte数组则尝试反序列化二进制内容为指定类型</description></item>
@@ -100,7 +101,7 @@ namespace WADV.VisualNovel.Provider {
         /// <param name="address">资源地址</param>
         /// <param name="language">目标语言</param>
         /// <returns></returns>
-        public static async Task<T> Load<T>(string address, string language) where T : class {
+        public static async Task<T> Load<T>(string address, string language = TranslationManager.DefaultLanguage) where T : class {
             var result = await Load(address);
             if (result == null) return null;
             if (typeof(T) == typeof(string))

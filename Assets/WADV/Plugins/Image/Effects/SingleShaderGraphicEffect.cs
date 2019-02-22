@@ -1,46 +1,54 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
 using WADV.Extensions;
 using WADV.Thread;
-using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Image.Effects {
-    /// <inheritdoc cref="ISingleGraphicEffect" />
-    /// <inheritdoc cref="ShaderGraphicEffect" />
+    /// <inheritdoc cref="ShaderLoader" />
     /// <summary>
-    /// 基于Shader的单程UI元素效果
+    /// 基于Shader的单程UI特效
     /// </summary>
-    public abstract class SingleShaderGraphicEffect : ShaderGraphicEffect, ISingleGraphicEffect {
-        /// <inheritdoc />
-        /// <summary>
-        /// 创建一个基于Shader的单程UI元素效果
-        /// </summary>
-        /// <param name="shaderName">Shader名称</param>
-        protected SingleShaderGraphicEffect(string shaderName) : base(shaderName) { }
+    public abstract class SingleShaderGraphicEffect : SingleGraphicEffect {
+        private readonly string _shaderName;
+        protected Shader EffectShader;
         
-        public async Task PlayEffect(IEnumerable<Graphic> targets, float totalTime, Func<float, float> easing, Texture2D targetTexture) {
-            var material = CreateMaterial(Parameters, targetTexture);
+        protected SingleShaderGraphicEffect(string shaderName) {
+            _shaderName = shaderName;
+        }
+
+        public override async Task Initialize() {
+            EffectShader = await ShaderLoader.Load(_shaderName);
+        }
+
+        public override async Task PlayEffect(IEnumerable<Graphic> targets, Texture2D nextTexture) {
+            var material = CreateMaterial(nextTexture);
             foreach (var target in targets) {
                 target.material = material;
             }
             var currentTime = 0.0F;
-            while (currentTime < totalTime) {
-                OnFrame(material, totalTime, Mathf.Clamp01(easing(currentTime / totalTime)));
+            while (currentTime < Duration) {
+                OnFrame(material, GetProgress(currentTime));
                 await Dispatcher.NextUpdate();
                 currentTime += Time.deltaTime;
             }
-            OnFrame(material, totalTime, 1.0F);
+            OnFrame(material, 1.0F);
         }
+        
+        /// <summary>
+        /// 初始化材质
+        /// </summary>
+        /// <param name="nextTexture">播放完成后要显示的纹理</param>
+        /// <returns></returns>
+        protected abstract Material CreateMaterial([CanBeNull] Texture2D nextTexture);
 
         /// <summary>
         /// 逐帧更新材质参数
         /// </summary>
         /// <param name="material">目标材质</param>
-        /// <param name="totalTime">效果预计播放时间</param>
-        /// <param name="progress">效果播放进度</param>
-        protected abstract void OnFrame(Material material, float totalTime, float progress);
+        /// <param name="progress">特效播放进度</param>
+        protected abstract void OnFrame(Material material, float progress);
     }
 }

@@ -91,12 +91,6 @@ Shader "UI/Unlit/TextureMaskTransition" {
             fixed4 frag (v2f i) : SV_Target {
                 half4 color;
                 UI_BASE_FREAGEMENT(color, i);
-                #ifdef UNITY_UI_CLIP_RECT
-                UI_CLIP_RECT(color, i, _ClipRect)
-                #endif
-                #ifdef UNITY_UI_ALPHACLIP
-                UI_ALPHACLIP(color);
-                #endif
                 float4 origin_color = tex2D(_MainTex, i.uv);
                 float4 target_color = tex2D(_TargetTex, i.target_uv);
                 half mask = to_grayscale(tex2D(_MaskTex, i.mask_uv));
@@ -109,6 +103,12 @@ Shader "UI/Unlit/TextureMaskTransition" {
                 } else {
                     color = target_color;
                 }
+                #ifdef UNITY_UI_CLIP_RECT
+                UI_CLIP_RECT(color, i, _ClipRect)
+                #endif
+                #ifdef UNITY_UI_ALPHACLIP
+                UI_ALPHACLIP(color);
+                #endif
                 return color;
             }
             ENDCG

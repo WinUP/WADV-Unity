@@ -15,7 +15,7 @@ namespace WADV.Plugins.Image {
         public string EffectType { get; }
 
 
-        public EffectValue(GraphicEffect effect) {
+        public EffectValue([NotNull] GraphicEffect effect) {
             Effect = effect;
         }
         
@@ -30,22 +30,21 @@ namespace WADV.Plugins.Image {
         }
         
         public override SerializableValue Duplicate() {
-            return new EffectValue(EffectType, _parameters);
+            return new EffectValue(Effect);
         }
 
         [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
-            var (duration, easing, parameters) = Effect.GetParameters();
             info.AddValue("name", EffectType);
-            info.AddValue("parameters", parameters);
-            info.AddValue("easing", easing);
-            info.AddValue("duration", duration);
+            info.AddValue("duration", Effect.Duration);
+            info.AddValue("easing", (int) Effect.EasingType);
+            info.AddValue("parameters", Effect.Parameters);
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return target is EffectValue characterValue
-                   && characterValue.EffectType == EffectType
-                   && characterValue._parameters.Equals(_parameters);
+            return target is EffectValue effectValue
+                   && effectValue.EffectType == EffectType
+                   && effectValue.Effect.Equals(Effect);
         }
 
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
