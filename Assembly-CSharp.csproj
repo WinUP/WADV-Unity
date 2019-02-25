@@ -114,6 +114,7 @@
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeIn.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeOut.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FrameGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\FrameShaderGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\GraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\ShaderLoader.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\SingleGraphicEffect.cs" />
@@ -123,10 +124,10 @@
     <Compile Include="Assets\WADV\Plugins\Image\EffectValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImageCanvas.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImagePlugin.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\IProgrammableImage.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\TransformPropertyValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Area2Plugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Area2Value.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Rect2Plugin.cs" />

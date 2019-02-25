@@ -20,6 +20,10 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// <summary>
     /// <para>表示一个32位浮点数内存值</para>
     /// <list type="bullet">
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>值复制</description></item>
+    /// </list>
+    /// <list type="bullet">
     ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
     ///     <item><description>浮点转换器</description></item>

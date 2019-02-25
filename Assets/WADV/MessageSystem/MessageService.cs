@@ -43,6 +43,7 @@ namespace WADV.MessageSystem {
 
         /// <summary>
         /// 同步处理消息
+        /// <para>这会在当前帧执行并等待监听器，因此请务必在一帧之内完成逻辑</para>
         /// </summary>
         /// <param name="message">要处理的消息</param>
         /// <returns></returns>

@@ -12,6 +12,11 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// <summary>
     /// <para>表示一个作用域内存值</para>
     /// <list type="bullet">
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>对偏移值使用值复制</description></item>
+    ///     <item><description>对其他部分使用引用复制</description></item>
+    /// </list>
+    /// <list type="bullet">
     ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>字符串转换器</description></item>
     /// </list>

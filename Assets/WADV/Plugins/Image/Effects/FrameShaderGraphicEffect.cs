@@ -3,15 +3,11 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace WADV.Plugins.Image.Effects {
-    /// <inheritdoc cref="ShaderLoader" />
-    /// <summary>
-    /// 基于Shader的无限循环UI元素效果
-    /// </summary>
-    public abstract class StaticShaderGraphicEffect : StaticGraphicEffect {
+    public abstract class FrameShaderGraphicEffect : FrameGraphicEffect {
         private readonly string _shaderName;
         protected Shader EffectShader;
         
-        protected StaticShaderGraphicEffect(string shaderName) {
+        protected FrameShaderGraphicEffect(string shaderName) {
             _shaderName = shaderName;
         }
 
@@ -35,8 +31,14 @@ namespace WADV.Plugins.Image.Effects {
             await PlayEndEffect(target.material);
             target.material = null;
         }
+        
+        public override void UpdateEffect(Graphic target) {
+            OnFrame(target.material);
+        }
 
         protected abstract Task PlayStartEffect(Material material);
+
+        protected abstract void OnFrame(Material material);
 
         protected abstract Task PlayEndEffect(Material material);
     }

@@ -8,6 +8,11 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// <summary>
     /// <para>表示一个间接引用内存值</para>
     /// <list type="bullet">
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>外部使用引用复制</description></item>
+    ///     <item><description>被引用对象的复制方式取决于其本身</description></item>
+    /// </list>
+    /// <list type="bullet">
     ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>字符串转换器</description></item>
     /// </list>

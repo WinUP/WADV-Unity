@@ -53,15 +53,15 @@ namespace WADV.Plugins.Image {
             }
             if (string.IsNullOrEmpty(effectName)) throw new NotSupportedException("Unable to create effect: missing effect type");
             if (duration.Equals(0.0F)) throw new NotSupportedException("Unable to create effect: missing duration or duration less than/equals to 0");
-            var effect = Create(effectName, duration, easingType, parameters);
+            var effect = Create(effectName, parameters, duration, easingType);
             if (effect == null) throw new KeyNotFoundException($"Unable to create effect: expected effect name {effectName} not existed");
             var result = new EffectValue(effect);
             return Task.FromResult<SerializableValue>(result);
         }
 
         [CanBeNull]
-        public static GraphicEffect Create(string name, float duration, EasingType easing, Dictionary<string, SerializableValue> parameters) {
-            return Effects.ContainsKey(name) ? (GraphicEffect) Activator.CreateInstance(Effects[name], parameters, duration, easing) : null;
+        public static GraphicEffect Create(string name, Dictionary<string, SerializableValue> parameters, float duration, EasingType easing) {
+            return Effects.ContainsKey(name) ? GraphicEffect.CreateInstance<GraphicEffect>(Effects[name], parameters, duration, easing) : null;
         }
 
         [UsedImplicitly]

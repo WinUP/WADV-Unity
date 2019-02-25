@@ -17,6 +17,11 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     /// <summary>
     /// <para>表示一个可翻译字符串内存值</para>
     /// <list type="bullet">
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>对脚本ID使用引用复制</description></item>
+    ///     <item><description>对翻译ID使用值复制</description></item>
+    /// </list>
+    /// <list type="bullet">
     ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
     ///     <item><description>浮点转换器</description></item>

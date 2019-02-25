@@ -7,7 +7,7 @@ namespace WADV.Plugins.Image.Effects {
         /// <summary>
         /// 更新效果显示
         /// </summary>
-        /// <param name="targets">效果目标</param>
-        public abstract void UpdateEffect(IEnumerable<Graphic> targets);
+        /// <param name="target">效果目标</param>
+        public abstract void UpdateEffect(Graphic target);
     }
 }

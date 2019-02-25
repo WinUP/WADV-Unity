@@ -14,6 +14,11 @@ namespace WADV.VisualNovel.Runtime.Utilities.Object {
     /// 表示一个对象内存值
     /// <para>VNS对象是键值对存储序列，可以使用32位浮点数、32位整数或字符串作为键值存储任意可序列化值并对可转换键值按上述优先级转换后查找元素</para>
     /// <list type="bullet">
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>索引使用值复制</description></item>
+    ///     <item><description>索引目标使用引用复制</description></item>
+    /// </list>
+    /// <list type="bullet">
     ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>字符串转换器</description></item>
     /// </list>

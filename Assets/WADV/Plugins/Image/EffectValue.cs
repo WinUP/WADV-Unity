@@ -23,9 +23,9 @@ namespace WADV.Plugins.Image {
             EffectType = info.GetString("name");
             Effect = EffectPlugin.Create(
                 EffectType,
+                (Dictionary<string, SerializableValue>) info.GetValue("parameters", typeof(Dictionary<string, SerializableValue>)),
                 info.GetSingle("duration"),
-                (EasingType) info.GetInt32("easing"),
-                (Dictionary<string, SerializableValue>) info.GetValue("parameters", typeof(Dictionary<string, SerializableValue>))
+                (EasingType) info.GetInt32("easing")
             );
         }
         

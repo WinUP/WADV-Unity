@@ -100,41 +100,17 @@
 #测试 闭包测试，第二次为3: [@temp]
 @runner = @temp = @null
 
-[Image
-    Name=Background
-    Priority=0
+[Show DefaultPivot=[Vector2 X=0.5 Y=0.5] DefaultAnchorMin=[Vector2 X=0 Y=0] DefaultAnchorMax=[Vector 2 X=0 Y=0]]
+
+[Show
+    [Image Name=Background Color=0xFFFFFF FlipX FlipY UV=[Rect X=0 Y=0 Size=[Vector2 X=100 Y=100]] Source='Resources://Background/Classroom 2']
+    AnchorMinX=0 AnchorMonY=0 AnchorMin=[Vector2 X=0 Y=0] AnchorMaxX=0 AnchorMaxY=0 AnchorMax=[Vector2 X=0 Y=0] PositionX=0 PositionY=0 Position=[Vector2 X=0 Y=0]
+    PivotX=0 PivotY=0 Pivot=[Vector2 X=0 Y=0] ScaleX=1 ScaleY=1 Scale=[Vector2 X=1 Y=1] RotateX=0 RotateY=0 Rotate=[Vector3 X=0 Y=0]
     
-    AnchorMinX=0
-    AnchorMonY=0
-    AnchorMin=[Vector2 X=0 Y=0]
+    [Image Name=Left Color=0xFFFFFF FlipX FlipY UV=[Rect X=0 Y=0 Size=[Vector2 X=100 Y=100]] Source='Resources://Character/Tomo/1']
+    Transform=[TransformProperty AnchorMinX=0 AnchorMonY=0 AnchorMin=[Vector2 X=0 Y=0] AnchorMaxX=0 AnchorMaxY=0 AnchorMax=[Vector2 X=0 Y=0]
+                                 PositionX=0 PositionY=0 Position=[Vector2 X=0 Y=0] Width=800 Height=600 Left=0 Right=0 Top=0 Bottom=0
+                                 PivotX=0 PivotY=0 Pivot=[Vector2 X=0 Y=0]
+                                 ScaleX=1 ScaleY=1 Scale=[Vector2 X=1 Y=1] RotateX=0 RotateY=0 Rotate=[Vector3 X=0 Y=0]]
     
-    AnchorMaxX=0
-    AnchorMaxY=0
-    AnchorMax=[Vector2 X=0 Y=0]
-    
-    PositionX=0
-    PositionY=0
-    Position=[Vector2 X=0 Y=0]
-    
-    PivotX=0
-    PivotY=0
-    Pivot=[Vector2 X=0 Y=0]
-    
-    ScaleX=1
-    ScaleY=1
-    Scale=[Vector2 X=1 Y=1]
-    
-    RotateX=0
-    RotateY=0
-    Rotate=[Vector3 X=0 Y=0]
-    
-    Color=0xFFFFFF
-    FlipX
-    FlipY
-    UV=[Rect X=0 Y=0 Size=[Vector2 X=100 Y=100]]
-    Effect=@Utilities->RoundFadeToLeft1.0Linear
-    Source='Resources://Classroom 2'
-    
-    DefaultPivot=[Vector2 X=0.5 Y=0.5]
-    DefaultAnchorMin=[Vector2 X=0 Y=0]
-    DefaultAnchorMax=[Vector 2 X=0 Y=0]]
+    Effect=@Utilities->RoundFadeToLeft1.0Linear]
