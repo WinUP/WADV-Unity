@@ -13,6 +13,12 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     ///     <item><description>被引用对象的复制方式取决于其本身</description></item>
     /// </list>
     /// <list type="bullet">
+    ///     <listheader><description>自有数据字节量</description></listheader>
+    ///     <item><description>1 字节</description></item>
+    ///     <item><description>1 ObjectId</description></item>
+    ///     <item><description>1 引用关联的WADV.VisualNovel.Interoperation.SerializableValue</description></item>
+    /// </list>
+    /// <list type="bullet">
     ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>字符串转换器</description></item>
     /// </list>

@@ -4,6 +4,14 @@ using UnityEngine;
 using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Unity {
+    /// <inheritdoc />
+    /// <summary>
+    /// <list type="bullet">
+    ///     <listheader><description>自有数据字节量</description></listheader>
+    ///     <item><description>88 字节</description></item>
+    ///     <item><description>1 数组信息</description></item>
+    /// </list>
+    /// </summary>
     [Serializable]
     public class TransformPropertyValue : SerializableValue, ISerializable {
         private readonly float?[] _data = new float?[22];
@@ -33,6 +41,35 @@ namespace WADV.Plugins.Unity {
         /// <returns></returns>
         public float? Get(PropertyName name) {
             return _data[(int) name];
+        }
+
+        /// <summary>
+        /// 将此Transform属性集应用至目标Transform
+        /// </summary>
+        /// <param name="target">目标Transform</param>
+        public void ApplyTo(ref Transform target) {
+            var x = Get(PropertyName.ScaleX);
+            var y = Get(PropertyName.ScaleY);
+            var z = Get(PropertyName.ScaleZ);
+            if (x.HasValue || y.HasValue || z.HasValue) {
+                var data = target.localScale;
+                target.localScale = new Vector3(x ?? data.x, y ?? data.y, z ?? data.z);
+            }
+            x = Get(PropertyName.RotationX);
+            y = Get(PropertyName.RotationY);
+            z = Get(PropertyName.RotationZ);
+            var w = Get(PropertyName.RotationW);
+            if (x.HasValue || y.HasValue || z.HasValue || w.HasValue) {
+                var data = target.localRotation;
+                target.localRotation = new Quaternion(x ?? data.x, y ?? data.y, z ?? data.z, w ?? data.w);
+            }
+            x = Get(PropertyName.PositionX);
+            y = Get(PropertyName.PositionY);
+            z = Get(PropertyName.PositionZ);
+            if (x.HasValue || y.HasValue || z.HasValue) {
+                var data = target.localPosition;
+                target.localPosition = new Vector3(x ?? data.x, y ?? data.y, z ?? data.z);
+            }
         }
 
         /// <summary>

@@ -23,6 +23,10 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     ///     <item><description>值复制</description></item>
     /// </list>
     /// <list type="bullet">
+    ///     <listheader><description>自有数据字节量</description></listheader>
+    ///     <item><description>4 字节</description></item>
+    /// </list>
+    /// <list type="bullet">
     ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
     ///     <item><description>浮点转换器</description></item>

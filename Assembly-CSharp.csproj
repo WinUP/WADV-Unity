@@ -127,6 +127,7 @@
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\TransformPropertyPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Unity\TransformPropertyValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Area2Plugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Area2Value.cs" />
