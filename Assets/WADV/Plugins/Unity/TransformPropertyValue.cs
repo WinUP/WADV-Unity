@@ -4,34 +4,45 @@ using UnityEngine;
 using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Unity {
-    /// <inheritdoc />
+    /// <inheritdoc cref="SerializableValue" />
+    /// <inheritdoc cref="ISerializable" />
     /// <summary>
+    /// <para>表示一个RectTransform的基本属性集合</para>
+    /// <list type="bullet">
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>值复制</description></item>
+    /// </list>
     /// <list type="bullet">
     ///     <listheader><description>自有数据字节量</description></listheader>
-    ///     <item><description>88 字节</description></item>
-    ///     <item><description>1 数组信息</description></item>
+    ///     <item><description>105 字节</description></item>
+    ///     <item><description>2 数组信息</description></item>
+    ///     <item><description>2 名称长度1的SerializationInfo项目</description></item>
     /// </list>
     /// </summary>
     [Serializable]
     public class TransformPropertyValue : SerializableValue, ISerializable {
-        private readonly float?[] _data = new float?[22];
+        private readonly float[] _data = new float[21];
+        private readonly bool[] _hasData = new bool[21];
         
         public TransformPropertyValue() { }
         
         protected TransformPropertyValue(SerializationInfo info, StreamingContext context) {
-            _data = (float?[]) info.GetValue("data", typeof(float?[]));
+            _data = (float[]) info.GetValue("d", typeof(float[]));
+            _hasData = (bool[]) info.GetValue("h", typeof(bool[]));
         }
         
         public override SerializableValue Duplicate() {
             var result = new TransformPropertyValue();
             for (var i = -1; ++i < 22;) {
                 result._data[i] = _data[i];
+                result._hasData[i] = _hasData[i];
             }
             return result;
         }
         
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
-            info.AddValue("data", _data);
+            info.AddValue("d", _data);
+            info.AddValue("h", _hasData);
         }
 
         /// <summary>
@@ -40,7 +51,22 @@ namespace WADV.Plugins.Unity {
         /// <param name="name">属性名称</param>
         /// <returns></returns>
         public float? Get(PropertyName name) {
-            return _data[(int) name];
+            return _hasData[(int) name] ? (float?) _data[(int) name] : null;
+        }
+
+        /// <summary>
+        /// 设置Transform属性值
+        /// </summary>
+        /// <param name="name">属性名称</param>
+        /// <param name="value">属性值</param>
+        public void Set(PropertyName name, float? value) {
+            if (value.HasValue) {
+                _data[(int) name] = value.Value;
+                _hasData[(int) name] = true;
+            } else {
+                _data[(int) name] = default(float);
+                _hasData[(int) name] = false;
+            }
         }
 
         /// <summary>
@@ -48,6 +74,10 @@ namespace WADV.Plugins.Unity {
         /// </summary>
         /// <param name="target">目标Transform</param>
         public void ApplyTo(ref Transform target) {
+            if (target is RectTransform rectTransform) {
+                ApplyTo(ref rectTransform);
+                return;
+            }
             var x = Get(PropertyName.ScaleX);
             var y = Get(PropertyName.ScaleY);
             var z = Get(PropertyName.ScaleZ);
@@ -58,10 +88,10 @@ namespace WADV.Plugins.Unity {
             x = Get(PropertyName.RotationX);
             y = Get(PropertyName.RotationY);
             z = Get(PropertyName.RotationZ);
-            var w = Get(PropertyName.RotationW);
-            if (x.HasValue || y.HasValue || z.HasValue || w.HasValue) {
+            if (x.HasValue || y.HasValue || z.HasValue) {
                 var data = target.localRotation;
-                target.localRotation = new Quaternion(x ?? data.x, y ?? data.y, z ?? data.z, w ?? data.w);
+                var rotation = data.eulerAngles;
+                target.localRotation = Quaternion.Euler(x ?? rotation.x, y ?? rotation.y, z ?? rotation.z);
             }
             x = Get(PropertyName.PositionX);
             y = Get(PropertyName.PositionY);
@@ -74,6 +104,7 @@ namespace WADV.Plugins.Unity {
 
         /// <summary>
         /// 将此Transform属性集应用至目标RectTransform
+        /// <para>属性按照AnchorMin->AnchorMax->Pivot->Position->Left/Bottom->Right/Top->Width/Height->Scale->Rotation的顺序应用，由于定位并不需要所有属性，某些组合可能引发预期外的效果</para>
         /// </summary>
         /// <param name="target">目标RectTransform</param>
         public void ApplyTo(ref RectTransform target) {
@@ -130,36 +161,101 @@ namespace WADV.Plugins.Unity {
             x = Get(PropertyName.RotationX);
             y = Get(PropertyName.RotationY);
             z = Get(PropertyName.RotationZ);
-            var w = Get(PropertyName.RotationW);
-            if (x.HasValue || y.HasValue || z.HasValue || w.HasValue) {
+            if (x.HasValue || y.HasValue || z.HasValue) {
                 var data = target.localRotation;
-                target.localRotation = new Quaternion(x ?? data.x, y ?? data.y, z ?? data.z, w ?? data.w);
+                var rotation = data.eulerAngles;
+                target.localRotation = Quaternion.Euler(x ?? rotation.x, y ?? rotation.y, z ?? rotation.z);
             }
         }
 
+        /// <summary>
+        /// Transform属性名称
+        /// </summary>
         public enum PropertyName {
+            /// <summary>
+            /// 锚区左下角X坐标
+            /// </summary>
             AnchorMinX,
+            /// <summary>
+            /// 锚区左下角Y坐标
+            /// </summary>
             AnchorMinY,
+            /// <summary>
+            /// 锚区右上角X坐标
+            /// </summary>
             AnchorMaxX,
+            /// <summary>
+            /// 锚区右上角Y坐标
+            /// </summary>
             AnchorMaxY,
+            /// <summary>
+            /// 变换基础点X坐标
+            /// </summary>
             PivotX,
+            /// <summary>
+            /// 变换基础点Y坐标
+            /// </summary>
             PivotY,
+            /// <summary>
+            /// 位置X坐标
+            /// </summary>
             PositionX,
+            /// <summary>
+            /// 位置Y坐标
+            /// </summary>
             PositionY,
+            /// <summary>
+            /// 位置Z坐标
+            /// </summary>
             PositionZ,
+            /// <summary>
+            /// 与锚区左侧的距离
+            /// </summary>
             Left,
+            /// <summary>
+            /// 与锚区右侧的距离
+            /// </summary>
             Right,
+            /// <summary>
+            /// 与锚区顶部的距离
+            /// </summary>
             Top,
+            /// <summary>
+            /// 与锚区底部的距离
+            /// </summary>
             Bottom,
+            /// <summary>
+            /// 宽度
+            /// </summary>
             Width,
+            /// <summary>
+            /// 高度
+            /// </summary>
             Height,
+            /// <summary>
+            /// X坐标缩放比例
+            /// </summary>
             ScaleX,
+            /// <summary>
+            /// Y坐标缩放比例
+            /// </summary>
             ScaleY,
+            /// <summary>
+            /// Z坐标缩放比例
+            /// </summary>
             ScaleZ,
+            /// <summary>
+            /// X轴旋转角度
+            /// </summary>
             RotationX,
+            /// <summary>
+            /// Y轴旋转角度
+            /// </summary>
             RotationY,
-            RotationZ,
-            RotationW
+            /// <summary>
+            /// Z轴旋转角度
+            /// </summary>
+            RotationZ
         }
     }
 }

@@ -50,8 +50,6 @@ namespace WADV.Plugins.Vector {
                     return (vector2Value.value.x, vector2Value.value.y);
                 case Rect2Value rect2Value:
                     return (rect2Value.value.x, rect2Value.value.y);
-                case Area2Value area2Value:
-                    return (area2Value.value.x, area2Value.value.y);
                 case IFloatConverter floatConverter:
                     var number = floatConverter.ConvertToFloat(language);
                     return (number, number);

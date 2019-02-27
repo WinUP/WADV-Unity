@@ -21,6 +21,15 @@ namespace WADV.Plugins.Vector {
     /// <summary>
     /// <para>表示一个二维矩形</para>
     /// <list type="bullet">
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>值复制</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>自有数据字节量</description></listheader>
+    ///     <item><description>16 字节</description></item>
+    ///     <item><description>4 名称长度1的SerializationInfo项目</description></item>
+    /// </list>
+    /// <list type="bullet">
     ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
     ///     <item><description>字符串转换器</description></item>
@@ -43,12 +52,25 @@ namespace WADV.Plugins.Vector {
     ///     <item><description>Height：获取高度</description></item>
     ///     <item><description>CopyPosition：复制坐标</description></item>
     ///     <item><description>CopySize：复制大小</description></item>
+    ///     <item><description>CopyArea：复制并重新计算新矩形坐标以保证长宽均为正值</description></item>
     /// </list>
     /// </summary>
     [Serializable]
     public class Rect2Value : SerializableValue, ISerializable, IBooleanConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
                              INegativeOperator, IPickChildOperator, ICompareOperator, IEqualOperator {
         public Rect value;
+
+        private static (float X, float Y, float Width, float Height) NormalizeSize(float x, float y, float width, float height) {
+            if (width < 0) {
+                x -= width;
+                width = -width;
+            }
+            if (height < 0) {
+                y -= height;
+                height = -height;
+            }
+            return (x, y, width, height);
+        }
         
         public Rect2Value() { }
 
@@ -57,7 +79,7 @@ namespace WADV.Plugins.Vector {
         }
         
         protected Rect2Value(SerializationInfo info, StreamingContext context) {
-            value = new Rect(info.GetSingle("x"), info.GetSingle("y"), info.GetSingle("width"), info.GetSingle("height"));
+            value = new Rect(info.GetSingle("x"), info.GetSingle("y"), info.GetSingle("w"), info.GetSingle("h"));
         }
         
         public override SerializableValue Duplicate() {
@@ -67,8 +89,8 @@ namespace WADV.Plugins.Vector {
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
             info.AddValue("x", value.x);
             info.AddValue("y", value.y);
-            info.AddValue("width", value.width);
-            info.AddValue("height", value.height);
+            info.AddValue("w", value.width);
+            info.AddValue("h", value.height);
         }
 
         public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
@@ -83,8 +105,6 @@ namespace WADV.Plugins.Vector {
             switch (target) {
                 case Rect2Value rectValue:
                     return new Rect2Value(value.x + rectValue.value.x, value.y + rectValue.value.y, value.width + rectValue.value.width, value.height + rectValue.value.height);
-                case Area2Value rectValue:
-                    return new Area2Value(value.x - rectValue.value.x, value.y - rectValue.value.y, value.width - rectValue.value.width, value.height - rectValue.value.height);
                 case Vector3Value vector3Value:
                     return new Rect2Value(value.x + vector3Value.value.x, value.y + vector3Value.value.y, value.width, value.height);
                 case Vector2Value vector2Value:
@@ -99,8 +119,6 @@ namespace WADV.Plugins.Vector {
             switch (target) {
                 case Rect2Value rectValue:
                     return new Rect2Value(value.x - rectValue.value.x, value.y - rectValue.value.y, value.width - rectValue.value.width, value.height - rectValue.value.height);
-                case Area2Value rectValue:
-                    return new Area2Value(value.x - rectValue.value.x, value.y - rectValue.value.y, value.width - rectValue.value.width, value.height - rectValue.value.height);
                 case Vector3Value vector3Value:
                     return new Rect2Value(value.x - vector3Value.value.x, value.y - vector3Value.value.y, value.width, value.height);
                 case Vector2Value vector2Value:
@@ -141,6 +159,9 @@ namespace WADV.Plugins.Vector {
                     return new Vector2Value(value.x, value.y);
                 case "CopySize":
                     return new Vector2Value(value.width, value.height);
+                case "CopyArea":
+                    var (x, y, width, height) = NormalizeSize(value.x, value.y, value.width, value.height);
+                    return new Rect2Value(x, y, width, height);
                 default:
                     throw new NotSupportedException($"Unable to pick child {name} from Rect2: unrecognized command {name}");
             }

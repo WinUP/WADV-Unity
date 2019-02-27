@@ -14,15 +14,7 @@ namespace WADV.Plugins.Unity {
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
             var transformProperty = new TransformPropertyValue();
             foreach (var (key, value) in context.StringParameters) {
-                /*
-                 AnchorMinX=0 AnchorMinY=0 AnchorMin=[Vector2 X=0 Y=0]
-                 AnchorMaxX=0 AnchorMaxY=0 AnchorMax=[Vector2 X=0 Y=0]
-                 PositionX=0 PositionY=0 PositionZ=0 Position=[Vector2 X=0 Y=0] Position=[Vector3 X=0 Y=0 Z=0]
-                 Width=800 Height=600 Left=0 Right=0 Top=0 Bottom=0
-                 PivotX=0 PivotY=0 Pivot=[Vector2 X=0 Y=0]
-                 ScaleX=1 ScaleY=1 ScaleZ=0 Scale=[Vector2 X=1 Y=1] Scale=[Vector3 X=1 Y=1 Z=1]
-                 RotateX=0 RotateY=0 RotateZ=0 Rotate=[Vector2 X=0 Y=0] Rotate=[Vector3 X=0 Y=0 Z=0]
-                 */
+                float? x, y, z;
                 switch (key.ConvertToString(context.Language)) {
                     case "AnchorMinX":
                         transformProperty.Set(TransformPropertyValue.PropertyName.AnchorMinX, FloatValue.TryParse(value));
@@ -31,16 +23,128 @@ namespace WADV.Plugins.Unity {
                         transformProperty.Set(TransformPropertyValue.PropertyName.AnchorMinY, FloatValue.TryParse(value));
                         break;
                     case "AnchorMin":
-                        var (x, y, _) = GetVectorComponents(value);
+                        (x, y, _) = GetVectorComponents(value);
                         if (x.HasValue) {
                             transformProperty.Set(TransformPropertyValue.PropertyName.AnchorMinX, x);
                         }
                         if (y.HasValue) {
                             transformProperty.Set(TransformPropertyValue.PropertyName.AnchorMinY, y);
                         }
+                        break;
+                    case "AnchorMaxX":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.AnchorMaxX, FloatValue.TryParse(value));
+                        break;
+                    case "AnchorMaxY":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.AnchorMaxY, FloatValue.TryParse(value));
+                        break;
+                    case "AnchorMax":
+                        (x, y, _) = GetVectorComponents(value);
+                        if (x.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.AnchorMaxX, x);
+                        }
+                        if (y.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.AnchorMaxY, y);
+                        }
+                        break;
+                    case "PositionX":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.PositionX, FloatValue.TryParse(value));
+                        break;
+                    case "PositionY":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.PositionY, FloatValue.TryParse(value));
+                        break;
+                    case "PositionZ":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.PositionZ, FloatValue.TryParse(value));
+                        break;
+                    case "Position":
+                        (x, y, z) = GetVectorComponents(value);
+                        if (x.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.PositionX, x);
+                        }
+                        if (y.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.PositionY, y);
+                        }
+                        if (z.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.PositionZ, z);
+                        }
+                        break;
+                    case "Width":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.Width, FloatValue.TryParse(value));
+                        break;
+                    case "Height":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.Height, FloatValue.TryParse(value));
+                        break;
+                    case "Top":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.Top, FloatValue.TryParse(value));
+                        break;
+                    case "Bottom":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.Bottom, FloatValue.TryParse(value));
+                        break;
+                    case "Left":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.Left, FloatValue.TryParse(value));
+                        break;
+                    case "Right":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.Right, FloatValue.TryParse(value));
+                        break;
+                    case "PivotX":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.PivotX, FloatValue.TryParse(value));
+                        break;
+                    case "PivotY":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.PivotY, FloatValue.TryParse(value));
+                        break;
+                    case "Pivot":
+                        (x, y, _) = GetVectorComponents(value);
+                        if (x.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.PivotX, x);
+                        }
+                        if (y.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.PivotY, y);
+                        }
+                        break;
+                    case "ScaleX":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.ScaleX, FloatValue.TryParse(value));
+                        break;
+                    case "ScaleY":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.ScaleY, FloatValue.TryParse(value));
+                        break;
+                    case "ScaleZ":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.ScaleZ, FloatValue.TryParse(value));
+                        break;
+                    case "Scale":
+                        (x, y, z) = GetVectorComponents(value);
+                        if (x.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.ScaleX, x);
+                        }
+                        if (y.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.ScaleY, y);
+                        }
+                        if (z.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.ScaleZ, z);
+                        }
+                        break;
+                    case "RotationX":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.RotationX, FloatValue.TryParse(value));
+                        break;
+                    case "RotationY":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.RotationY, FloatValue.TryParse(value));
+                        break;
+                    case "RotationZ":
+                        transformProperty.Set(TransformPropertyValue.PropertyName.RotationZ, FloatValue.TryParse(value));
+                        break;
+                    case "Rotation":
+                        (x, y, z) = GetVectorComponents(value);
+                        if (x.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.RotationX, x);
+                        }
+                        if (y.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.RotationY, y);
+                        }
+                        if (z.HasValue) {
+                            transformProperty.Set(TransformPropertyValue.PropertyName.RotationZ, z);
+                        }
+                        break;
                 }
             }
-            
+            return Task.FromResult<SerializableValue>(transformProperty);
         }
 
         public void OnRegister() { }

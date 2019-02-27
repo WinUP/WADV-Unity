@@ -21,6 +21,15 @@ namespace WADV.Plugins.Vector {
     /// <summary>
     /// <para>表示一个三维向量</para>
     /// <list type="bullet">
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>值复制</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>自有数据字节量</description></listheader>
+    ///     <item><description>12 字节</description></item>
+    ///     <item><description>3 名称长度1的SerializationInfo项目</description></item>
+    /// </list>
+    /// <list type="bullet">
     ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
     ///     <item><description>字符串转换器</description></item>
