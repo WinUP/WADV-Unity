@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Extensions;
 using WADV.MessageSystem;
@@ -11,11 +12,17 @@ using WADV.VisualNovel.Runtime.Utilities;
 namespace WADV.Plugins.Input {
     /// <inheritdoc />
     /// <summary>
-    /// 输入框插件
+    /// <para>输入框插件</para>
+    /// <list type="bullet">
+    ///     <listheader><description>可选有值参数</description></listheader>
+    ///     <item><description>Title: 标题字符串</description></item>
+    ///     <item><description>Default: 默认内容字符串</description></item>
+    ///     <item><description>ButtonText: 确认按钮文本字符串</description></item>
+    /// </list>
     /// </summary>
     [StaticRegistrationInfo("Input")]
+    [UsedImplicitly]
     public partial class InputPlugin : IVisualNovelPlugin {
-        /// <inheritdoc />
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var description = new MessageIntegration.Content();
             foreach (var (name, value) in context.StringParameters) {
@@ -47,10 +54,8 @@ namespace WADV.Plugins.Input {
             return message is Message<string> stringMessage ? new StringValue {value = stringMessage.Content} : null;
         }
 
-        /// <inheritdoc />
         public void OnRegister() { }
 
-        /// <inheritdoc />
         public void OnUnregister(bool isReplace) { }
     }
 }

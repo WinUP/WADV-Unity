@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.Serialization;
+using System.Security.Permissions;
 using UnityEngine;
 using WADV.VisualNovel.Interoperation;
 
@@ -40,6 +41,7 @@ namespace WADV.Plugins.Unity {
             return result;
         }
         
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
             info.AddValue("d", _data);
             info.AddValue("h", _hasData);

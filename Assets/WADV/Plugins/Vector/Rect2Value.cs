@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.Serialization;
+using System.Security.Permissions;
 using UnityEngine;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Runtime.Utilities;
@@ -57,7 +58,7 @@ namespace WADV.Plugins.Vector {
     /// </summary>
     [Serializable]
     public class Rect2Value : SerializableValue, ISerializable, IBooleanConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
-                             INegativeOperator, IPickChildOperator, ICompareOperator, IEqualOperator {
+                              INegativeOperator, IPickChildOperator, ICompareOperator, IEqualOperator {
         public Rect value;
 
         private static (float X, float Y, float Width, float Height) NormalizeSize(float x, float y, float width, float height) {
@@ -71,21 +72,22 @@ namespace WADV.Plugins.Vector {
             }
             return (x, y, width, height);
         }
-        
+
         public Rect2Value() { }
 
         public Rect2Value(float x, float y, float width, float height) {
             value = new Rect {x = x, y = y, width = width, height = height};
         }
-        
+
         protected Rect2Value(SerializationInfo info, StreamingContext context) {
             value = new Rect(info.GetSingle("x"), info.GetSingle("y"), info.GetSingle("w"), info.GetSingle("h"));
         }
-        
+
         public override SerializableValue Duplicate() {
             return new Rect2Value(value.x, value.y, value.width, value.height);
         }
 
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
             info.AddValue("x", value.x);
             info.AddValue("y", value.y);
@@ -180,25 +182,25 @@ namespace WADV.Plugins.Vector {
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return target is Rect2Value rectValue && value.Equals(rectValue.value);
         }
-        
+
         private void WriteXBack(WriteBackReferenceValue target) {
             if (target.ReferenceTarget is IFloatConverter floatConverter) {
                 value.x = floatConverter.ConvertToFloat();
             }
         }
-        
+
         private void WriteYBack(WriteBackReferenceValue target) {
             if (target.ReferenceTarget is IFloatConverter floatConverter) {
                 value.y = floatConverter.ConvertToFloat();
             }
         }
-        
+
         private void WriteWidthBack(WriteBackReferenceValue target) {
             if (target.ReferenceTarget is IFloatConverter floatConverter) {
                 value.width = floatConverter.ConvertToFloat();
             }
         }
-        
+
         private void WriteHeightBack(WriteBackReferenceValue target) {
             if (target.ReferenceTarget is IFloatConverter floatConverter) {
                 value.height = floatConverter.ConvertToFloat();

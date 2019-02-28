@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.Serialization;
+using System.Security.Permissions;
 using UnityEngine;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Runtime.Utilities;
@@ -69,6 +70,7 @@ namespace WADV.Plugins.Vector {
             return new Vector2Value(value.x, value.y);
         }
 
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
             info.AddValue("x", value.x);
             info.AddValue("y", value.y);

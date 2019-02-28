@@ -55,7 +55,7 @@ namespace WADV.Plugins.Image {
             if (duration.Equals(0.0F)) throw new NotSupportedException("Unable to create effect: missing duration or duration less than/equals to 0");
             var effect = Create(effectName, parameters, duration, easingType);
             if (effect == null) throw new KeyNotFoundException($"Unable to create effect: expected effect name {effectName} not existed");
-            var result = new EffectValue(effect);
+            var result = new EffectValue(effectName, effect);
             return Task.FromResult<SerializableValue>(result);
         }
 
