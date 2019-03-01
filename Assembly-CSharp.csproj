@@ -128,10 +128,11 @@
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
-    <Compile Include="Assets\WADV\Plugins\Unity\TransformPropertyPlugin.cs" />
-    <Compile Include="Assets\WADV\Plugins\Unity\TransformPropertyValue.cs" />
-    <Compile Include="Assets\WADV\Plugins\Vector\Rect2Plugin.cs" />
-    <Compile Include="Assets\WADV\Plugins\Vector\Rect2Value.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\ColorValue.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\TransformPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\TransformValue.cs" />
+    <Compile Include="Assets\WADV\Plugins\Vector\RectPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Vector\RectValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Vector2Plugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Vector2Value.cs" />
     <Compile Include="Assets\WADV\Plugins\Vector\Vector3Plugin.cs" />

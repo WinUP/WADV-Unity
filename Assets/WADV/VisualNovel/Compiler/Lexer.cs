@@ -195,10 +195,10 @@ namespace WADV.VisualNovel.Compiler {
                     var nextSpace = file.IndexOf(' ');
                     var lineBreak = file.IndexOf('\n');
                     if (nextSpace < 0 || nextSpace > lineBreak) { // 对话内容不能为空
-                        throw new CompileException(identifier, position, "Unable to create quick dialogue: Dialogue starts with character must has content");
+                        throw new CompileException(identifier, position, "Unable to create quick dialogue: dialogue starts with character must has content");
                     }
                     if (file.Current == ' ') { // 角色描述不能为空
-                        throw new CompileException(identifier, position, "Unable to create quick dialogue: Dialogue starts with character must has character definition");
+                        throw new CompileException(identifier, position, "Unable to create quick dialogue: dialogue starts with character must has character definition");
                     }
                     tokens.Add(new StringToken(TokenType.DialogueSpeaker, position, file.CopyContent(nextSpace).ExecuteEscapeCharacters(), false));
                     position = position.MoveColumn(nextSpace);
@@ -236,21 +236,21 @@ namespace WADV.VisualNovel.Compiler {
             if (number.StartsWith("0X")) { // 二进制整数转十进制
                 number = number.Substring(2);
                 if (number.Any(e => e != '0' && e != '1')) {
-                    throw new CompileException(identifier, position, "Unable to create number: Binary number must be integer and only allows 0/1");
+                    throw new CompileException(identifier, position, "Unable to create number: binary number must be integer and only allows 0/1");
                 }
                 tokens.Add(new IntegerToken(TokenType.Number, position, Convert.ToInt32(number, 2) * addon));
             } else if (number.StartsWith("0B")) { // 十六进制整数转十进制
                 number = number.Substring(2);
                 if (number.Any(e => e == '.')) {
-                    throw new CompileException(identifier, position, "Unable to create number: Hex number must be integer");
+                    throw new CompileException(identifier, position, "Unable to create number: hex number must be integer");
                 }
                 tokens.Add(new IntegerToken(TokenType.Number, position, Convert.ToInt32(number, 16) * addon));
             } else if (number.Any(e => e != '.' && e != '-' && e != 'E' && (e < '0' || e > '9'))) { // 错误格式
-                throw new CompileException(identifier, position, $"Unable to create number: Unknown format {number}");
+                throw new CompileException(identifier, position, $"Unable to create number: unknown format {number}");
             } else { // 十进制整数和浮点数转换
                 var dotCount = number.Count(e => e == '.');
                 if (dotCount > 1) { // 浮点数格式错误
-                    throw new CompileException(identifier, position, "Unable to create number: Float number format error");
+                    throw new CompileException(identifier, position, "Unable to create number: float number format error");
                 } else if (dotCount == 1 || number.Contains('E')) { // 浮点数
                     tokens.Add(new FloatToken(TokenType.Number, position, float.Parse(number) * addon));
                 } else { // 整数

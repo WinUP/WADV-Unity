@@ -57,7 +57,7 @@ namespace WADV.Plugins.Vector {
     /// </list>
     /// </summary>
     [Serializable]
-    public class Rect2Value : SerializableValue, ISerializable, IBooleanConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
+    public class RectValue : SerializableValue, ISerializable, IBooleanConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
                               INegativeOperator, IPickChildOperator, ICompareOperator, IEqualOperator {
         public Rect value;
 
@@ -73,18 +73,18 @@ namespace WADV.Plugins.Vector {
             return (x, y, width, height);
         }
 
-        public Rect2Value() { }
+        public RectValue() { }
 
-        public Rect2Value(float x, float y, float width, float height) {
+        public RectValue(float x, float y, float width, float height) {
             value = new Rect {x = x, y = y, width = width, height = height};
         }
 
-        protected Rect2Value(SerializationInfo info, StreamingContext context) {
+        protected RectValue(SerializationInfo info, StreamingContext context) {
             value = new Rect(info.GetSingle("x"), info.GetSingle("y"), info.GetSingle("w"), info.GetSingle("h"));
         }
 
         public override SerializableValue Duplicate() {
-            return new Rect2Value(value.x, value.y, value.width, value.height);
+            return new RectValue(value.x, value.y, value.width, value.height);
         }
 
         [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
@@ -105,44 +105,44 @@ namespace WADV.Plugins.Vector {
 
         public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             switch (target) {
-                case Rect2Value rectValue:
-                    return new Rect2Value(value.x + rectValue.value.x, value.y + rectValue.value.y, value.width + rectValue.value.width, value.height + rectValue.value.height);
+                case RectValue rectValue:
+                    return new RectValue(value.x + rectValue.value.x, value.y + rectValue.value.y, value.width + rectValue.value.width, value.height + rectValue.value.height);
                 case Vector3Value vector3Value:
-                    return new Rect2Value(value.x + vector3Value.value.x, value.y + vector3Value.value.y, value.width, value.height);
+                    return new RectValue(value.x + vector3Value.value.x, value.y + vector3Value.value.y, value.width, value.height);
                 case Vector2Value vector2Value:
-                    return new Rect2Value(value.x + vector2Value.value.x, value.y + vector2Value.value.y, value.width, value.height);
+                    return new RectValue(value.x + vector2Value.value.x, value.y + vector2Value.value.y, value.width, value.height);
                 default:
-                    var number = FloatValue.TryParse(target);
-                    return new Rect2Value(value.x + number, value.y + number, value.width, value.height);
+                    var number = FloatValue.TryParse(target, language);
+                    return new RectValue(value.x + number, value.y + number, value.width, value.height);
             }
         }
 
         public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             switch (target) {
-                case Rect2Value rectValue:
-                    return new Rect2Value(value.x - rectValue.value.x, value.y - rectValue.value.y, value.width - rectValue.value.width, value.height - rectValue.value.height);
+                case RectValue rectValue:
+                    return new RectValue(value.x - rectValue.value.x, value.y - rectValue.value.y, value.width - rectValue.value.width, value.height - rectValue.value.height);
                 case Vector3Value vector3Value:
-                    return new Rect2Value(value.x - vector3Value.value.x, value.y - vector3Value.value.y, value.width, value.height);
+                    return new RectValue(value.x - vector3Value.value.x, value.y - vector3Value.value.y, value.width, value.height);
                 case Vector2Value vector2Value:
-                    return new Rect2Value(value.x - vector2Value.value.x, value.y - vector2Value.value.y, value.width, value.height);
+                    return new RectValue(value.x - vector2Value.value.x, value.y - vector2Value.value.y, value.width, value.height);
                 default:
-                    var number = FloatValue.TryParse(target);
-                    return new Rect2Value(value.x - number, value.y - number, value.width, value.height);
+                    var number = FloatValue.TryParse(target, language);
+                    return new RectValue(value.x - number, value.y - number, value.width, value.height);
             }
         }
 
         public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            var number = FloatValue.TryParse(target);
-            return new Rect2Value(value.x, value.y, value.width * number, value.height * number);
+            var number = FloatValue.TryParse(target, language);
+            return new RectValue(value.x, value.y, value.width * number, value.height * number);
         }
 
         public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            var number = FloatValue.TryParse(target);
-            return new Rect2Value(value.x, value.y, value.width / number, value.height / number);
+            var number = FloatValue.TryParse(target, language);
+            return new RectValue(value.x, value.y, value.width / number, value.height / number);
         }
 
         public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
-            return new Rect2Value(-value.x, -value.y, -value.width, -value.height);
+            return new RectValue(-value.x, -value.y, -value.width, -value.height);
         }
 
         public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
@@ -163,7 +163,7 @@ namespace WADV.Plugins.Vector {
                     return new Vector2Value(value.width, value.height);
                 case "CopyArea":
                     var (x, y, width, height) = NormalizeSize(value.x, value.y, value.width, value.height);
-                    return new Rect2Value(x, y, width, height);
+                    return new RectValue(x, y, width, height);
                 default:
                     throw new NotSupportedException($"Unable to pick child {name} from Rect2: unrecognized command {name}");
             }
@@ -171,7 +171,7 @@ namespace WADV.Plugins.Vector {
 
         public int CompareWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             switch (target) {
-                case Rect2Value rectValue:
+                case RectValue rectValue:
                     var result = value.width * value.height - rectValue.value.width * rectValue.value.height;
                     return result > 0 ? 1 : result < 0 ? -1 : 0;
                 default:
@@ -180,7 +180,7 @@ namespace WADV.Plugins.Vector {
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return target is Rect2Value rectValue && value.Equals(rectValue.value);
+            return target is RectValue rectValue && value.Equals(rectValue.value);
         }
 
         private void WriteXBack(WriteBackReferenceValue target) {

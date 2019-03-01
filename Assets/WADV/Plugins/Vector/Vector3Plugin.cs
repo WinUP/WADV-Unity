@@ -14,13 +14,13 @@ namespace WADV.Plugins.Vector {
                 var name = key.ConvertToString(context.Language);
                 switch (name) {
                     case "X":
-                        x = FloatValue.TryParse(value);
+                        x = FloatValue.TryParse(value, context.Language);
                         break;
                     case "Y":
-                        y = FloatValue.TryParse(value);
+                        y = FloatValue.TryParse(value, context.Language);
                         break;
                     case "Z":
-                        z = FloatValue.TryParse(value);
+                        z = FloatValue.TryParse(value, context.Language);
                         break;
                         
                 }

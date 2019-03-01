@@ -21,19 +21,19 @@ namespace WADV.Plugins.Unity {
     /// </list>
     /// </summary>
     [Serializable]
-    public class TransformPropertyValue : SerializableValue, ISerializable {
+    public class TransformValue : SerializableValue, ISerializable {
         private readonly float[] _data = new float[21];
         private readonly bool[] _hasData = new bool[21];
         
-        public TransformPropertyValue() { }
+        public TransformValue() { }
         
-        protected TransformPropertyValue(SerializationInfo info, StreamingContext context) {
+        protected TransformValue(SerializationInfo info, StreamingContext context) {
             _data = (float[]) info.GetValue("d", typeof(float[]));
             _hasData = (bool[]) info.GetValue("h", typeof(bool[]));
         }
         
         public override SerializableValue Duplicate() {
-            var result = new TransformPropertyValue();
+            var result = new TransformValue();
             for (var i = -1; ++i < 22;) {
                 result._data[i] = _data[i];
                 result._hasData[i] = _hasData[i];

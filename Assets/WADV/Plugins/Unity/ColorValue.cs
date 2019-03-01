@@ -1,0 +1,216 @@
+using System;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
+using UnityEngine;
+using WADV.VisualNovel.Interoperation;
+using WADV.VisualNovel.Runtime.Utilities;
+using WADV.VisualNovel.Translation;
+
+namespace WADV.Plugins.Unity {
+    /// <inheritdoc cref="SerializableValue" />
+    /// <summary>
+    /// <para>表示一个ARGB颜色值</para>
+    /// <list type="bullet">
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>值复制</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>自有数据字节量</description></listheader>
+    ///     <item><description>4 字节</description></item>
+    ///     <item><description>1 名称长度1的SerializationInfo项目</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>类型转换支持</description></listheader>
+    ///     <item><description>布尔转换器</description></item>
+    ///     <item><description>浮点转换器</description></item>
+    ///     <item><description>整数转换器</description></item>
+    ///     <item><description>字符串转换器</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <item><description>加法互操作器</description></item>
+    ///     <item><description>减法互操作器</description></item>
+    ///     <item><description>乘法互操作器</description></item>
+    ///     <item><description>除法互操作器</description></item>
+    ///     <item><description>取反互操作器</description></item>
+    ///     <item><description>相等比较互操作器</description></item>
+    ///     <item><description>取子元素互操作器</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>特性支持</description></listheader>
+    ///     <item><description>R：获取红色分量（0-255）</description></item>
+    ///     <item><description>G：获取绿色分量（0-255）</description></item>
+    ///     <item><description>B：获取蓝色分量（0-255）</description></item>
+    ///     <item><description>A/Alpha：获取透明度（0-255）</description></item>
+    ///     <item><description>FloatR：获取红色分量（0-1）</description></item>
+    ///     <item><description>FloatG：获取绿色分量（0-1）</description></item>
+    ///     <item><description>FloatB：获取蓝色分量（0-1）</description></item>
+    ///     <item><description>FloatA/FloatAlpha：获取透明度（0-1）</description></item>
+    ///     <item><description>Hex：获以#开头的16进制颜色字符串</description></item>
+    /// </list>
+    /// </summary>
+    [Serializable]
+    public class ColorValue : SerializableValue, ISerializable, IStringConverter, IBooleanConverter, IFloatConverter, IIntegerConverter, IAddOperator, IMultiplyOperator,
+                              ISubtractOperator, IDivideOperator, INegativeOperator, IEqualOperator, IPickChildOperator {
+        /// <summary>
+        /// 获取颜色结构
+        /// </summary>
+        public Color32 color;
+
+        /// <summary>
+        /// 获取透明度
+        /// </summary>
+        public float Alpha => color.a / 255.0F;
+
+        /// <summary>
+        /// 获取红色分量
+        /// </summary>
+        public float R => color.r / 255.0F;
+        
+        /// <summary>
+        /// 获取绿色分量
+        /// </summary>
+        public float G => color.g / 255.0F;
+
+        /// <summary>
+        /// 获取蓝色分量
+        /// </summary>
+        public float B => color.b / 255.0F;
+
+        /// <summary>
+        /// 获取颜色数值
+        /// </summary>
+        public uint NumericValue => (uint) (color.a << 24) + (uint) (color.r << 16) + (uint) (color.g << 8) + color.b;
+
+        public ColorValue(uint color) {
+            var (r, g, b, a) = GetColorInteger(color);
+            this.color = new Color32(r, g, b, a);
+        }
+
+        public ColorValue(int color) {
+            var (r, g, b, a) = GetColorInteger(unchecked((uint) color));
+            this.color = new Color32(r, g, b, a);
+        }
+
+        public ColorValue(Color32 unityColor) {
+            color = unityColor;
+        }
+
+        public ColorValue(byte r, byte g, byte b, byte a) {
+            color = new Color32(r, g, b, a);
+        }
+        
+        public ColorValue(float r, float g, float b, float a) {
+            color = new Color32(
+                (byte) Mathf.Clamp(0, 255, Mathf.RoundToInt(r * 255.0F)),
+                (byte) Mathf.Clamp(0, 255, Mathf.RoundToInt(g * 255.0F)),
+                (byte) Mathf.Clamp(0, 255, Mathf.RoundToInt(b * 255.0F)),
+                (byte) Mathf.Clamp(0, 255, Mathf.RoundToInt(a * 255.0F))
+            );
+        }
+        
+        protected ColorValue(SerializationInfo info, StreamingContext context) {
+            var (r, g, b, a) = GetColorInteger(info.GetUInt32("c"));
+            color = new Color32(r, g, b, a);
+        }
+        
+        public override SerializableValue Duplicate() {
+            return new ColorValue(new Color32(color.r, color.g, color.b, color.a));
+        }
+        
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        public void GetObjectData(SerializationInfo info, StreamingContext context) {
+            info.AddValue("c", NumericValue);
+        }
+
+        public static (byte R, byte G, byte B, byte A) GetColorInteger(uint color) {
+            return ((byte) ((color & 0xFF0000) >> 16), (byte) ((color & 0xFF00) >> 8), (byte) (color & 0xFF), (byte) ((color & 0xFF000000) >> 24));
+        }
+
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
+            return $"#{color.a:X2}{color.r:X2}{color.g:X2}{color.b:X2}".ToUpper();
+        }
+
+        public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
+            return NumericValue != 0;
+        }
+
+        public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
+            return NumericValue;
+        }
+
+        public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
+            return (int) (NumericValue & 0x7FFFFFFF);
+        }
+
+        public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            var (r, g, b, a) = GetColorProperties(target, language);
+            return new ColorValue(r + R, g + G, b + B, a + Alpha);
+        }
+
+        public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            var (r, g, b, a) = GetColorProperties(target, language);
+            return new ColorValue(r * R, g * G, b * B, a * Alpha);
+        }
+
+        public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            var (r, g, b, a) = GetColorProperties(target, language);
+            return new ColorValue(r - R, g - G, b - B, a - Alpha);
+        }
+
+        public SerializableValue DivideWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            var (r, g, b, a) = GetColorProperties(target, language);
+            return new ColorValue(r / R, g / G, b / B, a / Alpha);
+        }
+        
+        public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
+            return new ColorValue(1.0F - R, 1.0F - G, 1.0F - B, 1.0F - Alpha);
+        }
+        
+        public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            var (r, g, b, a) = GetColorProperties(target, language);
+            return r.Equals(R) && g.Equals(G) && b.Equals(B) && a.Equals(Alpha);
+        }
+        
+        public SerializableValue PickChild(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            if (!(target is IStringConverter stringConverter)) throw new NotSupportedException($"Unable to pick child {target} from Vector2: only string is supported");
+            var name = stringConverter.ConvertToString(language);
+            switch (name) {
+                case "R":
+                    return new IntegerValue {value = color.r};
+                case "G":
+                    return new IntegerValue {value = color.g};
+                case "B":
+                    return new IntegerValue {value = color.b};
+                case "A":
+                case "Alpha":
+                    return new IntegerValue {value = color.a};
+                case "FloatR":
+                    return new FloatValue {value = R};
+                case "FloatG":
+                    return new FloatValue {value = G};
+                case "FloatB":
+                    return new FloatValue {value = B};
+                case "FloatA":
+                case "FloatAlpha":
+                    return new FloatValue {value = Alpha};
+                case "Hex":
+                    return new StringValue {value = ConvertToString(language)};
+            }
+            throw new NotSupportedException($"Unable to pick child {name} from Color: unrecognized command {name}");
+        }
+
+        private static (float R, float G, float B, float A) GetColorProperties(SerializableValue source, string language) {
+            switch (source) {
+                case ColorValue colorValue:
+                    return (colorValue.R, colorValue.G, colorValue.B, colorValue.Alpha);
+                default:
+                    var defaultValue = FloatValue.TryParse(source, language);
+                    if (defaultValue > 1.0F) {
+                        defaultValue /= 255.0F;
+                    }
+                    return (defaultValue, defaultValue, defaultValue, defaultValue);
+            }
+        }
+    }
+}

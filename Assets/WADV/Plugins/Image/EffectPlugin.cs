@@ -33,13 +33,13 @@ namespace WADV.Plugins.Image {
                 var name = key.ConvertToString(context.Language);
                 switch (name) {
                     case "Type":
-                        effectName = StringValue.TryParse(value);
+                        effectName = StringValue.TryParse(value, context.Language);
                         break;
                     case "Duration":
-                        duration = FloatValue.TryParse(value);
+                        duration = FloatValue.TryParse(value, context.Language);
                         break;
                     case "Easing": {
-                        var easingName = StringValue.TryParse(value);
+                        var easingName = StringValue.TryParse(value, context.Language);
                         if (!Enum.TryParse<EasingType>(easingName, true, out var easing)) {
                             throw new NotSupportedException($"Unable to create effect: ease type {easingName} is not supported");
                         }

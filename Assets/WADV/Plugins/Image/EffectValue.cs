@@ -10,6 +10,8 @@ using WADV.VisualNovel.Translation;
 namespace WADV.Plugins.Image {
     /// <inheritdoc cref="SerializableValue" />
     /// <inheritdoc cref="ISerializable" />
+    /// <inheritdoc cref="IEqualOperator" />
+    /// <inheritdoc cref="IStringConverter" />
     /// <summary>
     /// <para>表示一个适用于Graphic的特效</para>
     /// <list type="bullet">

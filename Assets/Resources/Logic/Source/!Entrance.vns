@@ -100,14 +100,14 @@
 #测试 闭包测试，第二次为3: [@temp]
 @runner = @temp = @null
 
-[Show DefaultTransform=[TransformProperty AnchorCenter PivotCenter Scale=1 Rotate=0]]
+[Show DefaultTransform=[Transform AnchorCenter PivotCenter Scale=1 Rotate=0]]
 
 [Show
-    [Image Color=0xFFFFFF FlipX FlipY UV=[Rect X=0 Y=0 Size=[Vector2 X=100 Y=100]] Source='Resources://Background/Classroom 2']
+    [Image Color=0xFFFFFF FlipX FlipY UV=[Rect X=0 Y=0 Size=[Vector2 X=1 Y=1]] Source='Resources://Background/Classroom 2']
     Name=Background PositionX=100 PositionY=50
     
-    [Image Color=0xFFFFFF FlipX FlipY UV=[Rect X=0 Y=0 Size=[Vector2 X=100 Y=100]] Source='Resources://Character/Tomo/1']
-    Name=Left Transform=[TransformProperty AnchorCenter PivotCenter Scale=1.03 Rotate=[Vector3 X=0 Y=0 Z=45] Position=[Vector2 X=100 Y=200]]
+    [Image Color=0xFFFFFFFF FlipX FlipY UV=[Rect X=0 Y=0 Size=[Vector2 X=100 Y=100]] Source='Resources://Character/Tomo/1']
+    Name=Left Transform=[Transform Scale=1.03 Rotate=[Vector3 X=0 Y=0 Z=45] Position=[Vector2 X=100 Y=200]]
     
     Effect=@Utilities->RoundFadeToLeft1.0Linear
     Bind=Container/Screen/Minimal/None]

@@ -12,6 +12,8 @@ using WADV.VisualNovel.Translation;
 namespace WADV.Plugins.Image {
     /// <inheritdoc cref="SerializableValue" />
     /// <inheritdoc cref="ISerializable" />
+    /// <inheritdoc cref="IStringConverter" />
+    /// <inheritdoc cref="IEqualOperator" />
     /// <summary>
     /// <para>表示一个2D材质</para>
     /// <list type="bullet">
@@ -46,14 +48,14 @@ namespace WADV.Plugins.Image {
         /// <summary>
         /// 材质的UV
         /// </summary>
-        public Rect2Value Uv {
+        public RectValue Uv {
             get {
                 if (_uv == null) {
-                    _uv = new Rect2Value(0.0F, 0.0F, 1.0F, 1.0F);
+                    _uv = new RectValue(0.0F, 0.0F, 1.0F, 1.0F);
                 }
                 return _uv;
             }
-            set => _uv = value ?? new Rect2Value(0.0F, 0.0F, 1.0F, 1.0F);
+            set => _uv = value ?? new RectValue(0.0F, 0.0F, 1.0F, 1.0F);
         }
 
         /// <summary>
@@ -66,13 +68,13 @@ namespace WADV.Plugins.Image {
         /// </summary>
         [CanBeNull] public Texture2D texture;
 
-        private Rect2Value _uv;
+        private RectValue _uv;
         
         public ImageValue() { }
         
         protected ImageValue(SerializationInfo info, StreamingContext context) {
             color = info.GetUInt32("c");
-            _uv = (Rect2Value) info.GetValue("r", typeof(Rect2Value));
+            _uv = (RectValue) info.GetValue("r", typeof(RectValue));
             source = info.GetString("s");
         }
 
@@ -93,7 +95,7 @@ namespace WADV.Plugins.Image {
         public override SerializableValue Duplicate() {
             return new ImageValue {
                 color = color,
-                Uv = (Rect2Value) Uv.Duplicate(),
+                Uv = (RectValue) Uv.Duplicate(),
                 source = source,
                 texture = texture
             };
@@ -105,7 +107,7 @@ namespace WADV.Plugins.Image {
             info.AddValue("s", source);
             var rect = Uv.value;
             if (rect.x.Equals(0.0F) && rect.y.Equals(0.0F) && rect.width.Equals(1.0F) && rect.height.Equals(1.0F)) {
-                info.AddValue("r", null, typeof(Rect2Value));
+                info.AddValue("r", null, typeof(RectValue));
             } else {
                 info.AddValue("r", Uv);
             }

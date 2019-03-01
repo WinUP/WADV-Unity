@@ -8,9 +8,9 @@ using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
 
 namespace WADV.Plugins.Vector {
-    [StaticRegistrationInfo("Rect2")]
+    [StaticRegistrationInfo("Rect")]
     [UsedImplicitly]
-    public class Rect2Plugin : IVisualNovelPlugin {
+    public class RectPlugin : IVisualNovelPlugin {
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
             float x = 0.0F, y = 0.0F, width = 0.0F, height = 0.0F;
             foreach (var (key, value) in context.StringParameters) {
@@ -22,9 +22,11 @@ namespace WADV.Plugins.Vector {
                         y = FloatValue.TryParse(value, context.Language);
                         break;
                     case "Width":
+                    case "W":
                         width = FloatValue.TryParse(value, context.Language);
                         break;
                     case "Height":
+                    case "H":
                         height = FloatValue.TryParse(value, context.Language);
                         break;
                     case "Position":
@@ -35,7 +37,7 @@ namespace WADV.Plugins.Vector {
                         break;
                 }
             }
-            return Task.FromResult<SerializableValue>(new Rect2Value(x, y, width, height));
+            return Task.FromResult<SerializableValue>(new RectValue(x, y, width, height));
         }
 
         public void OnRegister() { }
@@ -48,7 +50,7 @@ namespace WADV.Plugins.Vector {
                     return (vector3Value.value.x, vector3Value.value.y);
                 case Vector2Value vector2Value:
                     return (vector2Value.value.x, vector2Value.value.y);
-                case Rect2Value rect2Value:
+                case RectValue rect2Value:
                     return (rect2Value.value.x, rect2Value.value.y);
                 case IFloatConverter floatConverter:
                     var number = floatConverter.ConvertToFloat(language);
