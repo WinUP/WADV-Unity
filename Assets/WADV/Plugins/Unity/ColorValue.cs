@@ -8,8 +8,20 @@ using WADV.VisualNovel.Translation;
 
 namespace WADV.Plugins.Unity {
     /// <inheritdoc cref="SerializableValue" />
+    /// <inheritdoc cref="ISerializable" />
+    /// <inheritdoc cref="IStringConverter" />
+    /// <inheritdoc cref="IBooleanConverter" />
+    /// <inheritdoc cref="IFloatConverter" />
+    /// <inheritdoc cref="IIntegerConverter" />
+    /// <inheritdoc cref="IAddOperator" />
+    /// <inheritdoc cref="IMultiplyOperator" />
+    /// <inheritdoc cref="ISubtractOperator" />
+    /// <inheritdoc cref="IDivideOperator" />
+    /// <inheritdoc cref="INegativeOperator" />
+    /// <inheritdoc cref="IEqualOperator" />
+    /// <inheritdoc cref="IPickChildOperator" />
     /// <summary>
-    /// <para>表示一个ARGB颜色值</para>
+    /// <para>表示一个颜色值</para>
     /// <list type="bullet">
     ///     <listheader><description>复制方式</description></listheader>
     ///     <item><description>值复制</description></item>
@@ -46,101 +58,110 @@ namespace WADV.Plugins.Unity {
     ///     <item><description>FloatG：获取绿色分量（0-1）</description></item>
     ///     <item><description>FloatB：获取蓝色分量（0-1）</description></item>
     ///     <item><description>FloatA/FloatAlpha：获取透明度（0-1）</description></item>
-    ///     <item><description>Hex：获以#开头的16进制颜色字符串</description></item>
+    ///     <item><description>Hex：获以#开头的大写16进制颜色字符串</description></item>
     /// </list>
     /// </summary>
+    /// <remarks>颜色值存储时按ARGB排列</remarks>
     [Serializable]
     public class ColorValue : SerializableValue, ISerializable, IStringConverter, IBooleanConverter, IFloatConverter, IIntegerConverter, IAddOperator, IMultiplyOperator,
                               ISubtractOperator, IDivideOperator, INegativeOperator, IEqualOperator, IPickChildOperator {
         /// <summary>
         /// 获取颜色结构
         /// </summary>
-        public Color32 color;
+        public Color32 value;
 
         /// <summary>
         /// 获取透明度
         /// </summary>
-        public float Alpha => color.a / 255.0F;
+        public float Alpha => value.a / 255.0F;
 
         /// <summary>
         /// 获取红色分量
         /// </summary>
-        public float R => color.r / 255.0F;
+        public float R => value.r / 255.0F;
         
         /// <summary>
         /// 获取绿色分量
         /// </summary>
-        public float G => color.g / 255.0F;
+        public float G => value.g / 255.0F;
 
         /// <summary>
         /// 获取蓝色分量
         /// </summary>
-        public float B => color.b / 255.0F;
+        public float B => value.b / 255.0F;
 
         /// <summary>
-        /// 获取颜色数值
+        /// 获取颜色ARGB数值
         /// </summary>
-        public uint NumericValue => (uint) (color.a << 24) + (uint) (color.r << 16) + (uint) (color.g << 8) + color.b;
+        public uint Argb => (uint) (value.a << 24) + (uint) (value.r << 16) + (uint) (value.g << 8) + value.b;
+        
+        /// <summary>
+        /// 获取颜色RGBA数值
+        /// </summary>
+        public uint Rgba => (uint) (value.r << 24) + (uint) (value.g << 16) + (uint) (value.b << 8) + value.a;
 
-        public ColorValue(uint color) {
-            var (r, g, b, a) = GetColorInteger(color);
-            this.color = new Color32(r, g, b, a);
+        public ColorValue(uint argb) {
+            var (r, g, b, a) = GetColorInteger(argb);
+            value = new Color32(r, g, b, a);
         }
 
-        public ColorValue(int color) {
-            var (r, g, b, a) = GetColorInteger(unchecked((uint) color));
-            this.color = new Color32(r, g, b, a);
+        public ColorValue(int argb) {
+            var (r, g, b, a) = GetColorInteger(unchecked((uint) argb));
+            value = new Color32(r, g, b, a);
         }
 
-        public ColorValue(Color32 unityColor) {
-            color = unityColor;
+        public ColorValue(Color32 unityValue) {
+            value = unityValue;
         }
 
         public ColorValue(byte r, byte g, byte b, byte a) {
-            color = new Color32(r, g, b, a);
+            value = new Color32(r, g, b, a);
         }
         
         public ColorValue(float r, float g, float b, float a) {
-            color = new Color32(
-                (byte) Mathf.Clamp(0, 255, Mathf.RoundToInt(r * 255.0F)),
-                (byte) Mathf.Clamp(0, 255, Mathf.RoundToInt(g * 255.0F)),
-                (byte) Mathf.Clamp(0, 255, Mathf.RoundToInt(b * 255.0F)),
-                (byte) Mathf.Clamp(0, 255, Mathf.RoundToInt(a * 255.0F))
-            );
+            value = new Color32(ToByteColor(r), ToByteColor(g), ToByteColor(b), ToByteColor(a));
         }
         
         protected ColorValue(SerializationInfo info, StreamingContext context) {
             var (r, g, b, a) = GetColorInteger(info.GetUInt32("c"));
-            color = new Color32(r, g, b, a);
+            value = new Color32(r, g, b, a);
         }
         
         public override SerializableValue Duplicate() {
-            return new ColorValue(new Color32(color.r, color.g, color.b, color.a));
+            return new ColorValue(new Color32(value.r, value.g, value.b, value.a));
         }
         
         [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
-            info.AddValue("c", NumericValue);
+            info.AddValue("c", Argb);
         }
 
         public static (byte R, byte G, byte B, byte A) GetColorInteger(uint color) {
             return ((byte) ((color & 0xFF0000) >> 16), (byte) ((color & 0xFF00) >> 8), (byte) (color & 0xFF), (byte) ((color & 0xFF000000) >> 24));
         }
 
+        public static byte ToByteColor(float source) {
+            return (byte) Mathf.Clamp(Mathf.RoundToInt(source * 255.0F), 0, 255);
+        }
+
+        public static float ToFloatColor(byte source) {
+            return source / 255.0F;
+        }
+
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return $"#{color.a:X2}{color.r:X2}{color.g:X2}{color.b:X2}".ToUpper();
+            return $"#{value.a:X2}{value.r:X2}{value.g:X2}{value.b:X2}".ToUpper();
         }
 
         public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
-            return NumericValue != 0;
+            return Argb != 0;
         }
 
         public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
-            return NumericValue;
+            return Argb;
         }
 
         public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
-            return (int) (NumericValue & 0x7FFFFFFF);
+            return unchecked((int) Argb);
         }
 
         public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
@@ -177,14 +198,14 @@ namespace WADV.Plugins.Unity {
             var name = stringConverter.ConvertToString(language);
             switch (name) {
                 case "R":
-                    return new IntegerValue {value = color.r};
+                    return new IntegerValue {value = value.r};
                 case "G":
-                    return new IntegerValue {value = color.g};
+                    return new IntegerValue {value = value.g};
                 case "B":
-                    return new IntegerValue {value = color.b};
+                    return new IntegerValue {value = value.b};
                 case "A":
                 case "Alpha":
-                    return new IntegerValue {value = color.a};
+                    return new IntegerValue {value = value.a};
                 case "FloatR":
                     return new FloatValue {value = R};
                 case "FloatG":

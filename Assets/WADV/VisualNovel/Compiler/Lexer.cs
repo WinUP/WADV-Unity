@@ -63,6 +63,26 @@ namespace WADV.VisualNovel.Compiler {
                         position = position.MoveColumn(offset);
                     }
                     file.MoveToNext(); // 换行符处理结束后移动游标一位以对应CodePosition
+                    
+                    // 如果去掉空白后行以#开头则表示带角色描述的快速对话。快速对话中不能使用可编程语法，也不能中途换行，直接解析至行尾即可。
+                    if (file.Current == '#') {
+                        file.MoveToNext();
+                        position = position.NextColumn();
+                        var nextSpace = file.IndexOf(' ');
+                        var lineBreak = file.IndexOf('\n');
+                        if (nextSpace < 0 || nextSpace > lineBreak) { // 对话内容不能为空
+                            throw new CompileException(identifier, position, "Unable to create quick dialogue: dialogue starts with character must has content");
+                        }
+                        if (file.Current == ' ') { // 角色描述不能为空
+                            throw new CompileException(identifier, position, "Unable to create quick dialogue: dialogue starts with character must has character definition");
+                        }
+                        tokens.Add(new StringToken(TokenType.DialogueSpeaker, position, file.CopyContent(nextSpace).ExecuteEscapeCharacters(), false));
+                        position = position.MoveColumn(nextSpace);
+                        tokens.Add(new StringToken(TokenType.DialogueContent, position, file.CopyContent(nextSpace + 1, lineBreak).ExecuteEscapeCharacters(), false));
+                        file.Move(lineBreak);
+                        position = position.MoveColumn(lineBreak - nextSpace);
+                        continue;
+                    }
                 }
 
                 if (file.Current == '\0') {
@@ -186,25 +206,6 @@ namespace WADV.VisualNovel.Compiler {
                     }
                     file.Move(nextSeparator);
                     position = position.MoveColumn(nextSeparator);
-                    continue;
-                }
-
-                if (file.Current == '#' && file.Previous != '\\') { // 带角色描述的快速对话。快速对话中不能使用可编程语法，也不能中途换行，直接解析至行尾即可。
-                    file.MoveToNext();
-                    position = position.NextColumn();
-                    var nextSpace = file.IndexOf(' ');
-                    var lineBreak = file.IndexOf('\n');
-                    if (nextSpace < 0 || nextSpace > lineBreak) { // 对话内容不能为空
-                        throw new CompileException(identifier, position, "Unable to create quick dialogue: dialogue starts with character must has content");
-                    }
-                    if (file.Current == ' ') { // 角色描述不能为空
-                        throw new CompileException(identifier, position, "Unable to create quick dialogue: dialogue starts with character must has character definition");
-                    }
-                    tokens.Add(new StringToken(TokenType.DialogueSpeaker, position, file.CopyContent(nextSpace).ExecuteEscapeCharacters(), false));
-                    position = position.MoveColumn(nextSpace);
-                    tokens.Add(new StringToken(TokenType.DialogueContent, position, file.CopyContent(nextSpace + 1, lineBreak).ExecuteEscapeCharacters(), false));
-                    file.Move(lineBreak);
-                    position = position.MoveColumn(lineBreak - nextSpace);
                     continue;
                 }
 

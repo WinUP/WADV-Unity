@@ -128,6 +128,7 @@
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\ColorPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Unity\ColorValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Unity\TransformPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Unity\TransformValue.cs" />

@@ -4,6 +4,7 @@ using System.Security.Permissions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
+using WADV.Plugins.Unity;
 using WADV.Plugins.Vector;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Provider;
@@ -23,10 +24,10 @@ namespace WADV.Plugins.Image {
     /// </list>
     /// <list type="bullet">
     ///     <listheader><description>自有数据字节量</description></listheader>
-    ///     <item><description>4 字节</description></item>
     ///     <item><description>1 字符串</description></item>
-    ///     <item><description>1 ObjectId</description></item>
+    ///     <item><description>2 ObjectId</description></item>
     ///     <item><description>1 引用关联的WADV.Plugins.Vector.Rect2Value（当不是Rect2Value{0, 0, 1, 1}时）</description></item>
+    ///     <item><description>1 引用关联的WADV.Plugins.Unity.ColorValue</description></item>
     ///     <item><description>3 名称长度1的SerializationInfo项目</description></item>
     /// </list>
     /// <list type="bullet">
@@ -43,7 +44,15 @@ namespace WADV.Plugins.Image {
         /// <summary>
         /// Graphic颜色
         /// </summary>
-        public uint color;
+        public ColorValue Color {
+            get {
+                if (_color == null) {
+                    _color = new ColorValue(0, 0, 0, 255);
+                }
+                return _color;
+            }
+            set => _color = value ?? new ColorValue(0, 0, 0, 255);
+        }
 
         /// <summary>
         /// 材质的UV
@@ -69,11 +78,12 @@ namespace WADV.Plugins.Image {
         [CanBeNull] public Texture2D texture;
 
         private RectValue _uv;
+        private ColorValue _color;
         
         public ImageValue() { }
         
         protected ImageValue(SerializationInfo info, StreamingContext context) {
-            color = info.GetUInt32("c");
+            _color = (ColorValue) info.GetValue("c", typeof(ColorValue));
             _uv = (RectValue) info.GetValue("r", typeof(RectValue));
             source = info.GetString("s");
         }
@@ -94,7 +104,7 @@ namespace WADV.Plugins.Image {
         
         public override SerializableValue Duplicate() {
             return new ImageValue {
-                color = color,
+                Color = (ColorValue) Color.Duplicate(),
                 Uv = (RectValue) Uv.Duplicate(),
                 source = source,
                 texture = texture
@@ -111,6 +121,7 @@ namespace WADV.Plugins.Image {
             } else {
                 info.AddValue("r", Uv);
             }
+            var color = Color.value;
         }
 
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
@@ -118,7 +129,7 @@ namespace WADV.Plugins.Image {
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return target is ImageValue imageValue && imageValue.source == source;
+            return target is ImageValue imageValue && imageValue.source == source && color.EqualsWith(imageValue.color) && Uv.EqualsWith(imageValue.Uv);
         }
     }
 }
