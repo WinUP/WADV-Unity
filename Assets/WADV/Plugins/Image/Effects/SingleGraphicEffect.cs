@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
-using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Image.Effects {
     /// <inheritdoc />

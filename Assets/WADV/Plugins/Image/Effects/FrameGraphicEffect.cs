@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using UnityEngine.UI;
-using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Image.Effects {
     public abstract class FrameGraphicEffect : StaticGraphicEffect {

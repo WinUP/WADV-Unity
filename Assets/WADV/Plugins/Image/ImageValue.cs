@@ -113,7 +113,6 @@ namespace WADV.Plugins.Image {
 
         [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
-            info.AddValue("c", color);
             info.AddValue("s", source);
             var rect = Uv.value;
             if (rect.x.Equals(0.0F) && rect.y.Equals(0.0F) && rect.width.Equals(1.0F) && rect.height.Equals(1.0F)) {
@@ -122,6 +121,11 @@ namespace WADV.Plugins.Image {
                 info.AddValue("r", Uv);
             }
             var color = Color.value;
+            if (color.r == 0 && color.g == 0 && color.b == 0 && color.a == 255) {
+                info.AddValue("c", null, typeof(ColorValue));
+            } else {
+                info.AddValue("c", Color);
+            }
         }
 
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
@@ -129,7 +133,7 @@ namespace WADV.Plugins.Image {
         }
 
         public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return target is ImageValue imageValue && imageValue.source == source && color.EqualsWith(imageValue.color) && Uv.EqualsWith(imageValue.Uv);
+            return target is ImageValue imageValue && imageValue.source == source && Color.EqualsWith(imageValue.Color) && Uv.EqualsWith(imageValue.Uv);
         }
     }
 }

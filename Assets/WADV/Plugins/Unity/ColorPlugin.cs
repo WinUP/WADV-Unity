@@ -14,7 +14,7 @@ namespace WADV.Plugins.Unity {
     [UsedImplicitly]
     public class ColorPlugin : IVisualNovelPlugin {
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
-            byte? r, g, b, a;
+            byte? r = null, g = null, b = null, a = null;
             foreach (var (key, value) in context.StringParameters) {
                 var name = key.ConvertToString(context.Language);
                 if (name.StartsWith("#")) return Task.FromResult<SerializableValue>(ParseHex(name));
