@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Runtime;
 
 namespace WADV.Intents {
@@ -11,13 +13,15 @@ namespace WADV.Intents {
         private Dictionary<string, float> _floatValue;
         private Dictionary<string, string> _stringValue;
         private Dictionary<string, bool> _booleanValue;
+        private Dictionary<string, SerializableValue> _serializableValue;
 
         public static DumpRuntimeIntent CreateEmpty() {
             return new DumpRuntimeIntent {
                 _floatValue = new Dictionary<string, float>(),
                 _stringValue = new Dictionary<string, string>(),
                 _booleanValue = new Dictionary<string, bool>(),
-                _integerValue = new Dictionary<string, int>()
+                _integerValue = new Dictionary<string, int>(),
+                _serializableValue = new Dictionary<string, SerializableValue>()
             };
         }
 
@@ -35,6 +39,11 @@ namespace WADV.Intents {
         
         public bool GetBoolean(string id) {
             return _booleanValue.ContainsKey(id) ? _booleanValue[id] : throw new KeyNotFoundException($"Unable to find key {id} in boolean values");
+        }
+
+        [CanBeNull]
+        public T GetValue<T>(string id) where T : SerializableValue {
+            return _serializableValue.ContainsKey(id) ? _serializableValue[id] as T : throw new KeyNotFoundException($"Unable to find key {id} in serializable values");
         }
 
         public void AddValue(string id, int value) {
@@ -68,6 +77,13 @@ namespace WADV.Intents {
                 _booleanValue.Add(id, value);
             }
         }
-        
+
+        public void AddValue(string id, SerializableValue value) {
+            if (_serializableValue.ContainsKey(id)) {
+                _serializableValue[id] = value;
+            } else {
+                _serializableValue.Add(id, value);
+            }
+        }
     }
 }

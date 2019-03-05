@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using System.Security.Permissions;
 using UnityEngine;
 using WADV.VisualNovel.Interoperation;
+using WADV.VisualNovel.Translation;
 
 namespace WADV.Plugins.Unity {
     /// <inheritdoc cref="SerializableValue" />
@@ -19,9 +20,16 @@ namespace WADV.Plugins.Unity {
     ///     <item><description>2 数组信息</description></item>
     ///     <item><description>2 名称长度1的SerializationInfo项目</description></item>
     /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <item><description>加法互操作器</description></item>
+    ///     <item><description>减法互操作器</description></item>
+    ///     <item><description>相等比较互操作器</description></item>
+    /// </list>
     /// </summary>
+    /// <remarks>加法会将右侧有的数据覆盖到左端的副本，减法则会从左端的副本中去掉右侧有的数据项</remarks>
     [Serializable]
-    public class TransformValue : SerializableValue, ISerializable {
+    public class TransformValue : SerializableValue, ISerializable, IAddOperator, ISubtractOperator, IEqualOperator {
         private readonly float[] _data = new float[21];
         private readonly bool[] _hasData = new bool[21];
         
@@ -258,6 +266,174 @@ namespace WADV.Plugins.Unity {
             /// Z轴旋转角度
             /// </summary>
             RotationZ
+        }
+
+        public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            if (!(target is TransformValue transformValue)) throw new NotSupportedException($"Unable to add TransformValue: target {target} is not TransformValue");
+            var value = transformValue.Get(PropertyName.AnchorMinX);
+            var result = (TransformValue) Duplicate();
+            if (value.HasValue) {
+                result.Set(PropertyName.AnchorMinX, value);
+            }
+            value = transformValue.Get(PropertyName.AnchorMinY);
+            if (value.HasValue) {
+                result.Set(PropertyName.AnchorMinY, value);
+            }
+            value = transformValue.Get(PropertyName.AnchorMaxX);
+            if (value.HasValue) {
+                result.Set(PropertyName.AnchorMaxX, value);
+            }
+            value = transformValue.Get(PropertyName.AnchorMaxY);
+            if (value.HasValue) {
+                result.Set(PropertyName.AnchorMaxY, value);
+            }
+            value = transformValue.Get(PropertyName.PivotX);
+            if (value.HasValue) {
+                result.Set(PropertyName.PivotX, value);
+            }
+            value = transformValue.Get(PropertyName.PivotY);
+            if (value.HasValue) {
+                result.Set(PropertyName.PivotY, value);
+            }
+            value = transformValue.Get(PropertyName.PositionX);
+            if (value.HasValue) {
+                result.Set(PropertyName.PositionX, value);
+            }
+            value = transformValue.Get(PropertyName.PositionY);
+            if (value.HasValue) {
+                result.Set(PropertyName.PositionY, value);
+            }
+            value = transformValue.Get(PropertyName.PositionZ);
+            if (value.HasValue) {
+                result.Set(PropertyName.PositionZ, value);
+            }
+            value = transformValue.Get(PropertyName.Left);
+            if (value.HasValue) {
+                result.Set(PropertyName.Left, value);
+            }
+            value = transformValue.Get(PropertyName.Bottom);
+            if (value.HasValue) {
+                result.Set(PropertyName.Bottom, value);
+            }
+            value = transformValue.Get(PropertyName.Right);
+            if (value.HasValue) {
+                result.Set(PropertyName.Right, value);
+            }
+            value = transformValue.Get(PropertyName.Top);
+            if (value.HasValue) {
+                result.Set(PropertyName.Top, value);
+            }
+            value = transformValue.Get(PropertyName.Width);
+            if (value.HasValue) {
+                result.Set(PropertyName.Width, value);
+            }
+            value = transformValue.Get(PropertyName.Height);
+            if (value.HasValue) {
+                result.Set(PropertyName.Height, value);
+            }
+            value = transformValue.Get(PropertyName.ScaleX);
+            if (value.HasValue) {
+                result.Set(PropertyName.ScaleX, value);
+            }
+            value = transformValue.Get(PropertyName.ScaleY);
+            if (value.HasValue) {
+                result.Set(PropertyName.ScaleY, value);
+            }
+            value = transformValue.Get(PropertyName.ScaleZ);
+            if (value.HasValue) {
+                result.Set(PropertyName.ScaleZ, value);
+            }
+            value = transformValue.Get(PropertyName.RotationX);
+            if (value.HasValue) {
+                result.Set(PropertyName.RotationX, value);
+            }
+            value = transformValue.Get(PropertyName.RotationY);
+            if (value.HasValue) {
+                result.Set(PropertyName.RotationY, value);
+            }
+            value = transformValue.Get(PropertyName.RotationZ);
+            if (value.HasValue) {
+                result.Set(PropertyName.RotationZ, value);
+            }
+            return result;
+        }
+
+        public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            if (!(target is TransformValue transformValue)) throw new NotSupportedException($"Unable to add TransformValue: target {target} is not TransformValue");
+            var result = (TransformValue) Duplicate();
+            if (transformValue.Get(PropertyName.AnchorMinX).HasValue) {
+                result.Set(PropertyName.AnchorMinX, null);
+            }
+            if (transformValue.Get(PropertyName.AnchorMinY).HasValue) {
+                result.Set(PropertyName.AnchorMinY, null);
+            }
+            if (transformValue.Get(PropertyName.AnchorMaxX).HasValue) {
+                result.Set(PropertyName.AnchorMaxX, null);
+            }
+            if (transformValue.Get(PropertyName.AnchorMaxY).HasValue) {
+                result.Set(PropertyName.AnchorMaxY, null);
+            }
+            if (transformValue.Get(PropertyName.PivotX).HasValue) {
+                result.Set(PropertyName.PivotX, null);
+            }
+            if (transformValue.Get(PropertyName.PivotY).HasValue) {
+                result.Set(PropertyName.PivotY, null);
+            }
+            if (transformValue.Get(PropertyName.PositionX).HasValue) {
+                result.Set(PropertyName.PositionX, null);
+            }
+            if (transformValue.Get(PropertyName.PositionY).HasValue) {
+                result.Set(PropertyName.PositionY, null);
+            }
+            if (transformValue.Get(PropertyName.PositionZ).HasValue) {
+                result.Set(PropertyName.PositionZ, null);
+            }
+            if (transformValue.Get(PropertyName.Left).HasValue) {
+                result.Set(PropertyName.Left, null);
+            }
+            if (transformValue.Get(PropertyName.Bottom).HasValue) {
+                result.Set(PropertyName.Bottom, null);
+            }
+            if (transformValue.Get(PropertyName.Right).HasValue) {
+                result.Set(PropertyName.Right, null);
+            }
+            if (transformValue.Get(PropertyName.Top).HasValue) {
+                result.Set(PropertyName.Top, null);
+            }
+            if (transformValue.Get(PropertyName.Width).HasValue) {
+                result.Set(PropertyName.Width, null);
+            }
+            if (transformValue.Get(PropertyName.Height).HasValue) {
+                result.Set(PropertyName.Height, null);
+            }
+            if (transformValue.Get(PropertyName.ScaleX).HasValue) {
+                result.Set(PropertyName.ScaleX, null);
+            }
+            if (transformValue.Get(PropertyName.ScaleY).HasValue) {
+                result.Set(PropertyName.ScaleY, null);
+            }
+            if (transformValue.Get(PropertyName.ScaleZ).HasValue) {
+                result.Set(PropertyName.ScaleZ, null);
+            }
+            if (transformValue.Get(PropertyName.RotationX).HasValue) {
+                result.Set(PropertyName.RotationX, null);
+            }
+            if (transformValue.Get(PropertyName.RotationY).HasValue) {
+                result.Set(PropertyName.RotationY, null);
+            }
+            if (transformValue.Get(PropertyName.RotationZ).HasValue) {
+                result.Set(PropertyName.RotationZ, null);
+            }
+            return result;
+        }
+
+        public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            if (!(target is TransformValue transformValue)) return false;
+            for (var i = -1; ++i < 22;) {
+                if (!transformValue._data[i].Equals(_data[i])) return false;
+                if (transformValue._hasData[i] != _hasData[i]) return false;
+            }
+            return true;
         }
     }
 }

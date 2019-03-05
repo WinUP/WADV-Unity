@@ -14,16 +14,26 @@ namespace WADV.Plugins.Unity {
         public Task<SerializableValue> Execute(PluginExecuteContext context) {
             var transformProperty = new TransformValue();
             foreach (var (key, value) in context.StringParameters) {
-                float? x, y, z;
-                switch (key.ConvertToString(context.Language)) {
+                AnalyzePropertyTo(key.ConvertToString(context.Language), value, transformProperty, context.Language);
+            }
+            return Task.FromResult<SerializableValue>(transformProperty);
+        }
+
+        public void OnRegister() { }
+
+        public void OnUnregister(bool isReplace) { }
+
+        public static void AnalyzePropertyTo(string key, SerializableValue value, TransformValue transformProperty, string language) {
+            float? x, y, z;
+                switch (key) {
                     case "AnchorMinX":
-                        transformProperty.Set(TransformValue.PropertyName.AnchorMinX, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.AnchorMinX, FloatValue.TryParse(value, language));
                         break;
                     case "AnchorMinY":
-                        transformProperty.Set(TransformValue.PropertyName.AnchorMinY, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.AnchorMinY, FloatValue.TryParse(value, language));
                         break;
                     case "AnchorMin":
-                        (x, y, _) = GetVectorComponents(value, context.Language);
+                        (x, y, _) = GetVectorComponents(value, language);
                         if (x.HasValue) {
                             transformProperty.Set(TransformValue.PropertyName.AnchorMinX, x);
                         }
@@ -32,13 +42,13 @@ namespace WADV.Plugins.Unity {
                         }
                         break;
                     case "AnchorMaxX":
-                        transformProperty.Set(TransformValue.PropertyName.AnchorMaxX, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.AnchorMaxX, FloatValue.TryParse(value, language));
                         break;
                     case "AnchorMaxY":
-                        transformProperty.Set(TransformValue.PropertyName.AnchorMaxY, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.AnchorMaxY, FloatValue.TryParse(value, language));
                         break;
                     case "AnchorMax":
-                        (x, y, _) = GetVectorComponents(value, context.Language);
+                        (x, y, _) = GetVectorComponents(value, language);
                         if (x.HasValue) {
                             transformProperty.Set(TransformValue.PropertyName.AnchorMaxX, x);
                         }
@@ -47,16 +57,16 @@ namespace WADV.Plugins.Unity {
                         }
                         break;
                     case "PositionX":
-                        transformProperty.Set(TransformValue.PropertyName.PositionX, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.PositionX, FloatValue.TryParse(value, language));
                         break;
                     case "PositionY":
-                        transformProperty.Set(TransformValue.PropertyName.PositionY, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.PositionY, FloatValue.TryParse(value, language));
                         break;
                     case "PositionZ":
-                        transformProperty.Set(TransformValue.PropertyName.PositionZ, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.PositionZ, FloatValue.TryParse(value, language));
                         break;
                     case "Position":
-                        (x, y, z) = GetVectorComponents(value, context.Language);
+                        (x, y, z) = GetVectorComponents(value, language);
                         if (x.HasValue) {
                             transformProperty.Set(TransformValue.PropertyName.PositionX, x);
                         }
@@ -68,31 +78,31 @@ namespace WADV.Plugins.Unity {
                         }
                         break;
                     case "Width":
-                        transformProperty.Set(TransformValue.PropertyName.Width, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.Width, FloatValue.TryParse(value, language));
                         break;
                     case "Height":
-                        transformProperty.Set(TransformValue.PropertyName.Height, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.Height, FloatValue.TryParse(value, language));
                         break;
                     case "Top":
-                        transformProperty.Set(TransformValue.PropertyName.Top, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.Top, FloatValue.TryParse(value, language));
                         break;
                     case "Bottom":
-                        transformProperty.Set(TransformValue.PropertyName.Bottom, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.Bottom, FloatValue.TryParse(value, language));
                         break;
                     case "Left":
-                        transformProperty.Set(TransformValue.PropertyName.Left, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.Left, FloatValue.TryParse(value, language));
                         break;
                     case "Right":
-                        transformProperty.Set(TransformValue.PropertyName.Right, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.Right, FloatValue.TryParse(value, language));
                         break;
                     case "PivotX":
-                        transformProperty.Set(TransformValue.PropertyName.PivotX, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.PivotX, FloatValue.TryParse(value, language));
                         break;
                     case "PivotY":
-                        transformProperty.Set(TransformValue.PropertyName.PivotY, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.PivotY, FloatValue.TryParse(value, language));
                         break;
                     case "Pivot":
-                        (x, y, _) = GetVectorComponents(value, context.Language);
+                        (x, y, _) = GetVectorComponents(value, language);
                         if (x.HasValue) {
                             transformProperty.Set(TransformValue.PropertyName.PivotX, x);
                         }
@@ -101,16 +111,16 @@ namespace WADV.Plugins.Unity {
                         }
                         break;
                     case "ScaleX":
-                        transformProperty.Set(TransformValue.PropertyName.ScaleX, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.ScaleX, FloatValue.TryParse(value, language));
                         break;
                     case "ScaleY":
-                        transformProperty.Set(TransformValue.PropertyName.ScaleY, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.ScaleY, FloatValue.TryParse(value, language));
                         break;
                     case "ScaleZ":
-                        transformProperty.Set(TransformValue.PropertyName.ScaleZ, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.ScaleZ, FloatValue.TryParse(value, language));
                         break;
                     case "Scale":
-                        (x, y, z) = GetVectorComponents(value, context.Language);
+                        (x, y, z) = GetVectorComponents(value, language);
                         if (x.HasValue) {
                             transformProperty.Set(TransformValue.PropertyName.ScaleX, x);
                         }
@@ -122,16 +132,16 @@ namespace WADV.Plugins.Unity {
                         }
                         break;
                     case "RotationX":
-                        transformProperty.Set(TransformValue.PropertyName.RotationX, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.RotationX, FloatValue.TryParse(value, language));
                         break;
                     case "RotationY":
-                        transformProperty.Set(TransformValue.PropertyName.RotationY, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.RotationY, FloatValue.TryParse(value, language));
                         break;
                     case "RotationZ":
-                        transformProperty.Set(TransformValue.PropertyName.RotationZ, FloatValue.TryParse(value, context.Language));
+                        transformProperty.Set(TransformValue.PropertyName.RotationZ, FloatValue.TryParse(value, language));
                         break;
                     case "Rotation":
-                        (x, y, z) = GetVectorComponents(value, context.Language);
+                        (x, y, z) = GetVectorComponents(value, language);
                         if (x.HasValue) {
                             transformProperty.Set(TransformValue.PropertyName.RotationX, x);
                         }
@@ -269,13 +279,7 @@ namespace WADV.Plugins.Unity {
                         transformProperty.Set(TransformValue.PropertyName.PivotY, 0.0F);
                         break;
                 }
-            }
-            return Task.FromResult<SerializableValue>(transformProperty);
         }
-
-        public void OnRegister() { }
-
-        public void OnUnregister(bool isReplace) { }
 
         private static (float? x, float? y, float? z) GetVectorComponents(SerializableValue source, string language) {
             switch (source) {
