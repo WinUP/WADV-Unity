@@ -127,6 +127,7 @@
     <Compile Include="Assets\WADV\Plugins\Image\ImageValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ShowPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ShowPluginMessageIntegration.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\ShowPluginStructures.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageInformation.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageMessageIntegration.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />

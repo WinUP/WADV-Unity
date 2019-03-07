@@ -90,24 +90,14 @@ Shader "UI/Unlit/TextureMaskTransition" {
 
             fixed4 frag (v2f i) : SV_Target {
                 half4 color;
-                UI_BASE_FREAGEMENT(color, i);
-                float4 origin_color = tex2D(_MainTex, i.uv);
-                float4 target_color = tex2D(_TargetTex, i.target_uv);
-                half mask = to_grayscale(tex2D(_MaskTex, i.mask_uv));
-                half offset = -_Threshold * (1 - _Progress);
-                if (mask > _Progress + _Threshold + offset) {
-                    color = origin_color;
-                } else if (mask > _Progress + offset) {
-                    half progress = lerp(1, 0, (mask - _Progress - offset) / _Threshold);
-                    color = (1 - progress) * origin_color + progress * target_color;
-                } else {
-                    color = target_color;
-                }
+                UI_BASE_FREAGEMENT(color, i)
+                half progress = saturate(lerp(1, 0, (to_grayscale(tex2D(_MaskTex, i.mask_uv)) - _Progress + _Threshold * (1 - _Progress)) / _Threshold));
+                color = (1 - progress) * tex2D(_MainTex, i.uv) + progress * tex2D(_TargetTex, i.target_uv);
                 #ifdef UNITY_UI_CLIP_RECT
                 UI_CLIP_RECT(color, i, _ClipRect)
                 #endif
                 #ifdef UNITY_UI_ALPHACLIP
-                UI_ALPHACLIP(color);
+                UI_ALPHACLIP(color)
                 #endif
                 return color;
             }
