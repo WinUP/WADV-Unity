@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -9,6 +10,7 @@ using WADV.Plugins.Image.Effects;
 using WADV.Plugins.Image.Utilities;
 using WADV.Plugins.Unity;
 using WADV.Reflection;
+using WADV.Thread;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
@@ -18,9 +20,10 @@ namespace WADV.Plugins.Image {
     [UsedImplicitly]
     public partial class ShowPlugin : IVisualNovelPlugin {
         private TransformValue _default = new TransformValue();
+        private Dictionary<string, ShowingImage> _showingImages = new Dictionary<string, ShowingImage>();
         
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
-            var (mode, effect, images) = AnalyseParameters(context);
+            var (mode, layer, effect, images) = AnalyseParameters(context);
             var content = new ImageMessageIntegration.ShowImageContent();
             if (effect == null) {
                 content.Effect = null;
@@ -28,25 +31,36 @@ namespace WADV.Plugins.Image {
                 if (!(effect.Effect is SingleGraphicEffect singleGraphicEffect)) throw new NotSupportedException($"Unable to create show command: effect {effect} is not SingleGraphicEffect");
                 content.Effect = singleGraphicEffect;
             }
-            Vector2? bindRange = null;
             if (mode != BindMode.None) {
                 var getAreaMessage = await MessageService.ProcessAsync(Message<ImageMessageIntegration.GetAreaContent>.Create(
                                                                            ImageMessageIntegration.Mask,
                                                                            ImageMessageIntegration.GetArea,
                                                                            new ImageMessageIntegration.GetAreaContent {Images = images}));
-                if (!(getAreaMessage is Message<Vector2> vector2Message)) throw new NotSupportedException($"Unable to create show command: only Vector2 result is acceptable for GetArea message");
-                bindRange = vector2Message.Content;
+                if (!(getAreaMessage is Message<ImageMessageIntegration.GetAreaContent> area)) throw new NotSupportedException("Unable to create show command: only Vector2 result is acceptable for GetArea message");
+                var size = area.Content.CanvasSize;
+                var canvas = new Texture2D(Mathf.RoundToInt(size.x), Mathf.RoundToInt(size.y));
+                canvas.SetPixels(Enumerable.Repeat(Color.clear, canvas.width * canvas.height).ToArray());
+                await Dispatcher.WaitAll(area.Content.Images.Select(e => e.Image.ReadTexture()));
+                foreach (var (image, index) in area.Content.Images.WithIndex()) {
+                    var position = area.Content.ImagePosition[index];
+                    if (image.Image.texture == null) throw new NullReferenceException($"Unable to create show command: failed to load image {image.Image.source}");
+                    Graphics.CopyTexture(image.Image.texture, 0, 0, 0, 0, image.Image.texture.width, image.Image.texture.height,
+                                         canvas, 0, 0, Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y));
+                }
+                canvas.Apply(false);
+                
             }
-            
+            throw new NotSupportedException();
         }
 
         public void OnRegister() { }
 
         public void OnUnregister(bool isReplace) { }
 
-        private (BindMode Mode, EffectValue Effect, List<ImageInformation> Images) AnalyseParameters(PluginExecuteContext context) {
+        private (BindMode Mode, int Layer, EffectValue Effect, List<ImageInformation> Images) AnalyseParameters(PluginExecuteContext context) {
             EffectValue effect = null;
             var bind = BindMode.None;
+            var layer = 0;
             var images = new List<ImageInformation>();
             ImageValue currentImage = null;
             string currentName = null;
@@ -79,6 +93,9 @@ namespace WADV.Plugins.Image {
                     case IStringConverter stringConverter:
                         var name = stringConverter.ConvertToString(context.Language);
                         switch (name) {
+                            case "Layer":
+                                layer = FindLayer(value);
+                                break;
                             case "Name":
                                 currentName = StringValue.TryParse(value);
                                 break;
@@ -91,7 +108,7 @@ namespace WADV.Plugins.Image {
                             case "Bind":
                                 switch (StringValue.TryParse(value)) {
                                     case "Container":
-                                        bind = BindMode.Container;
+                                        bind = BindMode.Canvas;
                                         break;
                                     case "Screen":
                                         bind = BindMode.Screen;
@@ -118,14 +135,11 @@ namespace WADV.Plugins.Image {
             if (currentImage != null) {
                 AddImage();
             }
-            return (bind, effect, images);
+            return (bind, layer, effect, images);
         }
 
-        public enum BindMode {
-            Container,
-            Screen,
-            Minimal,
-            None
+        private static int FindLayer(SerializableValue value) {
+            throw new NotImplementedException();
         }
     }
 }

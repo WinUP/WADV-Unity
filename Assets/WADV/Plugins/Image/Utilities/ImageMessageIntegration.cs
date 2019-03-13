@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using UnityEngine;
 using WADV.MessageSystem;
 using WADV.Plugins.Image.Effects;
 
@@ -16,6 +17,10 @@ namespace WADV.Plugins.Image.Utilities {
 
         public class GetAreaContent {
             public List<ImageInformation> Images { get; set; } = new List<ImageInformation>();
+            
+            public Vector2 CanvasSize { get; set; }
+            
+            public List<Vector2> ImagePosition { get; set; } = new List<Vector2>();
         }
         
         public class ShowImageContent {
