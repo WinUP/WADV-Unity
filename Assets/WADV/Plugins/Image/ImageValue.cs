@@ -27,7 +27,7 @@ namespace WADV.Plugins.Image {
     ///     <item><description>1 字符串</description></item>
     ///     <item><description>2 ObjectId</description></item>
     ///     <item><description>1 引用关联的WADV.Plugins.Vector.Rect2Value（当不是Rect2Value{0, 0, 1, 1}时）</description></item>
-    ///     <item><description>1 引用关联的WADV.Plugins.Unity.ColorValue</description></item>
+    ///     <item><description>1 引用关联的WADV.Plugins.Unity.ColorValue（当不是ColorValue{0, 0, 0, 255}时）</description></item>
     ///     <item><description>3 名称长度1的SerializationInfo项目</description></item>
     /// </list>
     /// <list type="bullet">

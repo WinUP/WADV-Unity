@@ -1,18 +1,21 @@
 using System;
+using UnityEngine;
+using WADV.Plugins.Image.Utilities;
 
 namespace WADV.Plugins.Image {
     public partial class ShowPlugin {
-        public enum BindMode {
-            Canvas,
-            Minimal,
-            None
-        }
 
         [Serializable]
-        private class ShowingImage {
-            public int Layer { get; set; }
+        private class ShowingInformation {
+            public int Layer { get; }
             
-            public ImageValue Image { get; set; }
+            public Rect DisplayArea { get; set; }
+            
+            public ShowingInformation(int layer) {
+                Layer = layer;
+            }
+            
+            public ImageProperties Image { get; set; }
         }
     }
 }

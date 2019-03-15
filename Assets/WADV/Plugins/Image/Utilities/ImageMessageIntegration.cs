@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using UnityEngine;
 using WADV.MessageSystem;
 using WADV.Plugins.Image.Effects;
 
@@ -13,23 +12,19 @@ namespace WADV.Plugins.Image.Utilities {
 
         public const string ShowImage = "SHOW_IMAGE";
 
-        public const string GetArea = "GET_AREA";
+        public const string UpdateInformation = "UPDATE_INFORMATION";
 
-        public class GetAreaContent {
-            public List<ImageInformation> Images { get; set; } = new List<ImageInformation>();
-            
-            public Vector2 CanvasSize { get; set; }
-            
-            public List<Vector2> ImagePosition { get; set; } = new List<Vector2>();
-        }
+        public const string GetCanvasSize = "GET_CANVAS_SIZE";
+
+        public const string GetBindShader = "GET_BIND_SHADER";
         
         public class ShowImageContent {
-            public ShowPlugin.BindMode Mode { get; set; } = ShowPlugin.BindMode.None;
+            public ImageBindMode Mode { get; set; } = ImageBindMode.None;
                 
             [CanBeNull]
             public SingleGraphicEffect Effect { get; set; }
                 
-            public List<ImageInformation> Images { get; set; } = new List<ImageInformation>();
+            public List<ImageProperties> Images { get; set; } = new List<ImageProperties>();
         }
     }
 }

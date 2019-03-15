@@ -128,8 +128,11 @@
     <Compile Include="Assets\WADV\Plugins\Image\ShowPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ShowPluginMessageIntegration.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ShowPluginStructures.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageInformation.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageBindMode.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageDisplayInformation.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageMessageIntegration.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageProperties.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageStatus.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
@@ -261,7 +264,7 @@
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMPro_Properties.cginc" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
     <None Include="Assets\WADV\Plugins\Image\Shaders\TextureMaskTransition.shader" />
-    <None Include="Assets\Game\NewComputeShader.compute" />
+    <None Include="Assets\WADV\Plugins\Image\Shaders\CopyTexture.compute" />
     <None Include="Assets\WADV\Plugins\Image\Shaders\EffectUtilities.cginc" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
     <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />

@@ -2,7 +2,7 @@
 #pragma kernel SetTransparent
 
 RWTexture2D<float4> Canvas;
-float2 CanvasSize;
+float4 CanvasRect;
 
 Texture2D<float4> Source;
 float4x4 Transform; // Matrix4x4.TRS()
