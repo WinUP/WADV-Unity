@@ -85,7 +85,7 @@ Shader "UI/Unlit/AlphaMaskTransition" {
 
             fixed4 frag (v2f i) : SV_Target {
                 half4 color;
-                UI_BASE_FREAGEMENT(color, i)
+                UI_BASE_FRAGMENT(color, i)
                 color.a = saturate(lerp(1, 0, (to_grayscale(tex2D(_MaskTex, i.mask_uv)) - _Progress + _Threshold * (1 - _Progress)) / _Threshold));
                 #ifdef UNITY_UI_CLIP_RECT
                 UI_CLIP_RECT(color, i, _ClipRect)

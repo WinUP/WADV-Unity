@@ -2,9 +2,10 @@
 #pragma kernel SetTransparent
 
 RWTexture2D<float4> Canvas;
-float4 CanvasRect;
+float2 CanvasSize;
 
 Texture2D<float4> Source;
+fixed4 Color;
 float4x4 Transform; // Matrix4x4.TRS()
 
 [numthreads(16,16,1)]
@@ -12,7 +13,7 @@ void SetTexture(uint3 id : SV_DispatchThreadID) {
     float2 position = mul(Transform, float4(id, 0)).xy;
     position.x = clamp(position.x, 0, CanvasSize.x);
     position.y = clamp(position.y, 0, CanvasSize.y);
-    Canvas[position.xy] = Source[id.xy];
+    Canvas[position.xy] = Source[id.xy] * Color;
 }
 
 [numthreads(16,16,1)]

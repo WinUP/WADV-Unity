@@ -75,6 +75,7 @@
     <Compile Include="Assets\WADV\Extensions\EnumeratorExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\KeyValuePairExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\ListExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\RenderTextureExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\StringExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\TaskExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\TypeExtensions.cs" />

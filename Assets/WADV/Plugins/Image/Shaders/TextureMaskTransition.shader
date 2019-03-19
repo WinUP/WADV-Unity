@@ -90,7 +90,7 @@ Shader "UI/Unlit/TextureMaskTransition" {
 
             fixed4 frag (v2f i) : SV_Target {
                 half4 color;
-                UI_BASE_FREAGEMENT(color, i)
+                UI_BASE_FRAGMENT(color, i)
                 half progress = saturate(lerp(1, 0, (to_grayscale(tex2D(_MaskTex, i.mask_uv)) - _Progress + _Threshold * (1 - _Progress)) / _Threshold));
                 color = (1 - progress) * tex2D(_MainTex, i.uv) + progress * tex2D(_TargetTex, i.target_uv);
                 #ifdef UNITY_UI_CLIP_RECT

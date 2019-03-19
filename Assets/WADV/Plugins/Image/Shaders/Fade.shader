@@ -77,7 +77,7 @@
 
             fixed4 frag (v2f i) : SV_Target {
                 half4 color;
-                UI_BASE_FREAGEMENT(color, i);
+                UI_BASE_FRAGMENT(color, i);
                 color.a = saturate(color.a - 1 + _Alpha);
                 #ifdef UNITY_UI_CLIP_RECT
                 UI_CLIP_RECT(color, i, _ClipRect)

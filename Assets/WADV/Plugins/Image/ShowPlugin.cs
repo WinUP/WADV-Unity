@@ -23,10 +23,11 @@ namespace WADV.Plugins.Image {
         private int _defaultLayer = 0;
         private Dictionary<ImageProperties, ImageDisplayInformation> _images = new Dictionary<ImageProperties, ImageDisplayInformation>();
 
-        public readonly int ShaderCanvasName = Shader.PropertyToID("Canvas");
-        public readonly int ShaderCanvasRectName = Shader.PropertyToID("CanvasRect");
-        public readonly int ShaderSourceName = Shader.PropertyToID("Source");
-        public readonly int ShaderTransformName = Shader.PropertyToID("Transform");
+        public static readonly int ShaderCanvasName = Shader.PropertyToID("Canvas");
+        public static readonly int ShaderCanvasSizeName = Shader.PropertyToID("CanvasRect");
+        public static readonly int ShaderSourceName = Shader.PropertyToID("Source");
+        public static readonly int ShaderTransformName = Shader.PropertyToID("Transform");
+        public static readonly int ShaderColorName = Shader.PropertyToID("Color");
         
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var (mode, layer, effect, images) = AnalyseParameters(context);
@@ -40,27 +41,8 @@ namespace WADV.Plugins.Image {
             }
             if (mode != ImageBindMode.None && images.Count > 1) {
                 var preBindImages = FindPreBindImages(images.Select(e => e.Name));
+                var canvas = await BindImages(preBindImages, mode);
                 
-                
-                
-                
-                
-                var getAreaMessage = await MessageService.ProcessAsync(Message<ImageMessageIntegration.GetAreaContent>.Create(
-                                                                           ImageMessageIntegration.Mask,
-                                                                           ImageMessageIntegration.UpdateInformation,
-                                                                           new ImageMessageIntegration.GetAreaContent {Images = images}));
-                if (!(getAreaMessage is Message<ImageMessageIntegration.GetAreaContent> area)) throw new NotSupportedException("Unable to create show command: only Vector2 result is acceptable for GetArea message");
-                var size = area.Content.CanvasSize;
-                var canvas = new Texture2D(Mathf.RoundToInt(size.x), Mathf.RoundToInt(size.y));
-                canvas.SetPixels(Enumerable.Repeat(Color.clear, canvas.width * canvas.height).ToArray());
-                await Dispatcher.WaitAll(area.Content.Images.Select(e => e.Image.ReadTexture()));
-                foreach (var (image, index) in area.Content.Images.WithIndex()) {
-                    var position = area.Content.ImagePosition[index];
-                    if (image.Image.texture == null) throw new NullReferenceException($"Unable to create show command: failed to load image {image.Image.source}");
-                    Graphics.CopyTexture(image.Image.texture, 0, 0, 0, 0, image.Image.texture.width, image.Image.texture.height,
-                                         canvas, 0, 0, Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y));
-                }
-                canvas.Apply(false);
                 
             }
             throw new NotSupportedException();
@@ -167,50 +149,87 @@ namespace WADV.Plugins.Image {
             return list.ToDictionary(e => e.Image, e => e.DisplayInformation);
         }
 
-        private static async Task<Rect> GetImageContainerSize(IEnumerable<ImageDisplayInformation> images, ImageBindMode mode) {
-            switch (mode) {
-                case ImageBindMode.Canvas:
-                    return new Rect(Vector2.zero, (await MessageService.ProcessAsync(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetCanvasSize))
-                                                      as Message<Vector2>)?.Content ?? throw new ArgumentException());
-                case ImageBindMode.Minimal:
-                    var xMin = float.MaxValue;
-                    var yMin = float.MaxValue;
-                    var xMax = float.MinValue;
-                    var yMax = float.MinValue;
-                    foreach (var image in images) {
-                        var area = image.DisplayArea;
-                        xMin = area.xMin < xMin ? area.xMin : xMin;
-                        yMin = area.yMin < yMin ? area.yMin : yMin;
-                        xMax = area.xMax > xMax ? area.xMax : xMax;
-                        yMax = area.yMax > yMax ? area.yMax : yMax;
+        private static async Task<Vector2Int> GetImageContainerSize() {
+            var result = (await MessageService.ProcessAsync(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetCanvasSize))
+                       as Message<Vector2>)?.Content ?? throw new ArgumentException();
+            if (result == null) throw new ArgumentException("Unable to create show command: unable to get container size");
+            return new Vector2Int((int) Mathf.Ceil(result.x), (int) Mathf.Ceil(result.y));
+        }
+
+        private static async Task<Dictionary<ImageProperties, ImageDisplayInformation>> UpdateImages(Dictionary<ImageProperties, ImageDisplayInformation> images) {
+            var result = (await MessageService.ProcessAsync(Message<Dictionary<ImageProperties, ImageDisplayInformation>>.Create(
+                                                          ImageMessageIntegration.Mask, ImageMessageIntegration.UpdateInformation, images))
+                as Message<Dictionary<ImageProperties, ImageDisplayInformation>>)?.Content;
+            if (result == null) throw new ArgumentException("Unable to create show command: update image information failed");
+            return result;
+        }
+
+        private static async Task<RenderTexture> GenerateCanvasUsingShader(ComputeShader shader, Dictionary<ImageProperties, ImageDisplayInformation> images, Vector2Int canvasSize) {
+            var bindKernel = shader.FindKernel("SetTexture");
+            var clearKernel = shader.FindKernel("SetTransparent");
+            var canvas = new RenderTexture(canvasSize.x + 2, canvasSize.y + 2, 24);
+            shader.SetTexture(bindKernel, ShaderCanvasName, canvas);
+            shader.SetTexture(clearKernel, ShaderCanvasName, canvas);
+            shader.SetVector(ShaderCanvasSizeName, new Vector2(canvas.width, canvas.height));
+            foreach (var (image, info) in images) {
+                shader.SetMatrix(ShaderTransformName, info.Transform);
+                await image.Image.ReadTexture();
+                if (info.Status == ImageStatus.OnScreen) {
+                    if (image.Image.texture != null) {
+                        shader.Dispatch(clearKernel, image.Image.texture.width / 16 + 1, image.Image.texture.height / 16 + 1, 1);
                     }
-                    return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
-                default:
-                    throw new NotSupportedException();
+                } else {
+                    shader.SetTexture(bindKernel, ShaderSourceName, image.Image.texture);
+                    shader.SetVector(ShaderColorName, image.Image.Color.ToVector4());
+                    if (image.Image.texture != null) {
+                        shader.Dispatch(bindKernel, image.Image.texture.width / 16 + 1, image.Image.texture.height / 16 + 1, 1);
+                    }
+                }
             }
+            return canvas;
         }
         
-        private async Task<Texture2D> BindImages(Dictionary<ImageProperties, ImageDisplayInformation> images, ImageBindMode mode) {
-            images = (await MessageService.ProcessAsync(Message<Dictionary<ImageProperties, ImageDisplayInformation>>.Create(
-                                                            ImageMessageIntegration.Mask, ImageMessageIntegration.UpdateInformation, images))
-                as Message<Dictionary<ImageProperties, ImageDisplayInformation>>)?.Content;
-            if (images == null) throw new ArgumentException();
-            var drawingArea = await GetImageContainerSize(images.Values, mode);
+        private static async Task<Texture2D> GenerateCanvas(Dictionary<ImageProperties, ImageDisplayInformation> images, Vector2Int canvasSize) {
+            var canvas = new Texture2D(canvasSize.x, canvasSize.y, TextureFormat.RGBA32, false);
+            var transparent = new Color(0, 0, 0, 0);
+            foreach (var (image, info) in images) {
+                await image.Image.ReadTexture();
+                if (image.Image.texture == null) continue;
+                var width = image.Image.texture.width;
+                var height = image.Image.texture.height;
+                for (var i = -1; ++i < width;) {
+                    for (var j = -1; ++j < height;) {
+                        var position = info.Transform * new Vector4(i, j, 0, 0);
+                        if (position.x >= 0 && position.x <= canvasSize.x && position.y >= 0 && position.y <= canvasSize.y) {
+                            canvas.SetPixel(i, j, info.Status == ImageStatus.OnScreen ? transparent : image.Image.texture.GetPixel(i, j));
+                        }
+                    }
+                }
+            }
+            canvas.Apply(false);
+            return canvas;
+        }
+        
+        private static async Task<Texture> BindImages(Dictionary<ImageProperties, ImageDisplayInformation> images, ImageBindMode mode) {
+            images = await UpdateImages(images);
+            var canvasSize = await GetImageContainerSize();
+            Texture canvas;
             if (SystemInfo.supportsComputeShaders) {
                 var shader = (await MessageService.ProcessAsync(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader))
                     as Message<ComputeShader>)?.Content;
                 if (shader == null) {
-                    throw new NotSupportedException();
+                    canvas = await GenerateCanvas(images, canvasSize);
+                } else {
+                    canvas = await GenerateCanvasUsingShader(shader, images, canvasSize);
                 }
-                var bindKernel = shader.FindKernel("SetTexture");
-                var clearKernel = shader.FindKernel("SetTransparent");
-                var canvas = new RenderTexture(Mathf.RoundToInt(drawingArea.width) + 1, Mathf.RoundToInt(drawingArea.height) + 1, 24);
-                shader.SetTexture(bindKernel, ShaderCanvasName, canvas);
-                shader.SetTexture(clearKernel, ShaderCanvasName, canvas);
-                shader.SetVector(ShaderCanvasRectName, new Vector4(drawingArea.x, drawingArea.y, drawingArea.width, drawingArea.height));
             } else {
-                throw new NotSupportedException();
+                canvas = await GenerateCanvas(images, canvasSize);
             }
+            if (mode == ImageBindMode.Canvas) {
+                return canvas;
+            }
+            var original = canvas is RenderTexture renderTexture ? renderTexture.CopyAsTexture2D() : (Texture2D) canvas;
+            
         }
     }
 }
