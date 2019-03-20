@@ -5,7 +5,6 @@ using WADV.Extensions;
 using WADV.VisualNovel.Compiler;
 using WADV.VisualNovel.Compiler.Expressions;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
 using WADV.VisualNovel.Runtime.Utilities.Object;
 

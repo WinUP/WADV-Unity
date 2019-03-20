@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using WADV.Thread;
-using WADV.VisualNovel.Plugin;
+using WADV.VisualNovel.Interoperation;
 
 namespace WADV.MessageSystem {
     /// <summary>

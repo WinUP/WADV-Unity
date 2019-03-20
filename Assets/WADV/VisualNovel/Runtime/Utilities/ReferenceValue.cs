@@ -1,6 +1,6 @@
 using System;
+using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />

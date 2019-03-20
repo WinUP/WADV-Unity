@@ -5,9 +5,9 @@ using System.Text;
 using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Extensions;
+using WADV.Translation;
 using WADV.VisualNovel.Compiler;
 using WADV.VisualNovel.Runtime;
-using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.ScriptStatus {
     /// <summary>

@@ -1,7 +1,7 @@
 using System;
 using WADV.VisualNovel.Interoperation;
 using UnityEngine;
-using WADV.VisualNovel.Translation;
+using WADV.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />

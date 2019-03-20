@@ -1,7 +1,7 @@
 using System.Linq;
 using WADV.Extensions;
+using WADV.Translation;
 using WADV.VisualNovel.Compiler.Expressions;
-using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Compiler {
     /// <summary>

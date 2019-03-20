@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
-using WADV.VisualNovel.Provider;
+using WADV.Resource;
 
 namespace WADV.Plugins.Image.Effects {
     public static class ShaderLoader {

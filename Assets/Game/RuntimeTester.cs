@@ -2,7 +2,7 @@ using UnityEngine;
 using WADV.MessageSystem;
 using WADV.Plugins.Dialogue;
 using WADV.Plugins.Input;
-using WADV.VisualNovel.Plugin;
+using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Runtime;
 using WADV.VisualNovel.Runtime.Utilities;
 

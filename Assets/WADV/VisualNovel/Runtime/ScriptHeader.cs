@@ -6,10 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using WADV.Extensions;
 using WADV.VisualNovel.Compiler;
-using WADV.VisualNovel.Translation;
-using WADV.VisualNovel.Provider;
 using WADV.VisualNovel.ScriptStatus;
 using JetBrains.Annotations;
+using WADV.Resource;
+using WADV.Translation;
 
 namespace WADV.VisualNovel.Runtime {
     /// <summary>

@@ -6,8 +6,8 @@ using System.Security.Permissions;
 using System.Text;
 using JetBrains.Annotations;
 using WADV.Extensions;
+using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities.Object {
     /// <inheritdoc cref="SerializableValue" />

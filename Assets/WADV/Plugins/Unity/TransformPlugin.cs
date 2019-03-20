@@ -1,10 +1,8 @@
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using WADV.Extensions;
-using WADV.Plugins.Vector;
 using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
 
 namespace WADV.Plugins.Unity {

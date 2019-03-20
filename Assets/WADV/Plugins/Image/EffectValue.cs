@@ -4,8 +4,8 @@ using System.Runtime.Serialization;
 using System.Security.Permissions;
 using JetBrains.Annotations;
 using WADV.Plugins.Image.Effects;
+using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Translation;
 
 namespace WADV.Plugins.Image {
     /// <inheritdoc cref="SerializableValue" />

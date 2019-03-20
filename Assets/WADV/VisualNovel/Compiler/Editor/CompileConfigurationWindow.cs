@@ -8,8 +8,8 @@ using WADV.MessageSystem;
 using WADV.VisualNovel.ScriptStatus;
 using UnityEditor;
 using UnityEngine;
+using WADV.Translation;
 using WADV.VisualNovel.Runtime;
-using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Compiler.Editor {
     public class CompileConfigurationWindow : EditorWindow, IMessenger {

@@ -1,4 +1,4 @@
-using WADV.VisualNovel.Translation;
+using WADV.Translation;
 
 namespace WADV.VisualNovel.Interoperation {
     /// <summary>

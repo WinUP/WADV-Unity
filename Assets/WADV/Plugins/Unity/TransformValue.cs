@@ -2,8 +2,8 @@ using System;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 using UnityEngine;
+using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Translation;
 
 namespace WADV.Plugins.Unity {
     /// <inheritdoc cref="SerializableValue" />

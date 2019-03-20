@@ -16,7 +16,7 @@ namespace WADV.Thread {
         /// 跳转到主线程执行
         /// </summary>
         /// <returns></returns>
-        public static WaitForUpdate UseMainThread() => NextUpdate();
+        public static WaitForUpdate UseMainThread() => WaitForUpdate.Instance;
 
         /// <summary>
         /// 等待下一个更新循环
@@ -29,7 +29,7 @@ namespace WADV.Thread {
         /// <para>后台线程往往拥有更出色的性能，但其不能访问任何Unity界面和游戏场景元素</para>
         /// </summary>
         /// <returns></returns>
-        public static WaitForBackgroundThread UseBackgroundThread() => new WaitForBackgroundThread();
+        public static WaitForBackgroundThread UseBackgroundThread() => WaitForBackgroundThread.Instance;
 
         /// <summary>
         /// 等待一定时间

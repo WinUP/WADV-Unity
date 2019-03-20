@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 using WADV.MessageSystem;
 
 namespace WADV.Plugins.Image {

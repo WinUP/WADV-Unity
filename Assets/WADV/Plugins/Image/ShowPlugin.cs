@@ -10,9 +10,7 @@ using WADV.Plugins.Image.Effects;
 using WADV.Plugins.Image.Utilities;
 using WADV.Plugins.Unity;
 using WADV.Reflection;
-using WADV.Thread;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
 
 namespace WADV.Plugins.Image {
@@ -20,7 +18,7 @@ namespace WADV.Plugins.Image {
     [UsedImplicitly]
     public partial class ShowPlugin : IVisualNovelPlugin {
         private TransformValue _defaultTransform = new TransformValue();
-        private int _defaultLayer = 0;
+        private int _defaultLayer;
         private Dictionary<ImageProperties, ImageDisplayInformation> _images = new Dictionary<ImageProperties, ImageDisplayInformation>();
 
         public static readonly int ShaderCanvasName = Shader.PropertyToID("Canvas");
@@ -102,16 +100,20 @@ namespace WADV.Plugins.Image {
                                 currentTransform.AddWith(value);
                                 break;
                             case "Bind":
-                                switch (StringValue.TryParse(value)) {
-                                    case "Canvas":
-                                    case "Maximal":
-                                    case "Max":
-                                        bind = ImageBindMode.Canvas;
-                                        break;
-                                    case "Minimal":
-                                    case "Min":
-                                        bind = ImageBindMode.Minimal;
-                                        break;
+                                if (value is NullValue) {
+                                    bind = ImageBindMode.Canvas;
+                                } else {
+                                    switch (StringValue.TryParse(value)) {
+                                        case "Canvas":
+                                        case "Maximal":
+                                        case "Max":
+                                            bind = ImageBindMode.Canvas;
+                                            break;
+                                        case "Minimal":
+                                        case "Min":
+                                            bind = ImageBindMode.Minimal;
+                                            break;
+                                    }
                                 }
                                 break;
                             case "DefaultTransform":
@@ -164,7 +166,7 @@ namespace WADV.Plugins.Image {
             return result;
         }
 
-        private static async Task<RenderTexture> GenerateCanvasUsingShader(ComputeShader shader, Dictionary<ImageProperties, ImageDisplayInformation> images, Vector2Int canvasSize) {
+        private static async Task<Texture2D> GenerateCanvasUsingShader(ComputeShader shader, Dictionary<ImageProperties, ImageDisplayInformation> images, Vector2Int canvasSize) {
             var bindKernel = shader.FindKernel("SetTexture");
             var clearKernel = shader.FindKernel("SetTransparent");
             var canvas = new RenderTexture(canvasSize.x + 2, canvasSize.y + 2, 24);
@@ -186,7 +188,7 @@ namespace WADV.Plugins.Image {
                     }
                 }
             }
-            return canvas;
+            return canvas.CopyAsTexture2D(new RectInt(1, 1, canvas.width - 2, canvas.height - 2));
         }
         
         private static async Task<Texture2D> GenerateCanvas(Dictionary<ImageProperties, ImageDisplayInformation> images, Vector2Int canvasSize) {
@@ -210,10 +212,10 @@ namespace WADV.Plugins.Image {
             return canvas;
         }
         
-        private static async Task<Texture> BindImages(Dictionary<ImageProperties, ImageDisplayInformation> images, ImageBindMode mode) {
+        private static async Task<Texture2D> BindImages(Dictionary<ImageProperties, ImageDisplayInformation> images, ImageBindMode mode) {
             images = await UpdateImages(images);
             var canvasSize = await GetImageContainerSize();
-            Texture canvas;
+            Texture2D canvas;
             if (SystemInfo.supportsComputeShaders) {
                 var shader = (await MessageService.ProcessAsync(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader))
                     as Message<ComputeShader>)?.Content;
@@ -228,7 +230,6 @@ namespace WADV.Plugins.Image {
             if (mode == ImageBindMode.Canvas) {
                 return canvas;
             }
-            var original = canvas is RenderTexture renderTexture ? renderTexture.CopyAsTexture2D() : (Texture2D) canvas;
             
         }
     }

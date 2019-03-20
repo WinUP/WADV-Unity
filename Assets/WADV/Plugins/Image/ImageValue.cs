@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Plugins.Unity;
-using WADV.Plugins.Vector;
+using WADV.Resource;
+using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Provider;
-using WADV.VisualNovel.Translation;
 
 namespace WADV.Plugins.Image {
     /// <inheritdoc cref="SerializableValue" />

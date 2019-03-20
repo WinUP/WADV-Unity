@@ -7,8 +7,8 @@ using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 using WADV.Extensions;
 using WADV.MessageSystem;
+using WADV.Translation;
 using WADV.VisualNovel.ScriptStatus;
-using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Compiler.Editor {
     [CustomEditor(typeof(ScriptImporter))]

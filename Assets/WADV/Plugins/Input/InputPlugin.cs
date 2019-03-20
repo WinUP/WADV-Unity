@@ -6,7 +6,6 @@ using WADV.Extensions;
 using WADV.MessageSystem;
 using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
 
 namespace WADV.Plugins.Input {

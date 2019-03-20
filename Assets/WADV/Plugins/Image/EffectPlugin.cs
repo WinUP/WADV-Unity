@@ -7,7 +7,6 @@ using WADV.Extensions;
 using WADV.Plugins.Image.Effects;
 using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
 
 namespace WADV.Plugins.Image {

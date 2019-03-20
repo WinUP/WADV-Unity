@@ -4,8 +4,8 @@ using System.IO;
 using System.Text;
 using WADV.Extensions;
 using WADV.VisualNovel.ScriptStatus;
-using WADV.VisualNovel.Translation;
 using UnityEngine;
+using WADV.Translation;
 
 namespace WADV.VisualNovel.Compiler {
     /// <summary>

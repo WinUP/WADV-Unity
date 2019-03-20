@@ -1,8 +1,8 @@
 using System.IO;
 using System.Threading.Tasks;
 using WADV.VisualNovel.Compiler;
-using WADV.VisualNovel.Translation;
 using JetBrains.Annotations;
+using WADV.Translation;
 
 namespace WADV.VisualNovel.Runtime {
     /// <summary>

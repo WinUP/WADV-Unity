@@ -3,7 +3,6 @@ using UnityEngine;
 using WADV.Extensions;
 using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Plugin;
 
 namespace WADV.Plugins.Dialogue {
     /// <inheritdoc />

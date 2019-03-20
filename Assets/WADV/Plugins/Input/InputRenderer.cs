@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using WADV.Intents;
 using WADV.MessageSystem;
-using WADV.VisualNovel.Plugin;
+using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Input {
     /// <inheritdoc />
