@@ -18,7 +18,7 @@ namespace WADV.Plugins.Image.Utilities {
         /// 图片内容
         /// </summary>
         [NotNull]
-        public ImageValue Image { get; }
+        public ImageValue Content { get; }
 
         /// <summary>
         /// 图片的Transform属性集
@@ -28,7 +28,7 @@ namespace WADV.Plugins.Image.Utilities {
 
         public ImageProperties([NotNull] string name, [NotNull] ImageValue image, [NotNull] TransformValue transform) {
             Name = name;
-            Image = image;
+            Content = image;
             Transform = transform;
         }
     }

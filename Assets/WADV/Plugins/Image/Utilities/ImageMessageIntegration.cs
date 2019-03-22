@@ -19,11 +19,9 @@ namespace WADV.Plugins.Image.Utilities {
         public const string GetBindShader = "GET_BIND_SHADER";
         
         public class ShowImageContent {
-            public ImageBindMode Mode { get; set; } = ImageBindMode.None;
-                
             [CanBeNull]
             public SingleGraphicEffect Effect { get; set; }
-                
+            
             public List<ImageProperties> Images { get; set; } = new List<ImageProperties>();
         }
     }

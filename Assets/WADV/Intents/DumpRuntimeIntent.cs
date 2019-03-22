@@ -6,7 +6,7 @@ using WADV.VisualNovel.Runtime;
 
 namespace WADV.Intents {
     [Serializable]
-    public struct DumpRuntimeIntent {
+    public class DumpRuntimeIntent {
         public ScriptRuntime runtime;
 
         private Dictionary<string, int> _integerValue;

@@ -2,6 +2,12 @@ using UnityEngine;
 
 namespace WADV.Extensions {
     public static class RenderTextureExtensions {
+        /// <summary>
+        /// 复制为2D材质
+        /// </summary>
+        /// <param name="value">目标渲染材质</param>
+        /// <param name="rect">截取区域</param>
+        /// <returns></returns>
         public static Texture2D CopyAsTexture2D(this RenderTexture value, RectInt rect) {
             var result = new Texture2D(rect.width, rect.height, TextureFormat.RGBA32, false);
             var currentRenderTarget = RenderTexture.active;
@@ -12,6 +18,11 @@ namespace WADV.Extensions {
             return result;
         }
         
+        /// <summary>
+        /// 复制为2D材质
+        /// </summary>
+        /// <param name="value">目标渲染材质</param>
+        /// <returns></returns>
         public static Texture2D CopyAsTexture2D(this RenderTexture value) {
             return CopyAsTexture2D(value, new RectInt(0, 0, value.width, value.height));
         }

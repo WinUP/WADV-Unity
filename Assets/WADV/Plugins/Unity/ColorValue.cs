@@ -148,10 +148,6 @@ namespace WADV.Plugins.Unity {
             return source / 255.0F;
         }
 
-        public Vector4 ToVector4() {
-            return new Vector4(R, G, B, Alpha);
-        }
-
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
             return $"#{value.a:X2}{value.r:X2}{value.g:X2}{value.b:X2}".ToUpper();
         }

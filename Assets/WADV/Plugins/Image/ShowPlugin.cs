@@ -20,12 +20,6 @@ namespace WADV.Plugins.Image {
         private TransformValue _defaultTransform = new TransformValue();
         private int _defaultLayer;
         private Dictionary<ImageProperties, ImageDisplayInformation> _images = new Dictionary<ImageProperties, ImageDisplayInformation>();
-
-        public static readonly int ShaderCanvasName = Shader.PropertyToID("Canvas");
-        public static readonly int ShaderCanvasSizeName = Shader.PropertyToID("CanvasRect");
-        public static readonly int ShaderSourceName = Shader.PropertyToID("Source");
-        public static readonly int ShaderTransformName = Shader.PropertyToID("Transform");
-        public static readonly int ShaderColorName = Shader.PropertyToID("Color");
         
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var (mode, layer, effect, images) = AnalyseParameters(context);
@@ -37,13 +31,18 @@ namespace WADV.Plugins.Image {
                 if (!(effect.Effect is SingleGraphicEffect singleGraphicEffect)) throw new NotSupportedException($"Unable to create show command: effect {effect} is not SingleGraphicEffect");
                 content.Effect = singleGraphicEffect;
             }
-            if (mode != ImageBindMode.None && images.Count > 1) {
-                var preBindImages = FindPreBindImages(images.Select(e => e.Name));
-                var canvas = await BindImages(preBindImages, mode);
-                
-                
+            var preBindImages = FindPreBindImages(images.Select(e => e.Name));
+            Texture2D existedCanvas = null;
+            if (preBindImages.Any()) {
+                existedCanvas = await BindImages(preBindImages);
             }
-            throw new NotSupportedException();
+            var targetCanvas = await BindImages(InitializeImage(images, layer));
+            var displayArea = existedCanvas.GetVisibleContentArea().MergeWith(targetCanvas.GetVisibleContentArea());
+            if (existedCanvas != null) {
+                existedCanvas = existedCanvas.Cut(displayArea.size);
+            }
+            targetCanvas = targetCanvas.Cut(displayArea.size);
+            
         }
 
         public void OnRegister() { }
@@ -60,7 +59,7 @@ namespace WADV.Plugins.Image {
             var currentTransform = new TransformValue();
             void AddImage() {
                 // ReSharper disable once AccessToModifiedClosure
-                var existed = images.FindIndex(e => e.Image.EqualsWith(currentImage, context.Language));
+                var existed = images.FindIndex(e => e.Content.EqualsWith(currentImage, context.Language));
                 if (existed > -1) {
                     images.RemoveAt(existed);
                 }
@@ -151,6 +150,10 @@ namespace WADV.Plugins.Image {
             return list.ToDictionary(e => e.Image, e => e.DisplayInformation);
         }
 
+        private static Dictionary<ImageProperties, ImageDisplayInformation> InitializeImage(IEnumerable<ImageProperties> images, int layer) {
+            return images.ToDictionary(image => image, image => new ImageDisplayInformation {Status = ImageStatus.PrepareToShow, Layer = layer});
+        }
+
         private static async Task<Vector2Int> GetImageContainerSize() {
             var result = (await MessageService.ProcessAsync(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetCanvasSize))
                        as Message<Vector2>)?.Content ?? throw new ArgumentException();
@@ -165,72 +168,26 @@ namespace WADV.Plugins.Image {
             if (result == null) throw new ArgumentException("Unable to create show command: update image information failed");
             return result;
         }
-
-        private static async Task<Texture2D> GenerateCanvasUsingShader(ComputeShader shader, Dictionary<ImageProperties, ImageDisplayInformation> images, Vector2Int canvasSize) {
-            var bindKernel = shader.FindKernel("SetTexture");
-            var clearKernel = shader.FindKernel("SetTransparent");
-            var canvas = new RenderTexture(canvasSize.x + 2, canvasSize.y + 2, 24);
-            shader.SetTexture(bindKernel, ShaderCanvasName, canvas);
-            shader.SetTexture(clearKernel, ShaderCanvasName, canvas);
-            shader.SetVector(ShaderCanvasSizeName, new Vector2(canvas.width, canvas.height));
-            foreach (var (image, info) in images) {
-                shader.SetMatrix(ShaderTransformName, info.Transform);
-                await image.Image.ReadTexture();
-                if (info.Status == ImageStatus.OnScreen) {
-                    if (image.Image.texture != null) {
-                        shader.Dispatch(clearKernel, image.Image.texture.width / 16 + 1, image.Image.texture.height / 16 + 1, 1);
-                    }
-                } else {
-                    shader.SetTexture(bindKernel, ShaderSourceName, image.Image.texture);
-                    shader.SetVector(ShaderColorName, image.Image.Color.ToVector4());
-                    if (image.Image.texture != null) {
-                        shader.Dispatch(bindKernel, image.Image.texture.width / 16 + 1, image.Image.texture.height / 16 + 1, 1);
-                    }
-                }
-            }
-            return canvas.CopyAsTexture2D(new RectInt(1, 1, canvas.width - 2, canvas.height - 2));
-        }
         
-        private static async Task<Texture2D> GenerateCanvas(Dictionary<ImageProperties, ImageDisplayInformation> images, Vector2Int canvasSize) {
-            var canvas = new Texture2D(canvasSize.x, canvasSize.y, TextureFormat.RGBA32, false);
-            var transparent = new Color(0, 0, 0, 0);
-            foreach (var (image, info) in images) {
-                await image.Image.ReadTexture();
-                if (image.Image.texture == null) continue;
-                var width = image.Image.texture.width;
-                var height = image.Image.texture.height;
-                for (var i = -1; ++i < width;) {
-                    for (var j = -1; ++j < height;) {
-                        var position = info.Transform * new Vector4(i, j, 0, 0);
-                        if (position.x >= 0 && position.x <= canvasSize.x && position.y >= 0 && position.y <= canvasSize.y) {
-                            canvas.SetPixel(i, j, info.Status == ImageStatus.OnScreen ? transparent : image.Image.texture.GetPixel(i, j));
-                        }
-                    }
-                }
-            }
-            canvas.Apply(false);
-            return canvas;
-        }
-        
-        private static async Task<Texture2D> BindImages(Dictionary<ImageProperties, ImageDisplayInformation> images, ImageBindMode mode) {
+        private static async Task<Texture2D> BindImages(Dictionary<ImageProperties, ImageDisplayInformation> images) {
             images = await UpdateImages(images);
             var canvasSize = await GetImageContainerSize();
-            Texture2D canvas;
+            ComputeShader shader = null;
             if (SystemInfo.supportsComputeShaders) {
-                var shader = (await MessageService.ProcessAsync(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader))
+                shader = (await MessageService.ProcessAsync(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader))
                     as Message<ComputeShader>)?.Content;
-                if (shader == null) {
-                    canvas = await GenerateCanvas(images, canvasSize);
+            }
+            var canvas = new Texture2DCombiner(canvasSize.x, canvasSize.y, shader);
+            foreach (var (image, info) in images) {
+                await image.Content.ReadTexture();
+                if (image.Content.texture == null) continue;
+                if (info.Status == ImageStatus.OnScreen) {
+                    canvas.Clear(new RectInt(0, 0, image.Content.texture.width, image.Content.texture.height), info.Transform);
                 } else {
-                    canvas = await GenerateCanvasUsingShader(shader, images, canvasSize);
+                    canvas.DrawTexture(image.Content.texture, info.Transform, (Color) image.Content.Color.value);
                 }
-            } else {
-                canvas = await GenerateCanvas(images, canvasSize);
             }
-            if (mode == ImageBindMode.Canvas) {
-                return canvas;
-            }
-            
+            return canvas.Combine();
         }
     }
 }

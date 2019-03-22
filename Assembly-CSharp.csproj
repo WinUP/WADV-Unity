@@ -74,11 +74,11 @@
     <Compile Include="Assets\WADV\Extensions\EnumerableExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\EnumeratorExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\KeyValuePairExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\ListExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\RectIntExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\RenderTextureExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\StringExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\TaskExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\Texture2DExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\TypeExtensions.cs" />
     <Compile Include="Assets\WADV\GraphicColorFade.cs" />
     <Compile Include="Assets\WADV\Hasher.cs" />
@@ -159,6 +159,7 @@
     <Compile Include="Assets\WADV\Resource\Providers\UnityResourcesResourceProvider.cs" />
     <Compile Include="Assets\WADV\Resource\Providers\UnityStreamingAssetsResourceProvider.cs" />
     <Compile Include="Assets\WADV\Resource\ResourceManager.cs" />
+    <Compile Include="Assets\WADV\Texture2DCombiner.cs" />
     <Compile Include="Assets\WADV\Thread\Dispatcher.cs" />
     <Compile Include="Assets\WADV\Thread\MainThreadPlaceholder.cs" />
     <Compile Include="Assets\WADV\Thread\TaskDelegator.cs" />
