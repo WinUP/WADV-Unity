@@ -17,10 +17,10 @@ namespace WADV.Plugins.Image {
     [StaticRegistrationInfo("Show")]
     [UsedImplicitly]
     public partial class ShowPlugin : IVisualNovelPlugin {
+        private readonly Dictionary<ImageProperties, ImageDisplayInformation> _images = new Dictionary<ImageProperties, ImageDisplayInformation>();
         private TransformValue _defaultTransform = new TransformValue();
         private int _defaultLayer;
-        private Dictionary<ImageProperties, ImageDisplayInformation> _images = new Dictionary<ImageProperties, ImageDisplayInformation>();
-        
+
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var (mode, layer, effect, images) = AnalyseParameters(context);
             if (!images.Any()) return new NullValue();
@@ -31,18 +31,23 @@ namespace WADV.Plugins.Image {
                 if (!(effect.Effect is SingleGraphicEffect singleGraphicEffect)) throw new NotSupportedException($"Unable to create show command: effect {effect} is not SingleGraphicEffect");
                 content.Effect = singleGraphicEffect;
             }
-            var preBindImages = FindPreBindImages(images.Select(e => e.Name));
-            Texture2D existedCanvas = null;
-            if (preBindImages.Any()) {
-                existedCanvas = await BindImages(preBindImages);
+            var names = images.Select(e => e.Name).ToArray();
+            var preBindImages = FindPreBindImages(names);
+            var overlayCanvas = preBindImages.Any() ? await BindImages(preBindImages) : null;
+            var imageInformation = InitializeImage(images, layer);
+            var targetCanvas = await BindImages(imageInformation);
+            RectInt displayArea;
+            (overlayCanvas, targetCanvas, displayArea) = CreateDisplayArea(new RectInt(0, 0, targetCanvas.width, targetCanvas.height), overlayCanvas, targetCanvas, mode);
+            var overlayName = await PlaceExistedOverlayCanvas(overlayCanvas, displayArea.position, layer);
+            await MessageService.ProcessAsync(Message<string[]>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.HideImage, names));
+            _images.RemoveAll(e => names.Contains(e.Key.Name));
+            await ApplyOverlayEffect(overlayName, targetCanvas, effect?.Effect as SingleGraphicEffect);
+            await PlaceTargetImages(images, layer);
+            await MessageService.ProcessAsync(Message<string[]>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.HideImage, new[] {overlayName}));
+            foreach (var (image, info) in imageInformation) {
+                _images.Add(image, info.To(ImageStatus.OnScreen));
             }
-            var targetCanvas = await BindImages(InitializeImage(images, layer));
-            var displayArea = existedCanvas.GetVisibleContentArea().MergeWith(targetCanvas.GetVisibleContentArea());
-            if (existedCanvas != null) {
-                existedCanvas = existedCanvas.Cut(displayArea.size);
-            }
-            targetCanvas = targetCanvas.Cut(displayArea.size);
-            
+            return new NullValue();
         }
 
         public void OnRegister() { }
@@ -134,6 +139,48 @@ namespace WADV.Plugins.Image {
             return (bind, layer ?? _defaultLayer, effect, images);
         }
 
+        private static (Texture2D Overlay, Texture2D Target, RectInt Area) CreateDisplayArea(RectInt displayArea, Texture2D overlay, Texture2D target, ImageBindMode mode) {
+            if (mode == ImageBindMode.Minimal) {
+                displayArea = overlay == null
+                    ? target.GetVisibleContentArea()
+                    : overlay.GetVisibleContentArea().MergeWith(target.GetVisibleContentArea());
+                if (overlay != null) {
+                    overlay = overlay.Cut(displayArea.size);
+                }
+                target = target.Cut(displayArea.size);
+            }
+            return (overlay, target, displayArea);
+        }
+
+        private static async Task ApplyOverlayEffect(string name, Texture2D target, SingleGraphicEffect effect) {
+            var content = new ImageMessageIntegration.ShowImageContent {
+                Effect = effect,
+                Images = new List<ImageProperties> {new ImageProperties(name, new ImageValue {texture = target}, null)}
+            };
+            await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
+        }
+        
+        private static async Task<string> PlaceExistedOverlayCanvas(Texture2D canvas, Vector2Int position, int layer) {
+            var name = $"OVERLAY{{{Guid.NewGuid().ToString().ToUpper()}}}";
+            var transform = new TransformValue();
+            transform.Set(TransformValue.PropertyName.PositionX, position.x);
+            transform.Set(TransformValue.PropertyName.PositionY, position.y);
+            var content = new ImageMessageIntegration.ShowImageContent {
+                Layer = layer,
+                Images = new List<ImageProperties> {new ImageProperties(name, new ImageValue {texture = canvas}, transform)}
+            };
+            await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
+            return name;
+        }
+
+        private static async Task PlaceTargetImages(IEnumerable<ImageProperties> images, int layer) {
+            var content = new ImageMessageIntegration.ShowImageContent {
+                Layer = layer,
+                Images = images.ToList()
+            };
+            await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
+        }
+        
         private Dictionary<ImageProperties, ImageDisplayInformation> FindPreBindImages(IEnumerable<string> names) {
             names = names.ToArray();
             var targets = _images.Where(e => names.Contains(e.Key.Name)).ToList();
@@ -184,7 +231,7 @@ namespace WADV.Plugins.Image {
                 if (info.Status == ImageStatus.OnScreen) {
                     canvas.Clear(new RectInt(0, 0, image.Content.texture.width, image.Content.texture.height), info.Transform);
                 } else {
-                    canvas.DrawTexture(image.Content.texture, info.Transform, (Color) image.Content.Color.value);
+                    canvas.DrawTexture(image.Content.texture, info.Transform, image.Content.Color.value);
                 }
             }
             return canvas.Combine();

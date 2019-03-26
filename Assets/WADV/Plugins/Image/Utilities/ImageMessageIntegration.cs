@@ -8,9 +8,11 @@ namespace WADV.Plugins.Image.Utilities {
         /// <summary>
         /// 插件使用的消息掩码
         /// </summary>
-        public const int Mask = CoreConstant.Mask;
+        public const int Mask = 0B10;
 
         public const string ShowImage = "SHOW_IMAGE";
+
+        public const string HideImage = "HIDE_IMAGE";
 
         public const string UpdateInformation = "UPDATE_INFORMATION";
 
@@ -21,6 +23,8 @@ namespace WADV.Plugins.Image.Utilities {
         public class ShowImageContent {
             [CanBeNull]
             public SingleGraphicEffect Effect { get; set; }
+            
+            public int Layer { get; set; }
             
             public List<ImageProperties> Images { get; set; } = new List<ImageProperties>();
         }

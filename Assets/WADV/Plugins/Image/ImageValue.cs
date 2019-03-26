@@ -98,6 +98,7 @@ namespace WADV.Plugins.Image {
             } else {
                 source = newSource;
             }
+            if (string.IsNullOrEmpty(source)) return;
             texture = await ResourceManager.Load<Texture2D>(source);
         }
         

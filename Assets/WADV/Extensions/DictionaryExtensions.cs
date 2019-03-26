@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace WADV.Extensions {
@@ -14,6 +15,18 @@ namespace WADV.Extensions {
             if (!e.ContainsKey(target)) return false;
             e.Remove(target);
             return true;
+        }
+
+        public static void RemoveAll<TKey, TValue>(this Dictionary<TKey, TValue> e, Func<KeyValuePair<TKey, TValue>, bool> prediction) {
+            var keys = new List<TKey>();
+            foreach (var pair in e) {
+                if (prediction(pair)) {
+                    keys.Add(pair.Key);
+                }
+            }
+            foreach (var key in keys) {
+                e.Remove(key);
+            }
         }
     }
 }

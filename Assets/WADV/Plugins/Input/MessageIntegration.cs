@@ -8,7 +8,7 @@ namespace WADV.Plugins.Input {
             /// <summary>
             /// 插件使用的消息掩码
             /// </summary>
-            public const int Mask = CoreConstant.Mask;
+            public const int Mask = 0B100;
         
             /// <summary>
             /// 表示新建输入框的消息标记

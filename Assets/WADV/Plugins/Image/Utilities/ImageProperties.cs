@@ -23,10 +23,10 @@ namespace WADV.Plugins.Image.Utilities {
         /// <summary>
         /// 图片的Transform属性集
         /// </summary>
-        [NotNull]
+        [CanBeNull]
         public TransformValue Transform { get; }
 
-        public ImageProperties([NotNull] string name, [NotNull] ImageValue image, [NotNull] TransformValue transform) {
+        public ImageProperties([NotNull] string name, [NotNull] ImageValue image, [CanBeNull] TransformValue transform) {
             Name = name;
             Content = image;
             Transform = transform;

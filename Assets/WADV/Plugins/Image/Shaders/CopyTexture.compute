@@ -1,5 +1,5 @@
 ﻿#pragma kernel SetTexture
-#pragma kernel SetTransparent
+#pragma kernel SetColor
 
 RWTexture2D<float4> Canvas;
 float4 Size;
