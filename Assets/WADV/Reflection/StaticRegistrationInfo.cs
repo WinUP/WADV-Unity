@@ -11,12 +11,12 @@ namespace WADV.Reflection {
         /// 类型注册名
         /// </summary>
         [CanBeNull]
-        public string Name { get; }
-        
+        public readonly string Name;
+
         /// <summary>
         /// 注册优先级
         /// </summary>
-        public int Priority { get; }
+        public readonly int Priority;
         
         /// <summary>
         /// 创建一个空的自动注册描述

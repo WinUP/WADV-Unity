@@ -8,7 +8,7 @@ namespace WADV.Resource {
         /// <summary>
         /// 获取数据内容
         /// </summary>
-        public byte[] Data { get; }
+        public readonly byte[] Data;
 
         /// <summary>
         /// 获取数据的UTF8字符表示

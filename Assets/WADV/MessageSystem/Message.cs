@@ -11,18 +11,18 @@ namespace WADV.MessageSystem {
         /// <summary>
         /// 消息标记
         /// </summary>
-        public string Tag { get; set; }
+        public string Tag;
 
         /// <summary>
         /// 消息掩码
         /// </summary>
-        public int Mask { get; set; }
+        public int Mask;
         
         /// <summary>
         /// 主线程占位符列表
         /// <para>如果某个消息监听器希望在消息传递给下一个节点后继续执行某些代码，可以通过主线程占位符通知消息循环何时可以结束</para>
         /// </summary>
-        public List<MainThreadPlaceholder> Placeholders { get; } = new List<MainThreadPlaceholder>();
+        public readonly List<MainThreadPlaceholder> Placeholders = new List<MainThreadPlaceholder>();
         
         protected Message() { }
         
@@ -56,12 +56,21 @@ namespace WADV.MessageSystem {
         }
 
         /// <summary>
-        /// 确定消息是否具有指定标记中的任意一个（不传递任何标记时检查消息是否没有标记）
+        /// 确定消息是否具有指定标记（不传递时检查消息是否有标记）
+        /// </summary>
+        /// <param name="tag">要检查的标记</param>
+        /// <returns></returns>
+        public bool HasTag(string tag) {
+            return string.IsNullOrEmpty(tag) ? !string.IsNullOrEmpty(Tag) : tag == Tag;
+        }
+
+        /// <summary>
+        /// 确定消息是否具有指定标记中的任意一个（不传递任何标记时检查消息是否有标记）
         /// </summary>
         /// <param name="tag">要检查的标记</param>
         /// <returns></returns>
         public bool HasTag(params string[] tag) {
-            return tag.Length == 0 ? string.IsNullOrEmpty(Tag) : tag.Contains(Tag);
+            return tag.Length == 0 ? !string.IsNullOrEmpty(Tag) : tag.Contains(Tag);
         }
     }
 
@@ -73,7 +82,9 @@ namespace WADV.MessageSystem {
         /// <summary>
         /// 消息内容
         /// </summary>
-        public T Content { get; set; }
+        public T Content;
+        
+        protected Message() { }
 
         /// <summary>
         /// 创建一条有值消息
@@ -95,7 +106,11 @@ namespace WADV.MessageSystem {
         /// <summary>
         /// 插件执行上下文
         /// </summary>
-        public PluginExecuteContext Context { get; private set; }
+        public readonly PluginExecuteContext Context;
+
+        private ContextMessage(PluginExecuteContext context) {
+            Context = context;
+        }
         
         /// <summary>
         /// 创建一条带插件执行上下文的有值消息
@@ -105,7 +120,7 @@ namespace WADV.MessageSystem {
         /// <param name="mask">消息掩码</param>
         /// <param name="tag">消息标记（如果有）</param>
         public static ContextMessage<T> Create(int mask, string tag, T content, PluginExecuteContext context) {
-            return new ContextMessage<T> {Mask = mask, Tag = tag, Content = content, Context = context};
+            return new ContextMessage<T>(context) {Mask = mask, Tag = tag, Content = content};
         }
     }
 }

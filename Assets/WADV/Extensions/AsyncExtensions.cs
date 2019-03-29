@@ -1,14 +1,64 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Threading.Tasks;
 using WADV.Thread;
 using UnityEngine;
 
 namespace WADV.Extensions {
-    public static class EnumeratorExtensions {
+    public static class AsyncExtensions {
+        public static TaskAwaiter<int> GetAwaiter(this Process process) {
+            var source = new TaskCompletionSource<int>();
+            if (process.HasExited) {
+                source.TrySetResult(process.ExitCode);
+            } else {
+                process.EnableRaisingEvents = true;
+                process.Exited += (s, e) => source.TrySetResult(process.ExitCode);
+            }
+            return source.Task.GetAwaiter();
+        }
+
+        public static async void WrapErrors(this Task task) {
+            await task;
+        }
+        
+        public static async Task<T> WrapErrors<T>(this Task<T> task) {
+            return await task;
+        }
+        
+        public static IEnumerator AsIEnumerator(this Task task) {
+            while (!task.IsCompleted) {
+                yield return null;
+            }
+            if (task.IsFaulted) {
+                ExceptionDispatchInfo.Capture(task.Exception).Throw();
+            }
+        }
+
+        public static IEnumerator<T> AsIEnumerator<T>(this Task<T> task) {
+            while (!task.IsCompleted) {
+                yield return default;
+            }
+            if (task.IsFaulted) {
+                ExceptionDispatchInfo.Capture(task.Exception).Throw();
+            }
+            yield return task.Result;
+        }
+
+        /// <summary>
+        /// 等待任务执行结束并返回执行结果
+        /// </summary>
+        /// <param name="task">目标任务</param>
+        /// <returns></returns>
+        public static T GetResultAfterFinished<T>(this Task<T> task) {
+            task.Wait();
+            return task.Result;
+        }
+        
         public static SimpleCoroutineAwaiter<UnityEngine.Object> GetAwaiter(this ResourceRequest instruction) {
             var awaiter = new SimpleCoroutineAwaiter<UnityEngine.Object>();
             RunOnUnityScheduler(() => TaskDelegator.Instance.StartCoroutine(ResourceRequest(awaiter, instruction)));
@@ -185,7 +235,7 @@ namespace WADV.Extensions {
                     try {
                         isDone = !worker.MoveNext();
                     } catch (Exception e) {
-                        _awaiter.Complete(default(T), e);
+                        _awaiter.Complete(default, e);
                         yield break;
                     }
                     if (isDone) {

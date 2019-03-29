@@ -1,9 +1,79 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
 
 namespace WADV.Extensions {
-    public static class StringExtensions {
+    public static class ValuesExtensions {
+        public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key, out TValue value) {
+            key = pair.Key;
+            value = pair.Value;
+        }
+        
+        /// <summary>
+        /// 转换为普通矩形
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <returns></returns>
+        public static Rect ToRect(this RectInt value) {
+            return new Rect(value.x, value.y, value.width, value.height);
+        }
+        
+        /// <summary>
+        /// 转换为整坐标矩形
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <returns></returns>
+        public static RectInt CeilToRectInt(this Rect value) {
+            return new RectInt(Mathf.CeilToInt(value.x), Mathf.CeilToInt(value.y), Mathf.CeilToInt(value.width), Mathf.CeilToInt(value.height));
+        }
+        
+        /// <summary>
+        /// 转换为整坐标矩形
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <returns></returns>
+        public static RectInt RoundToRectInt(this Rect value) {
+            return new RectInt(Mathf.RoundToInt(value.x), Mathf.RoundToInt(value.y), Mathf.RoundToInt(value.width), Mathf.RoundToInt(value.height));
+        }
+        
+        /// <summary>
+        /// 转换为整坐标矩形
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <returns></returns>
+        public static RectInt FloorToRectInt(this Rect value) {
+            return new RectInt(Mathf.FloorToInt(value.x), Mathf.FloorToInt(value.y), Mathf.FloorToInt(value.width), Mathf.FloorToInt(value.height));
+        }
+
+        /// <summary>
+        /// 获取同时覆盖当前矩形和目标矩形的最小矩形
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <param name="target">目标矩形</param>
+        /// <returns></returns>
+        public static RectInt MergeWith(this RectInt value, RectInt target) {
+            var xMin = Mathf.Min(value.xMin, target.xMin);
+            var yMin = Mathf.Min(value.yMin, target.yMin);
+            var xMax = Mathf.Max(value.xMax, target.xMax);
+            var yMax = Mathf.Max(value.yMax, target.yMax);
+            return new RectInt(xMin, yMin, xMax - xMin, yMax - yMin);
+        }
+        
+        /// <summary>
+        /// 获取同时覆盖当前矩形和目标矩形的最小矩形
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <param name="target">目标矩形</param>
+        /// <returns></returns>
+        public static Rect MergeWith(this Rect value, Rect target) {
+            var xMin = Mathf.Min(value.xMin, target.xMin);
+            var yMin = Mathf.Min(value.yMin, target.yMin);
+            var xMax = Mathf.Max(value.xMax, target.xMax);
+            var yMax = Mathf.Max(value.yMax, target.yMax);
+            return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
+        }
+        
         /// <summary>
         /// 如果字符串以目标子串开头则删除该子串
         /// </summary>

@@ -74,7 +74,7 @@ namespace WADV.Plugins.Unity {
                 _data[(int) name] = value.Value;
                 _hasData[(int) name] = true;
             } else {
-                _data[(int) name] = default(float);
+                _data[(int) name] = default;
                 _hasData[(int) name] = false;
             }
         }
@@ -83,9 +83,9 @@ namespace WADV.Plugins.Unity {
         /// 将此Transform属性集应用至目标Transform
         /// </summary>
         /// <param name="target">目标Transform</param>
-        public void ApplyTo(ref Transform target) {
+        public void ApplyTo(Transform target) {
             if (target is RectTransform rectTransform) {
-                ApplyTo(ref rectTransform);
+                ApplyTo(rectTransform);
                 return;
             }
             var x = Get(PropertyName.ScaleX);
@@ -117,7 +117,7 @@ namespace WADV.Plugins.Unity {
         /// <para>属性按照AnchorMin->AnchorMax->Pivot->Position->Left/Bottom->Right/Top->Width/Height->Scale->Rotation的顺序应用，由于定位并不需要所有属性，某些组合可能引发预期外的效果</para>
         /// </summary>
         /// <param name="target">目标RectTransform</param>
-        public void ApplyTo(ref RectTransform target) {
+        public void ApplyTo(RectTransform target) {
             var x = Get(PropertyName.AnchorMinX);
             var y = Get(PropertyName.AnchorMinY);
             if (x.HasValue || y.HasValue) {

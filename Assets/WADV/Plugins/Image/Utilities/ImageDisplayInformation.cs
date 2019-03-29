@@ -1,21 +1,36 @@
 using System;
+using System.Runtime.Serialization;
+using JetBrains.Annotations;
 using UnityEngine;
+using WADV.Plugins.Unity;
 
 namespace WADV.Plugins.Image.Utilities {
     [Serializable]
-    public struct ImageDisplayInformation {
-        public int Layer { get; set; }
+    public struct ImageDisplayInformation : ISerializable {
+        public readonly string Name;
         
-        public Matrix4x4 Transform { get; set; }
+        public readonly ImageValue Content;
         
-        public ImageStatus Status { get; set; }
+        [CanBeNull]
+        public readonly TransformValue Transform;
+        
+        public int layer;
 
-        public ImageDisplayInformation To(ImageStatus status) {
-            return new ImageDisplayInformation {
-                Layer = Layer,
-                Transform = Transform,
-                Status = status
-            };
+        public Matrix4x4 displayMatrix;
+
+        public ImageStatus status;
+        
+        public ImageDisplayInformation([NotNull] string name, [NotNull] ImageValue image, [CanBeNull] TransformValue transform) {
+            Name = name;
+            Content = image;
+            Transform = transform;
+            layer = 0;
+            displayMatrix = Matrix4x4.identity;
+            status = ImageStatus.Unavailable;
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context) {
+            throw new NotImplementedException();
         }
     }
 }

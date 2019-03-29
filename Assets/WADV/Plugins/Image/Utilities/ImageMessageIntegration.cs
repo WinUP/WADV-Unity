@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using JetBrains.Annotations;
-using WADV.MessageSystem;
 using WADV.Plugins.Image.Effects;
 
 namespace WADV.Plugins.Image.Utilities {
@@ -20,13 +18,16 @@ namespace WADV.Plugins.Image.Utilities {
 
         public const string GetBindShader = "GET_BIND_SHADER";
         
-        public class ShowImageContent {
-            [CanBeNull]
-            public SingleGraphicEffect Effect { get; set; }
-            
-            public int Layer { get; set; }
-            
-            public List<ImageProperties> Images { get; set; } = new List<ImageProperties>();
+        public struct ShowImageContent {
+            [CanBeNull] public SingleGraphicEffect Effect;
+
+            public ImageDisplayInformation[] Images;
+        }
+
+        public struct HideImageContent {
+            [CanBeNull] public SingleGraphicEffect Effect;
+
+            public string[] Names;
         }
     }
 }

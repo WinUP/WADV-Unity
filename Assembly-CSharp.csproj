@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <LangVersion>7</LangVersion>
+    <LangVersion>7.2</LangVersion>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <_TargetFrameworkDirectories>non_empty_path_generated_by_rider_editor_plugin</_TargetFrameworkDirectories>
     <_FullFrameworkReferenceAssemblyPaths>non_empty_path_generated_by_rider_editor_plugin</_FullFrameworkReferenceAssemblyPaths>
@@ -69,17 +69,11 @@
     <Compile Include="Assets\WADV\DumpManager.cs" />
     <Compile Include="Assets\WADV\Easing.cs" />
     <Compile Include="Assets\WADV\EasingType.cs" />
-    <Compile Include="Assets\WADV\Extensions\AwaitExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\DictionaryExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\EnumeratorExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\KeyValuePairExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\RectIntExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\RenderTextureExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\StringExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\TaskExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\Texture2DExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\TypeExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\AsyncExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\ReflectionExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\UnityGraphicExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\ValuesExtensions.cs" />
     <Compile Include="Assets\WADV\GraphicColorFade.cs" />
     <Compile Include="Assets\WADV\Hasher.cs" />
     <Compile Include="Assets\WADV\Intents\ChangeLanguageIntent.cs" />
@@ -93,7 +87,10 @@
     <Compile Include="Assets\WADV\MessageSystem\MessageService.cs" />
     <Compile Include="Assets\WADV\MessageSystem\MonoMessengerBehaviour.cs" />
     <Compile Include="Assets\WADV\ParallaxController.cs" />
+    <Compile Include="Assets\WADV\Plugins\Converter\BooleanPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Converter\FloatPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Converter\IntegerPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Converter\StringPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\CharacterPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\CharacterValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\DialogueCreator.cs" />
@@ -133,7 +130,6 @@
     <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageBindMode.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageDisplayInformation.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageMessageIntegration.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageProperties.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageStatus.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />

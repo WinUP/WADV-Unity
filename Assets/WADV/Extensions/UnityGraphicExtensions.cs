@@ -3,7 +3,32 @@ using System.Linq;
 using UnityEngine;
 
 namespace WADV.Extensions {
-    public static class Texture2DExtensions {
+    public static class UnityGraphicExtensions {
+        /// <summary>
+        /// 复制为2D材质
+        /// </summary>
+        /// <param name="value">目标渲染材质</param>
+        /// <param name="rect">截取区域</param>
+        /// <returns></returns>
+        public static Texture2D CopyAsTexture2D(this RenderTexture value, RectInt rect) {
+            var result = new Texture2D(rect.width, rect.height, TextureFormat.RGBA32, false);
+            var currentRenderTarget = RenderTexture.active;
+            RenderTexture.active = value;
+            result.ReadPixels(rect.ToRect(), 0, 0); // 从当前RenderTexture读取数据，天知道Unity为何把函数叫这个名
+            result.Apply();
+            RenderTexture.active = currentRenderTarget;
+            return result;
+        }
+        
+        /// <summary>
+        /// 复制为2D材质
+        /// </summary>
+        /// <param name="value">目标渲染材质</param>
+        /// <returns></returns>
+        public static Texture2D CopyAsTexture2D(this RenderTexture value) {
+            return CopyAsTexture2D(value, new RectInt(0, 0, value.width, value.height));
+        }
+        
         /// <summary>
         /// 获取2D纹理的不透明区域（全透明则返回RectInt{0, 0, 0, 0}）
         /// </summary>
@@ -66,16 +91,29 @@ namespace WADV.Extensions {
             return new RectInt(borderLeft, borderTop, borderRight - borderLeft + 1, borderBottom - borderTop + 1);
         }
 
-        public static Texture2D Cut(this Texture2D texture, Vector2Int size, Color fillColor) {
-            var result = new Texture2D(size.x, size.y, TextureFormat.RGBA32, false);
-            result.SetPixels(Enumerable.Repeat(fillColor, size.x * size.y).ToArray());
-            Graphics.CopyTexture(texture, 0, 0, 0, 0, Mathf.Min(texture.width, size.x), Mathf.Min(texture.height, size.y), result, 0, 0, 0, 0);
+        /// <summary>
+        /// 复制2D纹理的部分或全部到新的2D纹理
+        /// </summary>
+        /// <param name="texture">目标2D纹理</param>
+        /// <param name="rect">复制区域</param>
+        /// <param name="fillColor">超出材质大小部分的填充颜色</param>
+        /// <returns></returns>
+        public static Texture2D Cut(this Texture2D texture, RectInt rect, Color fillColor) {
+            var result = new Texture2D(rect.width, rect.height, TextureFormat.RGBA32, false);
+            result.SetPixels(Enumerable.Repeat(fillColor, rect.width * rect.height).ToArray());
+            Graphics.CopyTexture(texture, 0, 0, rect.x, rect.y, Mathf.Min(texture.width, rect.width), Mathf.Min(texture.height, rect.height), result, 0, 0, 0, 0);
             result.Apply(false);
             return result;
         }
-
-        public static Texture2D Cut(this Texture2D texture, Vector2Int size) {
-            return Cut(texture, size, Vector4.zero);
+        
+        /// <summary>
+        /// 复制2D纹理的部分或全部到新的2D纹理，超出大小的部分填充为透明
+        /// </summary>
+        /// <param name="texture">目标2D纹理</param>
+        /// <param name="rect">复制区域</param>
+        /// <returns></returns>
+        public static Texture2D Cut(this Texture2D texture, RectInt rect) {
+            return Cut(texture, rect, Vector4.zero);
         }
     }
 }

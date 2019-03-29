@@ -328,7 +328,7 @@ namespace WADV {
                     }
                 } while (Current.Node != null && !Current.Node.Enabled);
                 if (Current.Node == _root) {
-                    Current = (Node: null, Value: default(T));
+                    Current = (Node: null, Value: default);
                 }
             }
             
@@ -356,7 +356,7 @@ namespace WADV {
             }
 
             public void Reset() {
-                Current = (Node: null, Value: default(T));
+                Current = (Node: null, Value: default);
                 _mapStack = new Stack<LinkedTreeNode>();
             }
 

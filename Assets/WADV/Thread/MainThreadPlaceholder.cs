@@ -31,7 +31,7 @@ namespace WADV.Thread {
 
         /// <inheritdoc />
         public override void Complete() {
-            Value = default(T);
+            Value = default;
             base.Complete();
         }
 

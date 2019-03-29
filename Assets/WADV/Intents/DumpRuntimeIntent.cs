@@ -13,7 +13,7 @@ namespace WADV.Intents {
         private Dictionary<string, float> _floatValue;
         private Dictionary<string, string> _stringValue;
         private Dictionary<string, bool> _booleanValue;
-        private Dictionary<string, SerializableValue> _serializableValue;
+        private Dictionary<string, object> _objectValue;
 
         public static DumpRuntimeIntent CreateEmpty() {
             return new DumpRuntimeIntent {
@@ -21,7 +21,7 @@ namespace WADV.Intents {
                 _stringValue = new Dictionary<string, string>(),
                 _booleanValue = new Dictionary<string, bool>(),
                 _integerValue = new Dictionary<string, int>(),
-                _serializableValue = new Dictionary<string, SerializableValue>()
+                _objectValue = new Dictionary<string, object>()
             };
         }
 
@@ -42,8 +42,8 @@ namespace WADV.Intents {
         }
 
         [CanBeNull]
-        public T GetValue<T>(string id) where T : SerializableValue {
-            return _serializableValue.ContainsKey(id) ? _serializableValue[id] as T : throw new KeyNotFoundException($"Unable to find key {id} in serializable values");
+        public T GetValue<T>(string id) where T : class {
+            return _objectValue.ContainsKey(id) ? _objectValue[id] as T : throw new KeyNotFoundException($"Unable to find key {id} in serializable values");
         }
 
         public void AddValue(string id, int value) {
@@ -78,11 +78,11 @@ namespace WADV.Intents {
             }
         }
 
-        public void AddValue(string id, SerializableValue value) {
-            if (_serializableValue.ContainsKey(id)) {
-                _serializableValue[id] = value;
+        public void AddValue(string id, object value) {
+            if (_objectValue.ContainsKey(id)) {
+                _objectValue[id] = value;
             } else {
-                _serializableValue.Add(id, value);
+                _objectValue.Add(id, value);
             }
         }
     }
