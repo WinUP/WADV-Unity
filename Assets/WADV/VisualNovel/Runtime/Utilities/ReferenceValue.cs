@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using WADV.Intents;
 using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
 
@@ -51,6 +53,14 @@ namespace WADV.VisualNovel.Runtime.Utilities {
 
         public override SerializableValue Duplicate() {
             return new ReferenceValue {IsConstant = IsConstant, ReferenceTarget = ReferenceTarget.Duplicate()};
+        }
+
+        public override Task BeforeDump(DumpRuntimeIntent.TaskLists tasks) {
+            return ReferenceTarget == null ? Task.CompletedTask : ReferenceTarget.BeforeDump(tasks);
+        }
+
+        public override Task BeforeRead(DumpRuntimeIntent.TaskLists tasks) {
+            return ReferenceTarget == null ? Task.CompletedTask : ReferenceTarget.BeforeRead(tasks);
         }
         
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {

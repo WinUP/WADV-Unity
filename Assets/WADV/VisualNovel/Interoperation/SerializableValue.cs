@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
+using WADV.Intents;
 
 namespace WADV.VisualNovel.Interoperation {
     /// <summary>
@@ -17,5 +20,13 @@ namespace WADV.VisualNovel.Interoperation {
         /// <returns></returns>
         [NotNull]
         public abstract SerializableValue Duplicate();
+
+        public virtual Task BeforeDump(DumpRuntimeIntent.TaskLists tasks) {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task BeforeRead(DumpRuntimeIntent.TaskLists tasks) {
+            return Task.CompletedTask;
+        }
     }
 }

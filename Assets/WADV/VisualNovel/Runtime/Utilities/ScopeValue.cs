@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using WADV.Extensions;
 using WADV.VisualNovel.Interoperation;
 using JetBrains.Annotations;
+using WADV.Intents;
 using WADV.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
@@ -55,9 +57,29 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         public override SerializableValue Duplicate() {
             return new ScopeValue {entrance = entrance, scriptId = scriptId, parentScope = parentScope, LocalVariables = LocalVariables.Duplicate()};
         }
-        
+
+        public override Task BeforeDump(DumpRuntimeIntent.TaskLists tasks) {
+            foreach (var (_, value) in LocalVariables) {
+                tasks.AddBeforeDump(value);
+            }
+            if (parentScope != null) {
+                tasks.AddBeforeDump(parentScope);
+            }
+            return base.BeforeDump(tasks);
+        }
+
+        public override Task BeforeRead(DumpRuntimeIntent.TaskLists tasks) {
+            foreach (var (_, value) in LocalVariables) {
+                tasks.AddBeforeRead(value);
+            }
+            if (parentScope != null) {
+                tasks.AddBeforeRead(parentScope);
+            }
+            return base.BeforeRead(tasks);
+        }
+
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
-            return $"ScopeValue {{ScriptId = {scriptId}, Entrance = {entrance}}}";
+            return $"ScopeValue {{ScriptId = {scriptId}, Entrance = 0x{Convert.ToString(entrance, 16)}}}";
         }
 
         public override string ToString() {

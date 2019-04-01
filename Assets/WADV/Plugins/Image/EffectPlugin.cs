@@ -23,7 +23,7 @@ namespace WADV.Plugins.Image {
 
         public void OnUnregister(bool isReplace) { }
         
-        public Task<SerializableValue> Execute(PluginExecuteContext context) {
+        public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var parameters = new Dictionary<string, SerializableValue>();
             string effectName = null;
             var duration = 0.0F;
@@ -54,8 +54,9 @@ namespace WADV.Plugins.Image {
             if (duration.Equals(0.0F)) throw new NotSupportedException("Unable to create effect: missing duration or duration less than/equals to 0");
             var effect = Create(effectName, parameters, duration, easingType);
             if (effect == null) throw new KeyNotFoundException($"Unable to create effect: expected effect name {effectName} not existed");
+            await effect.Initialize();
             var result = new EffectValue(effectName, effect);
-            return Task.FromResult<SerializableValue>(result);
+            return result;
         }
 
         [CanBeNull]

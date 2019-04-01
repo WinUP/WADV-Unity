@@ -13,7 +13,7 @@ namespace WADV.Plugins.Image {
     [RequireComponent(typeof(Canvas))]
     public class ImageCanvas : MonoMessengerBehaviour {
         private readonly Dictionary<string, RawImage> _images = new Dictionary<string, RawImage>();
-        private readonly Dictionary<string, ImageProperties> _properties = new Dictionary<string, ImageProperties>();
+        private readonly Dictionary<string, ImageDisplayInformation> _properties = new Dictionary<string, ImageDisplayInformation>();
         private RectTransform _root;
 
         public override int Mask { get; } = ImageMessageIntegration.Mask;
@@ -26,22 +26,22 @@ namespace WADV.Plugins.Image {
         public override async Task<Message> Receive(Message message) {
             if (message.HasTag(ImageMessageIntegration.ShowImage) && message is Message<ImageMessageIntegration.ShowImageContent> showMessage) {
                 await ShowImages(showMessage.Content);
-            } else if (message.HasTag(ImageMessageIntegration.HideImage) && message is Message<string[]> hideMessage) {
+            } else if (message.HasTag(ImageMessageIntegration.HideImage) && message is Message<ImageMessageIntegration.HideImageContent> hideMessage) {
                 await HideImages(hideMessage.Content);
             }
             return message;
         }
 
-        private async Task HideImages(string[] names) {
+        private async Task HideImages(ImageMessageIntegration.HideImageContent content) {
             
         }
 
         private async Task ShowImages(ImageMessageIntegration.ShowImageContent content) {
-            async Task PlayOnExistedImage(ImageProperties target) {
+            async Task PlayOnExistedImage(ImageDisplayInformation target) {
                 if (content.Effect == null) return;
                 var component = _images[target.Name];
                 await content.Effect.PlayEffect(new[] {component}, target.Content.texture);
-                PrepareImage(target, content.Layer, component.gameObject);
+                PrepareImage(target, component.gameObject);
             }
             if (content.Effect == null) {
                 var names = content.Images.Select(e => e.Name).ToArray();
@@ -50,7 +50,7 @@ namespace WADV.Plugins.Image {
                 foreach (var image in content.Images) {
                     await image.Content.ReadTexture();
                     if (image.Content.texture == null) continue;
-                    PrepareImage(image, content.Layer);
+                    PrepareImage(image);
                 }
             } else {
                 var tasks = new List<Task>();
@@ -61,7 +61,7 @@ namespace WADV.Plugins.Image {
                     if (_images.ContainsKey(image.Name)) {
                         tasks.Add(PlayOnExistedImage(image));
                     } else {
-                        newImages.Add(PrepareImage(image, content.Layer).Image);
+                        newImages.Add(PrepareImage(image).Image);
                     }
                 }
                 tasks.Add(content.Effect.PlayEffect(newImages, null));
@@ -75,14 +75,14 @@ namespace WADV.Plugins.Image {
             _properties.Remove(target);
         }
 
-        private (RectTransform Transform, RawImage Image) PrepareImage(ImageProperties image, int layer, GameObject target = null) {
+        private (RectTransform Transform, RawImage Image) PrepareImage(ImageDisplayInformation image, GameObject target = null) {
             if (target == null) {
                 target = new GameObject();
                 target.AddComponent<RectTransform>();
             }
             var targetTransform = target.GetComponent<RectTransform>();
             image.Transform?.ApplyTo(targetTransform);
-            targetTransform.SetSiblingIndex(layer);
+            targetTransform.SetSiblingIndex(image.layer);
             var targetImage = target.AddComponent<RawImage>();
             targetImage.texture = image.Content.texture;
             targetImage.uvRect = image.Content.Uv.value;

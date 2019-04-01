@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
+using WADV.Intents;
 using WADV.Plugins.Image.Effects;
 using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
@@ -47,7 +49,7 @@ namespace WADV.Plugins.Image {
         /// </summary>
         public string EffectType { get; }
 
-        public EffectValue([NotNull]string type, [NotNull] GraphicEffect effect) {
+        public EffectValue([NotNull] string type, [NotNull] GraphicEffect effect) {
             EffectType = type;
             Effect = effect;
         }
@@ -64,6 +66,10 @@ namespace WADV.Plugins.Image {
         
         public override SerializableValue Duplicate() {
             return new EffectValue(EffectType, Effect);
+        }
+
+        public override Task BeforeRead(DumpRuntimeIntent.TaskLists tasks) {
+            return Effect.Initialize();
         }
 
         [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]

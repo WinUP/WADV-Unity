@@ -1,10 +1,14 @@
-using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
+using WADV.Extensions;
 using WADV.Intents;
 using WADV.MessageSystem;
+using WADV.Thread;
+using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Runtime;
+using WADV.VisualNovel.Runtime.Utilities;
 
 namespace WADV {
     /// <summary>
@@ -18,12 +22,18 @@ namespace WADV {
         public static async Task<byte[]> Dump(ScriptRuntime runtime) {
             var intent = DumpRuntimeIntent.CreateEmpty();
             intent.runtime = runtime;
-            var message = await MessageService.ProcessAsync(Message<DumpRuntimeIntent>.Create(CoreConstant.Mask, CoreConstant.DumpRuntime, intent));
-            if (message is Message<DumpRuntimeIntent> returnMessage) {
-                intent = returnMessage.Content;
-            } else {
-                throw new NotSupportedException($"Unable to dump runtime: message broadcast result is not DumpRuntimeIntent");
+            intent = (await MessageService.ProcessAsync<DumpRuntimeIntent>(Message<DumpRuntimeIntent>.Create(CoreConstant.Mask, CoreConstant.DumpRuntime, intent))).Content;
+            var tasks = new DumpRuntimeIntent.TaskLists();
+            foreach (var value in intent.runtime.MemoryStack) {
+                tasks.AddBeforeDump(value);
             }
+            foreach (var (_, value) in intent.runtime.Exported) {
+                tasks.AddBeforeDump(value);
+            }
+            if (intent.runtime.ActiveScope != null) {
+                tasks.AddBeforeDump(intent.runtime.ActiveScope);
+            }
+            await tasks.WaitAll();
             var serializer = new BinaryFormatter();
             var stream = new MemoryStream();
             serializer.Serialize(stream, intent);
@@ -38,6 +48,17 @@ namespace WADV {
         public static async Task<DumpRuntimeIntent> Read(byte[] data) {
             var deserializer = new BinaryFormatter();
             var intent = (DumpRuntimeIntent) deserializer.Deserialize(new MemoryStream(data));
+            var tasks = new DumpRuntimeIntent.TaskLists();
+            foreach (var value in intent.runtime.MemoryStack) {
+                tasks.AddBeforeRead(value);
+            }
+            foreach (var (_, value) in intent.runtime.Exported) {
+                tasks.AddBeforeRead(value);
+            }
+            if (intent.runtime.ActiveScope != null) {
+                tasks.AddBeforeRead(intent.runtime.ActiveScope);
+            }
+            await tasks.WaitAll();
             await MessageService.ProcessAsync(Message<DumpRuntimeIntent>.Create(CoreConstant.Mask, CoreConstant.DumpRuntime, intent));
             return intent;
         }

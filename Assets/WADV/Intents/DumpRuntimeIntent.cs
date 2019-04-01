@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
+using WADV.Thread;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Runtime;
 
@@ -26,24 +28,24 @@ namespace WADV.Intents {
         }
 
         public int GetInteger(string id) {
-            return _integerValue.ContainsKey(id) ? _integerValue[id] : throw new KeyNotFoundException($"Unable to find key {id} in integer values");
+            return _integerValue.ContainsKey(id) ? _integerValue[id] : throw new KeyNotFoundException($"Unable to get dump data: missing key {id} in integer values");
         }
 
         public float GetFloat(string id) {
-            return _floatValue.ContainsKey(id) ? _floatValue[id] : throw new KeyNotFoundException($"Unable to find key {id} in float values");
+            return _floatValue.ContainsKey(id) ? _floatValue[id] : throw new KeyNotFoundException($"Unable to get dump data: missing key {id} in float values");
         }
 
         public string GetString(string id) {
-            return _stringValue.ContainsKey(id) ? _stringValue[id] : throw new KeyNotFoundException($"Unable to find key {id} in string values");
+            return _stringValue.ContainsKey(id) ? _stringValue[id] : throw new KeyNotFoundException($"Unable to get dump data: missing key {id} in string values");
         }
         
         public bool GetBoolean(string id) {
-            return _booleanValue.ContainsKey(id) ? _booleanValue[id] : throw new KeyNotFoundException($"Unable to find key {id} in boolean values");
+            return _booleanValue.ContainsKey(id) ? _booleanValue[id] : throw new KeyNotFoundException($"Unable to get dump data: missing key {id} in boolean values");
         }
 
         [CanBeNull]
         public T GetValue<T>(string id) where T : class {
-            return _objectValue.ContainsKey(id) ? _objectValue[id] as T : throw new KeyNotFoundException($"Unable to find key {id} in serializable values");
+            return _objectValue.ContainsKey(id) ? _objectValue[id] as T : throw new KeyNotFoundException($"Unable to get dump data: missing key {id} in object values");
         }
 
         public void AddValue(string id, int value) {
@@ -79,10 +81,28 @@ namespace WADV.Intents {
         }
 
         public void AddValue(string id, object value) {
+            if (!value.GetType().IsSerializable)
+                throw new NotSupportedException($"Unable to set dump data {id}: target {value.GetType().FullName} is not serializable");
             if (_objectValue.ContainsKey(id)) {
                 _objectValue[id] = value;
             } else {
                 _objectValue.Add(id, value);
+            }
+        }
+
+        public class TaskLists {
+            private readonly Dictionary<SerializableValue, Task> _tasks = new Dictionary<SerializableValue, Task>();
+
+            public void AddBeforeDump(SerializableValue value) {
+                _tasks.Add(value, value.BeforeDump(this));
+            }
+
+            public void AddBeforeRead(SerializableValue value) {
+                _tasks.Add(value, value.BeforeRead(this));
+            }
+
+            public Task WaitAll() {
+                return Dispatcher.WaitAll(_tasks.Values);
             }
         }
     }
