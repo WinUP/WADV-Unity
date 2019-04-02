@@ -10,8 +10,8 @@ namespace WADV.VisualNovel.Compiler.Editor {
             // 重命名
             var movingFiles = movedFromAssetPaths
                               .WithIndex()
-                              .Where(e => e.item.EndsWith(".vns") || e.item.EndsWith(".vnb") || e.item.EndsWith(".txt"))
-                              .Select(e => (From: e.item, To: movedAssets[e.index]));
+                              .Where(e => e.Item.EndsWith(".vns") || e.Item.EndsWith(".vnb") || e.Item.EndsWith(".txt"))
+                              .Select(e => (From: e.Item, To: movedAssets[e.Index]));
             foreach (var (movedFromAsset, moveToAsset) in movingFiles) {
                 var origin = ScriptInformation.CreateInformationFromAsset(movedFromAsset);
                 if (origin == null) continue;

@@ -249,7 +249,6 @@
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\WriteBackReferenceValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\VariableSearchMode.cs" />
     <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\CompileConfiguration.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\RelativePath.cs" />
     <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\ScriptInformation.cs" />
     <None Include="Assets\Resources\Logic\Translation\jp\!Entrance.txt" />
     <None Include="Assets\WADV\Plugins\Image\Shaders\UIBase.cginc" />

@@ -26,7 +26,7 @@ namespace WADV.Plugins.Image {
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var (mode, layer, effect, images) = AnalyseParameters(context);
             if (!images.Any()) return new NullValue();
-            _placeholder = Dispatcher.CreatePlaceholder();
+            CreatePlaceholder();
             InitializeImage(images, layer);
             if (effect == null) {
                 await PlaceNewImages(images);
@@ -58,6 +58,13 @@ namespace WADV.Plugins.Image {
         public void OnRegister() { }
 
         public void OnUnregister(bool isReplace) { }
+
+        private void CreatePlaceholder() {
+            if (_placeholder != null) {
+                CompletePlaceholder();
+            }
+            _placeholder = Dispatcher.CreatePlaceholder();
+        }
 
         private void CompletePlaceholder() {
             _placeholder.Complete();

@@ -19,7 +19,7 @@ namespace WADV.Thread {
         public static WaitForUpdate UseMainThread() => WaitForUpdate.Instance;
 
         /// <summary>
-        /// 等待下一个更新循环
+        /// 等待下一个渲染循环
         /// </summary>
         /// <returns></returns>
         public static WaitForUpdate NextUpdate() => WaitForUpdate.Instance;
@@ -50,6 +50,12 @@ namespace WADV.Thread {
         /// </summary>
         /// <returns></returns>
         public static MainThreadPlaceholder CreatePlaceholder() => new MainThreadPlaceholder();
+        
+        /// <summary>
+        /// 生成一个新的带返回值的主线程占位符
+        /// </summary>
+        /// <returns></returns>
+        public static MainThreadPlaceholder<T> CreatePlaceholder<T>() => new MainThreadPlaceholder<T>();
 
         /// <summary>
         /// 等待所有任务完成

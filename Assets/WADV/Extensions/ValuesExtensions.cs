@@ -9,6 +9,42 @@ namespace WADV.Extensions {
             key = pair.Key;
             value = pair.Value;
         }
+
+        /// <summary>
+        /// 转换为普通二维向量
+        /// </summary>
+        /// <param name="value">当前向量</param>
+        /// <returns></returns>
+        public static Vector2 ToVector2(this Vector2Int value) {
+            return new Vector2(value.x, value.y);
+        }
+
+        /// <summary>
+        /// 进位转换为普通二维向量
+        /// </summary>
+        /// <param name="value">当前向量</param>
+        /// <returns></returns>
+        public static Vector2Int CeilToVector2(this Vector2 value) {
+            return new Vector2Int(Mathf.CeilToInt(value.x), Mathf.CeilToInt(value.y));
+        }
+        
+        /// <summary>
+        /// 四舍五入转换为普通二维向量
+        /// </summary>
+        /// <param name="value">当前向量</param>
+        /// <returns></returns>
+        public static Vector2Int RoundToVector2(this Vector2 value) {
+            return new Vector2Int(Mathf.RoundToInt(value.x), Mathf.RoundToInt(value.y));
+        }
+        
+        /// <summary>
+        /// 去尾转换为普通二维向量
+        /// </summary>
+        /// <param name="value">当前向量</param>
+        /// <returns></returns>
+        public static Vector2Int FloorToVector2(this Vector2 value) {
+            return new Vector2Int(Mathf.FloorToInt(value.x), Mathf.FloorToInt(value.y));
+        }
         
         /// <summary>
         /// 转换为普通矩形
@@ -20,7 +56,7 @@ namespace WADV.Extensions {
         }
         
         /// <summary>
-        /// 转换为整坐标矩形
+        /// 进位转换为整坐标矩形
         /// </summary>
         /// <param name="value">当前矩形</param>
         /// <returns></returns>
@@ -29,7 +65,7 @@ namespace WADV.Extensions {
         }
         
         /// <summary>
-        /// 转换为整坐标矩形
+        /// 四舍五入转换为整坐标矩形
         /// </summary>
         /// <param name="value">当前矩形</param>
         /// <returns></returns>
@@ -38,7 +74,7 @@ namespace WADV.Extensions {
         }
         
         /// <summary>
-        /// 转换为整坐标矩形
+        /// 去尾转换为整坐标矩形
         /// </summary>
         /// <param name="value">当前矩形</param>
         /// <returns></returns>
