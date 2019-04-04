@@ -46,11 +46,11 @@ namespace WADV.Plugins.Image {
         public ColorValue Color {
             get {
                 if (_color == null) {
-                    _color = new ColorValue(0, 0, 0, 255);
+                    _color = new ColorValue(255, 255, 255, 255);
                 }
                 return _color;
             }
-            set => _color = value ?? new ColorValue(0, 0, 0, 255);
+            set => _color = value ?? new ColorValue(255, 255, 255, 255);
         }
 
         /// <summary>

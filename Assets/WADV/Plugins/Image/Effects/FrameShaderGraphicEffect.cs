@@ -4,15 +4,12 @@ using UnityEngine.UI;
 
 namespace WADV.Plugins.Image.Effects {
     public abstract class FrameShaderGraphicEffect : FrameGraphicEffect {
-        private readonly string _shaderName;
-        protected Shader EffectShader;
+        protected abstract string ShaderName { get; }
         
-        protected FrameShaderGraphicEffect(string shaderName) {
-            _shaderName = shaderName;
-        }
+        protected Shader EffectShader;
 
         public override async Task Initialize() {
-            EffectShader = await ShaderLoader.Load(_shaderName);
+            EffectShader = await ShaderLoader.Load(ShaderName);
         }
         
         /// <summary>

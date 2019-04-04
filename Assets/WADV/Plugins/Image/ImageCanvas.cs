@@ -12,7 +12,7 @@ using WADV.Thread;
 namespace WADV.Plugins.Image {
     [RequireComponent(typeof(Canvas))]
     public class ImageCanvas : MonoMessengerBehaviour {
-        private readonly Dictionary<string, RawImage> _images = new Dictionary<string, RawImage>();
+        private readonly Dictionary<string, GameObject> _images = new Dictionary<string, GameObject>();
         private RectTransform _root;
 
         public ComputeShader computeShader;
@@ -47,11 +47,11 @@ namespace WADV.Plugins.Image {
                 switch (image.status) {
                     case ImageStatus.PrepareToHide:
                     case ImageStatus.OnScreen:
-                        image.Transform?.ApplyTo(_images[image.Name].rectTransform);
+                        image.Transform?.ApplyTo(_images[image.Name].GetComponent<RectTransform>());
                         break;
                     default:
                         extraImages.Add(image.Name);
-                        PrepareImage(image).Image.color = Color.clear;
+                        CreateImageObject(image).GetComponent<RawImage>().color = Color.clear;
                         break;
                 }
             }
@@ -65,8 +65,8 @@ namespace WADV.Plugins.Image {
             }
         }
 
-        private static Matrix4x4 GetMatrix(RawImage target) {
-            var image = target.texture;
+        private static Matrix4x4 GetMatrix(GameObject target) {
+            var image = target.GetComponent<RawImage>().texture;
             var transform = target.GetComponent<RectTransform>();
             var scale = transform.localScale;
             var rect = transform.rect;
@@ -76,26 +76,24 @@ namespace WADV.Plugins.Image {
         }
 
         private async Task HideImages(ImageMessageIntegration.HideImageContent content) {
-            if (content.Effect == null) {
-                
+            var targets = content.Names.Where(e => _images.ContainsKey(e)).ToArray();
+            if (content.Effect != null) {
+                await content.Effect.PlayEffect(targets.Select(e => _images[e].GetComponent<RawImage>()), null);
+            }
+            foreach (var target in targets) {
+                DestroyImage(target);
             }
         }
 
         private async Task ShowImages(ImageMessageIntegration.ShowImageContent content) {
-            async Task PlayOnExistedImage(ImageDisplayInformation target) {
-                if (content.Effect == null) return;
-                var component = _images[target.Name];
-                await content.Effect.PlayEffect(new[] {component}, target.Content.texture);
-                PrepareImage(target, component.gameObject);
-            }
             if (content.Effect == null) {
+                await Dispatcher.WaitAll(content.Images.Select(e => e.Content.ReadTexture()));
                 foreach (var image in content.Images) {
-                    await image.Content.ReadTexture();
                     if (image.Content.texture == null) continue;
                     if (_images.ContainsKey(image.Name)) {
-                        PrepareImage(image, _images[image.Name].gameObject);
+                        ApplyToImageObject(image, _images[image.Name]);
                     } else {
-                        PrepareImage(image);
+                        CreateImageObject(image);
                     }
                 }
             } else {
@@ -105,9 +103,9 @@ namespace WADV.Plugins.Image {
                     await image.Content.ReadTexture();
                     if (image.Content.texture == null) continue;
                     if (_images.ContainsKey(image.Name)) {
-                        tasks.Add(PlayOnExistedImage(image));
+                        tasks.Add(PlayOnExistedImage(image, content.Effect));
                     } else {
-                        newImages.Add(PrepareImage(image).Image);
+                        newImages.Add(CreateImageObject(image).GetComponent<RawImage>());
                     }
                 }
                 tasks.Add(content.Effect.PlayEffect(newImages, null));
@@ -120,21 +118,40 @@ namespace WADV.Plugins.Image {
             _images.Remove(target);
         }
 
-        private (RectTransform Transform, RawImage Image) PrepareImage(ImageDisplayInformation image, GameObject target = null) {
-            target = target ? target : new GameObject();
-            var targetTransform = target.GetComponent<RectTransform>() ?? target.AddComponent<RectTransform>();
+        private GameObject CreateImageObject(ImageDisplayInformation image) {
+            var target = new GameObject(image.Name);
+            target.AddComponent<RectTransform>();
+            target.AddComponent<RawImage>();
+            ApplyToImageObject(image, target);
+            _images.Add(image.Name, target);
+            return target;
+        }
+
+        private void ApplyToImageObject(ImageDisplayInformation image, GameObject target) {
+            var targetTransform = target.GetComponent<RectTransform>();
+            if (targetTransform.parent != _root) {
+                targetTransform.SetParent(_root);
+            }
+            if (image.Content.texture != null) {
+                targetTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, image.Content.texture.height);
+                targetTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, image.Content.texture.width);
+                targetTransform.localScale = Vector3.one;
+            }
+            var position = targetTransform.localPosition;
+            targetTransform.localPosition = new Vector3(position.x, position.y, 0);
             image.Transform?.ApplyTo(targetTransform);
             targetTransform.SetSiblingIndex(image.layer);
-            var targetImage = target.GetComponent<RawImage>() ?? target.AddComponent<RawImage>();
+            var targetImage = target.GetComponent<RawImage>();
             targetImage.texture = image.Content.texture;
             targetImage.uvRect = image.Content.Uv.value;
             targetImage.color = image.Content.Color.value;
-            targetTransform.parent = _root;
-            if (_images.ContainsKey(image.Name)) {
-                DestroyImage(image.Name);
-            }
-            _images.Add(image.Name, targetImage);
-            return (targetTransform, targetImage);
+        }
+        
+        private async Task PlayOnExistedImage(ImageDisplayInformation target, SingleGraphicEffect effect) {
+            if (effect == null) return;
+            var component = _images[target.Name];
+            await effect.PlayEffect(new[] {component.GetComponent<RawImage>()}, target.Content.texture);
+            ApplyToImageObject(target, component);
         }
     }
 }

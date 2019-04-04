@@ -8,15 +8,12 @@ namespace WADV.Plugins.Image.Effects {
     /// 基于Shader的无限循环UI元素效果
     /// </summary>
     public abstract class StaticShaderGraphicEffect : StaticGraphicEffect {
-        private readonly string _shaderName;
-        protected Shader EffectShader;
+        protected abstract string ShaderName { get; }
         
-        protected StaticShaderGraphicEffect(string shaderName) {
-            _shaderName = shaderName;
-        }
+        protected Shader EffectShader;
 
         public override async Task Initialize() {
-            EffectShader = await ShaderLoader.Load(_shaderName);
+            EffectShader = await ShaderLoader.Load(ShaderName);
         }
         
         /// <summary>

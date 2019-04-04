@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -13,35 +14,26 @@ namespace WADV.Plugins.Image.Effects {
         /// <summary>
         /// 持续时间
         /// </summary>
-        public readonly float Duration;
+        public float Duration { get; private set; }
         /// <summary>
         /// 缓动函数
         /// </summary>
-        public readonly Func<float, float> EasingFunction;
+        public Func<float, float> EasingFunction { get; private set; }
         /// <summary>
         /// 缓动函数类型
         /// </summary>
-        public readonly EasingType EasingType;
+        public EasingType EasingType { get; private set; }
         /// <summary>
         /// 特效初始化参数
         /// </summary>
-        public readonly Dictionary<string, SerializableValue> Parameters;
+        public Dictionary<string, SerializableValue> Parameters { get; private set; }
 
-        /// <summary>
-        /// 创建一个UI特效
-        /// </summary>
-        /// <param name="parameters">特效参数</param>
-        /// <param name="duration">持续时间</param>
-        /// <param name="easing">缓动函数类型</param>
-        [UsedImplicitly]
-        private GraphicEffect(Dictionary<string, SerializableValue> parameters, float duration, EasingType easing = EasingType.Linear) {
+        private void SetStaticData(Dictionary<string, SerializableValue> parameters, float duration, EasingType easing) {
             Parameters = parameters;
             Duration = duration;
             EasingFunction = Easing.GetEasingFunction(easing);
             EasingType = easing;
         }
-        
-        protected GraphicEffect() { }
 
         /// <summary>
         /// 根据类型创建UI效果的实例
@@ -51,13 +43,10 @@ namespace WADV.Plugins.Image.Effects {
         /// <param name="duration">持续时间</param>
         /// <param name="easing">缓动函数类型</param>
         /// <returns></returns>
-        [CanBeNull]
         public static T CreateInstance<T>(Type target, Dictionary<string, SerializableValue> parameters, float duration, EasingType easing) where T : GraphicEffect {
-            try {
-                return (T) Activator.CreateInstance(target, parameters, duration, easing);
-            } catch {
-                return null;
-            }
+            var instance = (T) Activator.CreateInstance(target);
+            instance.SetStaticData(parameters, duration, easing);
+            return instance;
         }
 
         /// <summary>

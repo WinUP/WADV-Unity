@@ -6,9 +6,9 @@ namespace WADV.Plugins.Image.Effects {
     [StaticRegistrationInfo("FadeIn")]
     [UsedImplicitly]
     public class FadeIn : SingleShaderGraphicEffect {
+        protected override string ShaderName { get; } = "UI/Unlit/Fade";
+        
         private static readonly int Alpha = Shader.PropertyToID("_Alpha");
-
-        public FadeIn() : base("UI/Unlit/Fade") { }
 
         protected override Material CreateMaterial(Texture2D nextTexture) {
             var material = new Material(EffectShader);

@@ -6,9 +6,9 @@ namespace WADV.Plugins.Image.Effects {
     [StaticRegistrationInfo("FadeOut")]
     [UsedImplicitly]
     public class FadeOut : SingleShaderGraphicEffect {
-        private static readonly int Alpha = Shader.PropertyToID("_Alpha");
+        protected override string ShaderName { get; } = "UI/Unlit/Fade";
         
-        public FadeOut() : base("UI/Unlit/Fade") { }
+        private static readonly int Alpha = Shader.PropertyToID("_Alpha");
         
         protected override Material CreateMaterial(Texture2D nextTexture) {
             var material = new Material(EffectShader);

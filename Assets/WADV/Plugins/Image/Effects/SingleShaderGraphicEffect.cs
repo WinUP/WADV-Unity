@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -12,19 +13,16 @@ namespace WADV.Plugins.Image.Effects {
     /// 基于Shader的单程UI特效
     /// </summary>
     public abstract class SingleShaderGraphicEffect : SingleGraphicEffect {
-        private readonly string _shaderName;
-        protected Shader EffectShader;
+        protected abstract string ShaderName { get; }
         
-        protected SingleShaderGraphicEffect(string shaderName) {
-            _shaderName = shaderName;
-        }
-
+        protected Shader EffectShader;
         public override async Task Initialize() {
-            EffectShader = await ShaderLoader.Load(_shaderName);
+            EffectShader = await ShaderLoader.Load(ShaderName);
         }
 
         public override async Task PlayEffect(IEnumerable<Graphic> targets, Texture2D nextTexture) {
             var material = CreateMaterial(nextTexture);
+            targets = targets.ToArray();
             foreach (var target in targets) {
                 target.material = material;
             }
@@ -35,6 +33,9 @@ namespace WADV.Plugins.Image.Effects {
                 currentTime += Time.deltaTime;
             }
             OnFrame(material, 1.0F);
+            foreach (var target in targets) {
+                target.material = null;
+            }
         }
         
         /// <summary>
