@@ -1,15 +1,16 @@
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using WADV.Resource;
 
 namespace WADV.Plugins.Image.Effects {
     public abstract class FrameShaderGraphicEffect : FrameGraphicEffect {
-        protected abstract string ShaderName { get; }
+        protected abstract string ShaderId { get; }
         
         protected Shader EffectShader;
 
         public override async Task Initialize() {
-            EffectShader = await ShaderLoader.Load(ShaderName);
+            EffectShader = await ResourceManager.Load<Shader>($"Shader://{ShaderId}");
         }
         
         /// <summary>

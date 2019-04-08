@@ -5,19 +5,20 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
 using WADV.Extensions;
+using WADV.Resource;
 using WADV.Thread;
 
 namespace WADV.Plugins.Image.Effects {
-    /// <inheritdoc cref="ShaderLoader" />
+    /// <inheritdoc />
     /// <summary>
     /// 基于Shader的单程UI特效
     /// </summary>
     public abstract class SingleShaderGraphicEffect : SingleGraphicEffect {
-        protected abstract string ShaderName { get; }
+        protected abstract string ShaderId { get; }
         
         protected Shader EffectShader;
         public override async Task Initialize() {
-            EffectShader = await ShaderLoader.Load(ShaderName);
+            EffectShader = await ResourceManager.Load<Shader>($"Shader://{ShaderId}");
         }
 
         public override async Task PlayEffect(IEnumerable<Graphic> targets, Texture2D nextTexture) {

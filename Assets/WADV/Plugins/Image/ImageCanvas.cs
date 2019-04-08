@@ -13,6 +13,7 @@ namespace WADV.Plugins.Image {
     [RequireComponent(typeof(Canvas))]
     public class ImageCanvas : MonoMessengerBehaviour {
         private readonly Dictionary<string, GameObject> _images = new Dictionary<string, GameObject>();
+        private readonly SortedDictionary<string, GameObject> _i = new SortedDictionary<string, GameObject>(Comparer<string>.Create((x, y) => ));
         private RectTransform _root;
 
         public ComputeShader computeShader;
@@ -26,7 +27,7 @@ namespace WADV.Plugins.Image {
 
         public override async Task<Message> Receive(Message message) {
             if (message.HasTag(ImageMessageIntegration.GetCanvasSize))
-                return Message<Vector2Int>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetCanvasSize, _root.rect.size.CeilToVector2());
+                return Message<Vector2Int>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetCanvasSize, _root.rect.size.CeilToVector2Int());
             if (message.HasTag(ImageMessageIntegration.GetBindShader))
                 return Message<ComputeShader>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader, computeShader);
             if (message.HasTag(ImageMessageIntegration.UpdateInformation) && message is Message<ImageDisplayInformation[]> updateMessage) {
@@ -91,7 +92,7 @@ namespace WADV.Plugins.Image {
                 foreach (var image in content.Images) {
                     if (image.Content.texture == null) continue;
                     if (_images.ContainsKey(image.Name)) {
-                        ApplyToImageObject(image, _images[image.Name]);
+                        image.ApplyTo(_images[image.Name], _root);
                     } else {
                         CreateImageObject(image);
                     }
@@ -122,36 +123,17 @@ namespace WADV.Plugins.Image {
             var target = new GameObject(image.Name);
             target.AddComponent<RectTransform>();
             target.AddComponent<RawImage>();
-            ApplyToImageObject(image, target);
+            image.ApplyTo(target, _root);
             _images.Add(image.Name, target);
             return target;
         }
 
-        private void ApplyToImageObject(ImageDisplayInformation image, GameObject target) {
-            var targetTransform = target.GetComponent<RectTransform>();
-            if (targetTransform.parent != _root) {
-                targetTransform.SetParent(_root);
-            }
-            if (image.Content.texture != null) {
-                targetTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, image.Content.texture.height);
-                targetTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, image.Content.texture.width);
-                targetTransform.localScale = Vector3.one;
-            }
-            var position = targetTransform.localPosition;
-            targetTransform.localPosition = new Vector3(position.x, position.y, 0);
-            image.Transform?.ApplyTo(targetTransform);
-            targetTransform.SetSiblingIndex(image.layer);
-            var targetImage = target.GetComponent<RawImage>();
-            targetImage.texture = image.Content.texture;
-            targetImage.uvRect = image.Content.Uv.value;
-            targetImage.color = image.Content.Color.value;
-        }
         
         private async Task PlayOnExistedImage(ImageDisplayInformation target, SingleGraphicEffect effect) {
             if (effect == null) return;
             var component = _images[target.Name];
             await effect.PlayEffect(new[] {component.GetComponent<RawImage>()}, target.Content.texture);
-            ApplyToImageObject(target, component);
+            target.ApplyTo(component, _root);
         }
     }
 }

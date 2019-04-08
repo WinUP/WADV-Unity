@@ -1,19 +1,20 @@
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using WADV.Resource;
 
 namespace WADV.Plugins.Image.Effects {
-    /// <inheritdoc cref="ShaderLoader" />
+    /// <inheritdoc />
     /// <summary>
     /// 基于Shader的无限循环UI元素效果
     /// </summary>
     public abstract class StaticShaderGraphicEffect : StaticGraphicEffect {
-        protected abstract string ShaderName { get; }
+        protected abstract string ShaderId { get; }
         
         protected Shader EffectShader;
 
         public override async Task Initialize() {
-            EffectShader = await ShaderLoader.Load(ShaderName);
+            EffectShader = await ResourceManager.Load<Shader>($"Shader://{ShaderId}");
         }
         
         /// <summary>

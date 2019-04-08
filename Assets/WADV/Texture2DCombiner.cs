@@ -27,7 +27,7 @@ namespace WADV {
         /// </summary>
         /// <param name="width">画板宽度</param>
         /// <param name="height">画板高度</param>
-        /// <param name="shader">要使用的ComputeShader（仅当平台支持时可用）</param>
+        /// <param name="shader">线程组设置为24x24x1的ComputeShader（仅当平台支持时可用）</param>
         public Texture2DCombiner(int width, int height, ComputeShader shader = null) {
             if (SupportsComputeShaders && shader != null) {
                 _renderCanvas = new RenderTexture(width + 2, height + 2, 24) {enableRandomWrite = true};
@@ -104,7 +104,7 @@ namespace WADV {
                 _shader.SetVector(ShaderColorName, overlayColor);
                 _shader.SetMatrix(ShaderTransformName, transform);
                 _shader.SetVector(ShaderSizeName, new Vector4(_renderCanvas.width, _renderCanvas.height, texture.width, texture.height));
-                _shader.Dispatch(_addKernel, Mathf.CeilToInt(width / 16.0F), Mathf.CeilToInt(height / 16.0F), 1);
+                _shader.Dispatch(_addKernel, Mathf.CeilToInt(width / 24.0F), Mathf.CeilToInt(height / 24.0F), 1);
             }
             return this;
         }
@@ -153,7 +153,7 @@ namespace WADV {
                 _shader.SetVector(ShaderColorName, targetColor);
                 _shader.SetMatrix(ShaderTransformName, transform);
                 _shader.SetVector(ShaderSizeName, new Vector4(_renderCanvas.width, _renderCanvas.height, area.width, area.height));
-                _shader.Dispatch(_fillKernel, Mathf.CeilToInt(width / 16.0F), Mathf.CeilToInt(height / 16.0F), 1);
+                _shader.Dispatch(_fillKernel, Mathf.CeilToInt(width / 24.0F), Mathf.CeilToInt(height / 24.0F), 1);
             }
             return this;
         }

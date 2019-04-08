@@ -2,6 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.UI;
 using WADV.Plugins.Unity;
 
 namespace WADV.Plugins.Image.Utilities {
@@ -31,6 +32,26 @@ namespace WADV.Plugins.Image.Utilities {
 
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
             throw new NotImplementedException();
+        }
+
+        public void ApplyTo(GameObject target, Transform layoutRoot = null) {
+            var targetTransform = target.GetComponent<RectTransform>() ?? target.AddComponent<RectTransform>();
+            if (layoutRoot != null && targetTransform.parent != layoutRoot) {
+                targetTransform.SetParent(layoutRoot);
+            }
+            if (Content.texture != null) {
+                targetTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Content.texture.height);
+                targetTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Content.texture.width);
+                targetTransform.localScale = Vector3.one;
+            }
+            var position = targetTransform.localPosition;
+            targetTransform.localPosition = new Vector3(position.x, position.y, 0);
+            Transform?.ApplyTo(targetTransform);
+            targetTransform.SetSiblingIndex(layer);
+            var targetImage = target.GetComponent<RawImage>() ?? target.AddComponent<RawImage>();
+            targetImage.texture = Content.texture;
+            targetImage.uvRect = Content.Uv.value;
+            targetImage.color = Content.Color.value;
         }
     }
 }

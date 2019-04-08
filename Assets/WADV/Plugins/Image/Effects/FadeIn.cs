@@ -6,7 +6,7 @@ namespace WADV.Plugins.Image.Effects {
     [StaticRegistrationInfo("FadeIn")]
     [UsedImplicitly]
     public class FadeIn : SingleShaderGraphicEffect {
-        protected override string ShaderName { get; } = "UI/Unlit/Fade";
+        protected override string ShaderId { get; } = "UI/Unlit/Fade";
         
         private static readonly int Alpha = Shader.PropertyToID("_Alpha");
 

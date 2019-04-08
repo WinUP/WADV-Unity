@@ -24,7 +24,7 @@ namespace WADV.Extensions {
         /// </summary>
         /// <param name="value">当前向量</param>
         /// <returns></returns>
-        public static Vector2Int CeilToVector2(this Vector2 value) {
+        public static Vector2Int CeilToVector2Int(this Vector2 value) {
             return new Vector2Int(Mathf.CeilToInt(value.x), Mathf.CeilToInt(value.y));
         }
         
@@ -33,7 +33,7 @@ namespace WADV.Extensions {
         /// </summary>
         /// <param name="value">当前向量</param>
         /// <returns></returns>
-        public static Vector2Int RoundToVector2(this Vector2 value) {
+        public static Vector2Int RoundToVector2Int(this Vector2 value) {
             return new Vector2Int(Mathf.RoundToInt(value.x), Mathf.RoundToInt(value.y));
         }
         
@@ -42,7 +42,7 @@ namespace WADV.Extensions {
         /// </summary>
         /// <param name="value">当前向量</param>
         /// <returns></returns>
-        public static Vector2Int FloorToVector2(this Vector2 value) {
+        public static Vector2Int FloorToVector2Int(this Vector2 value) {
             return new Vector2Int(Mathf.FloorToInt(value.x), Mathf.FloorToInt(value.y));
         }
         

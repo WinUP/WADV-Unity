@@ -48,72 +48,105 @@ namespace WADV {
     /// 缓动函数库
     /// </summary>
     public static class Easing {
+        private static readonly Func<float, float> LinearDelegate = Linear;
+        private static readonly Func<float, float> SpringDelegate = Spring;
+        private static readonly Func<float, float> QuadInDelegate = QuadIn;
+        private static readonly Func<float, float> QuadOutDelegate = QuadOut;
+        private static readonly Func<float, float> QuadInOutDelegate = QuadInOut;
+        private static readonly Func<float, float> CubicInDelegate = CubicIn;
+        private static readonly Func<float, float> CubicOutDelegate = CubicOut;
+        private static readonly Func<float, float> CubicInOutDelegate = CubicInOut;
+        private static readonly Func<float, float> QuartInDelegate = QuartIn;
+        private static readonly Func<float, float> QuartOutDelegate = QuartOut;
+        private static readonly Func<float, float> QuartInOutDelegate = QuartInOut;
+        private static readonly Func<float, float> QuintInDelegate = QuintIn;
+        private static readonly Func<float, float> QuintOutDelegate = QuintOut;
+        private static readonly Func<float, float> QuintInOutDelegate = QuintInOut;
+        private static readonly Func<float, float> SineInDelegate = SineIn;
+        private static readonly Func<float, float> SineOutDelegate = SineOut;
+        private static readonly Func<float, float> SineInOutDelegate = SineInOut;
+        private static readonly Func<float, float> ExponentInDelegate = ExponentIn;
+        private static readonly Func<float, float> ExponentOutDelegate = ExponentOut;
+        private static readonly Func<float, float> ExponentInOutDelegate = ExponentInOut;
+        private static readonly Func<float, float> CircleInDelegate = CircleIn;
+        private static readonly Func<float, float> CircleOutDelegate = CircleOut;
+        private static readonly Func<float, float> CircleInOutDelegate = CircleInOut;
+        private static readonly Func<float, float> BounceInDelegate = BounceIn;
+        private static readonly Func<float, float> BounceOutDelegate = BounceOut;
+        private static readonly Func<float, float> BounceInOutDelegate = BounceInOut;
+        private static readonly Func<float, float> BackInDelegate = BackIn;
+        private static readonly Func<float, float> BackOutDelegate = BackOut;
+        private static readonly Func<float, float> BackInOutDelegate = BackInOut;
+        private static readonly Func<float, float> ElasticInDelegate = ElasticIn;
+        private static readonly Func<float, float> ElasticOutDelegate = ElasticOut;
+        private static readonly Func<float, float> ElasticInOutDelegate = ElasticInOut;
+        
         public static Func<float, float> GetEasingFunction(EasingType type) {
             switch (type) {
                 case EasingType.Linear:
-                    return Linear;
+                    return LinearDelegate;
                 case EasingType.Spring:
-                    return Spring;
+                    return SpringDelegate;
                 case EasingType.QuadIn:
-                    return QuadIn;
+                    return QuadInDelegate;
                 case EasingType.QuadOut:
-                    return QuadOut;
+                    return QuadOutDelegate;
                 case EasingType.QuadInOut:
-                    return QuadInOut;
+                    return QuadInOutDelegate;
                 case EasingType.CubicIn:
-                    return CubicIn;
+                    return CubicInDelegate;
                 case EasingType.CubicOut:
-                    return CubicOut;
+                    return CubicOutDelegate;
                 case EasingType.CubicInOut:
-                    return CubicInOut;
+                    return CubicInOutDelegate;
                 case EasingType.QuartIn:
-                    return QuartIn;
+                    return QuartInDelegate;
                 case EasingType.QuartOut:
-                    return QuartOut;
+                    return QuartOutDelegate;
                 case EasingType.QuartInOut:
-                    return QuartInOut;
+                    return QuartInOutDelegate;
                 case EasingType.QuintIn:
-                    return QuintIn;
+                    return QuintInDelegate;
                 case EasingType.QuintOut:
-                    return QuintOut;
+                    return QuintOutDelegate;
                 case EasingType.QuintInOut:
-                    return QuintInOut;
+                    return QuintInOutDelegate;
                 case EasingType.SineIn:
-                    return SineIn;
+                    return SineInDelegate;
                 case EasingType.SineOut:
-                    return SineOut;
+                    return SineOutDelegate;
                 case EasingType.SineInOut:
-                    return SineInOut;
+                    return SineInOutDelegate;
                 case EasingType.ExponentIn:
-                    return ExponentIn;
+                    return ExponentInDelegate;
                 case EasingType.ExponentOut:
-                    return ExponentOut;
+                    return ExponentOutDelegate;
                 case EasingType.ExponentInOut:
-                    return ExponentInOut;
+                    return ExponentInOutDelegate;
                 case EasingType.CircleIn:
-                    return CircleIn;
+                    return CircleInDelegate;
                 case EasingType.CircleOut:
-                    return CircleOut;
+                    return CircleOutDelegate;
                 case EasingType.CircleInOut:
-                    return CircleInOut;
+                    return CircleInOutDelegate;
                 case EasingType.BounceIn:
-                    return BounceIn;
+                    return BounceInDelegate;
                 case EasingType.BounceOut:
-                    return BounceOut;
+                    return BounceOutDelegate;
                 case EasingType.BounceInOut:
-                    return BounceInOut;
+                    return BounceInOutDelegate;
                 case EasingType.BackIn:
-                    return BackIn;
+                    return BackInDelegate;
                 case EasingType.BackOut:
-                    return BackOut;
+                    return BackOutDelegate;
                 case EasingType.BackInOut:
-                    return BackInOut;
+                    return BackInOutDelegate;
                 case EasingType.ElasticIn:
-                    return ElasticIn;
+                    return ElasticInDelegate;
                 case EasingType.ElasticOut:
-                    return ElasticOut;
+                    return ElasticOutDelegate;
                 case EasingType.ElasticInOut:
-                    return ElasticInOut;
+                    return ElasticInOutDelegate;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, $"Unable to create ease function: unknown ease type {type}");
             }

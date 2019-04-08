@@ -6,7 +6,7 @@ namespace WADV.Reflection {
     /// 为类型提供自动注册支持
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    public class StaticRegistrationInfo : Attribute {
+    public sealed class StaticRegistrationInfo : Attribute {
         /// <summary>
         /// 类型注册名
         /// </summary>

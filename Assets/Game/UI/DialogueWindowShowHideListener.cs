@@ -16,6 +16,7 @@ namespace Game.UI {
         private void Start() {
             _rectTransform = GetComponent<RectTransform>();
             _canvas = GetComponent<Canvas>();
+            _rectTransform.SetSiblingIndex(10000);
         }
 
         protected override void PrepareStartShow(float totalTime) {

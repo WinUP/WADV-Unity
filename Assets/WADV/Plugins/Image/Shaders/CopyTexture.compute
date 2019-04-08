@@ -8,7 +8,7 @@ Texture2D<float4> Source;
 float4 Color;
 float4x4 Transform;
 
-[numthreads(16,16,1)]
+[numthreads(24,24,1)]
 void SetTexture(uint3 id : SV_DispatchThreadID) {
     id.x = clamp(id.x, 0, Size.z);
     id.y = clamp(id.y, 0, Size.w);

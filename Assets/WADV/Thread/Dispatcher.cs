@@ -63,8 +63,8 @@ namespace WADV.Thread {
         /// <param name="tasks">目标任务组</param>
         /// <returns></returns>
         public static async Task WaitAll(params Task[] tasks) {
-            var target = tasks.Select(e => e.GetAwaiter()).ToList();
-            while (target.Any(e => !e.IsCompleted)) {
+            var target = tasks.Select(e => e.GetAwaiter()).ToArray();
+            while (!target.All(e => e.IsCompleted)) {
                 await NextUpdate();
             }
         }
@@ -75,8 +75,8 @@ namespace WADV.Thread {
         /// <param name="tasks">目标任务组</param>
         /// <returns></returns>
         public static async Task WaitAll(IEnumerable<Task> tasks) {
-            var target = tasks.Select(e => e.GetAwaiter()).ToList();
-            while (target.Any(e => !e.IsCompleted)) {
+            var target = tasks.Select(e => e.GetAwaiter()).ToArray();
+            while (!target.All(e => e.IsCompleted)) {
                 await NextUpdate();
             }
         }
@@ -87,7 +87,7 @@ namespace WADV.Thread {
         /// <param name="tasks">目标任务组</param>
         /// <returns></returns>
         public static async Task WaitAny(params Task[] tasks) {
-            var target = tasks.Select(e => e.GetAwaiter()).ToList();
+            var target = tasks.Select(e => e.GetAwaiter()).ToArray();
             while (!target.Any(e => e.IsCompleted)) {
                 await NextUpdate();
             }
@@ -99,7 +99,7 @@ namespace WADV.Thread {
         /// <param name="tasks">目标任务组</param>
         /// <returns></returns>
         public static async Task WaitAny(IEnumerable<Task> tasks) {
-            var target = tasks.Select(e => e.GetAwaiter()).ToList();
+            var target = tasks.Select(e => e.GetAwaiter()).ToArray();
             while (!target.Any(e => e.IsCompleted)) {
                 await NextUpdate();
             }
