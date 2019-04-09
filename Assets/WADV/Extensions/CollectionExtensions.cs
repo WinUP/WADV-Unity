@@ -35,7 +35,7 @@ namespace WADV.Extensions {
         /// <param name="e">目标字典</param>
         /// <param name="target">要删除的元素</param>
         /// <returns></returns>
-        public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> e, TKey target) {
+        public static bool TryRemove<TKey, TValue>(this IDictionary<TKey, TValue> e, TKey target) {
             if (!e.ContainsKey(target)) return false;
             e.Remove(target);
             return true;
@@ -53,6 +53,12 @@ namespace WADV.Extensions {
         }
         
         public static void RemoveAll<TKey, TValue>(this IDictionary<TKey, TValue> e, IEnumerable<TKey> keys) {
+            foreach (var key in keys) {
+                e.Remove(key);
+            }
+        }
+        
+        public static void RemoveAll<TKey, TValue>(this IDictionary<TKey, TValue> e, params TKey[] keys) {
             foreach (var key in keys) {
                 e.Remove(key);
             }

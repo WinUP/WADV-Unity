@@ -1,6 +1,9 @@
 ﻿#pragma kernel SetTexture
 #pragma kernel SetColor
 
+#define GROUP_SIZE_X 24
+#define GROUP_SIZE_Y 24
+
 RWTexture2D<float4> Canvas;
 float4 Size;
 
@@ -8,7 +11,7 @@ Texture2D<float4> Source;
 float4 Color;
 float4x4 Transform;
 
-[numthreads(24,24,1)]
+[numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
 void SetTexture(uint3 id : SV_DispatchThreadID) {
     id.x = clamp(id.x, 0, Size.z);
     id.y = clamp(id.y, 0, Size.w);
@@ -18,8 +21,10 @@ void SetTexture(uint3 id : SV_DispatchThreadID) {
     Canvas[position.xy] = Source[id.xy] * Color;
 }
 
-[numthreads(16,16,1)]
+[numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
 void SetColor(uint3 id : SV_DispatchThreadID) {
+    id.x = clamp(id.x, 0, Size.z);
+    id.y = clamp(id.y, 0, Size.w);
     float2 position = mul(Transform, float4(id, 0)).xy;
     position.x = clamp(position.x + 1, 0, Size.x);
     position.y = clamp(position.y + 1, 0, Size.y);

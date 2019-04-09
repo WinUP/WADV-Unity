@@ -122,7 +122,6 @@
     <Compile Include="Assets\WADV\Plugins\Image\Effects\StaticShaderGraphicEffect.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\EffectValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImageCanvas.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\ImageList.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImagePlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImageValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ShowPlugin.cs" />

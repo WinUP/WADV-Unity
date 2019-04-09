@@ -12,8 +12,7 @@ using WADV.Thread;
 namespace WADV.Plugins.Image {
     [RequireComponent(typeof(Canvas))]
     public class ImageCanvas : MonoMessengerBehaviour {
-        private readonly Dictionary<string, GameObject> _images = new Dictionary<string, GameObject>();
-        private readonly SortedDictionary<string, GameObject> _i = new SortedDictionary<string, GameObject>(Comparer<string>.Create((x, y) => ));
+        private readonly ImageList _images = new ImageList();
         private RectTransform _root;
 
         public ComputeShader computeShader;
@@ -48,7 +47,7 @@ namespace WADV.Plugins.Image {
                 switch (image.status) {
                     case ImageStatus.PrepareToHide:
                     case ImageStatus.OnScreen:
-                        image.Transform?.ApplyTo(_images[image.Name].GetComponent<RectTransform>());
+                        image.Transform?.ApplyTo(_images.Find(image.Name).GetComponent<RectTransform>());
                         break;
                     default:
                         extraImages.Add(image.Name);
@@ -59,7 +58,7 @@ namespace WADV.Plugins.Image {
             await Dispatcher.NextUpdate();
             for (var i = -1; ++i < length;) {
                 var image = images[i];
-                image.displayMatrix = GetMatrix(_images[image.Name]);
+                image.displayMatrix = GetMatrix(_images.Find(image.Name));
                 if (extraImages.TryRemove(image.Name)) {
                     DestroyImage(image.Name);
                 }
@@ -77,9 +76,9 @@ namespace WADV.Plugins.Image {
         }
 
         private async Task HideImages(ImageMessageIntegration.HideImageContent content) {
-            var targets = content.Names.Where(e => _images.ContainsKey(e)).ToArray();
+            var targets = content.Names.Where(e => _images.Contains(e)).ToArray();
             if (content.Effect != null) {
-                await content.Effect.PlayEffect(targets.Select(e => _images[e].GetComponent<RawImage>()), null);
+                await content.Effect.PlayEffect(targets.Select(e => _images.Find(e).GetComponent<RawImage>()), null);
             }
             foreach (var target in targets) {
                 DestroyImage(target);
@@ -91,8 +90,8 @@ namespace WADV.Plugins.Image {
                 await Dispatcher.WaitAll(content.Images.Select(e => e.Content.ReadTexture()));
                 foreach (var image in content.Images) {
                     if (image.Content.texture == null) continue;
-                    if (_images.ContainsKey(image.Name)) {
-                        image.ApplyTo(_images[image.Name], _root);
+                    if (_images.Contains(image.Name)) {
+                        image.ApplyTo(_images.Find(image.Name), _root);
                     } else {
                         CreateImageObject(image);
                     }
@@ -103,7 +102,7 @@ namespace WADV.Plugins.Image {
                 foreach (var image in content.Images) {
                     await image.Content.ReadTexture();
                     if (image.Content.texture == null) continue;
-                    if (_images.ContainsKey(image.Name)) {
+                    if (_images.Contains(image.Name)) {
                         tasks.Add(PlayOnExistedImage(image, content.Effect));
                     } else {
                         newImages.Add(CreateImageObject(image).GetComponent<RawImage>());
@@ -115,8 +114,7 @@ namespace WADV.Plugins.Image {
         }
 
         private void DestroyImage(string target) {
-            Destroy(_images[target].gameObject);
-            _images.Remove(target);
+            _images.Destroy(target);
         }
 
         private GameObject CreateImageObject(ImageDisplayInformation image) {
@@ -124,16 +122,55 @@ namespace WADV.Plugins.Image {
             target.AddComponent<RectTransform>();
             target.AddComponent<RawImage>();
             image.ApplyTo(target, _root);
-            _images.Add(image.Name, target);
+            target.GetComponent<RectTransform>().SetSiblingIndex(_images.Add(image.Name, target, image.layer));
             return target;
         }
 
-        
         private async Task PlayOnExistedImage(ImageDisplayInformation target, SingleGraphicEffect effect) {
             if (effect == null) return;
-            var component = _images[target.Name];
+            var component = _images.Find(target.Name);
             await effect.PlayEffect(new[] {component.GetComponent<RawImage>()}, target.Content.texture);
             target.ApplyTo(component, _root);
+        }
+        
+        private class ImageList {
+            private readonly Dictionary<string, GameObject> _imageIndex = new Dictionary<string, GameObject>();
+            private readonly List<(string Name, int Sibling)> _images = new List<(string, int)>();
+
+            public int Add(string name, GameObject target, int layer) {
+                if (_imageIndex.ContainsKey(name)) {
+                    Destroy(name);
+                }
+                _imageIndex.Add(name, target);
+                var result = (name, layer);
+                if (_images.Count == 0) {
+                    _images.Add(result);
+                    return 0;
+                }
+                // 鉴于大多数情况下图片数量最多也就几十张，为二分查找开空间不值得，可直接使用线性查找
+                var index = _images.FindIndex(e => e.Sibling > layer);
+                if (index < 0) {
+                    _images.Add(result);
+                    return _images.Count - 1;
+                }
+                _images.Insert(index, result);
+                return index;
+            }
+            
+            public GameObject Find(string name) {
+                return _imageIndex.TryGetValue(name, out var target) ? target : null;
+            }
+
+            public bool Contains(string name) {
+                return _imageIndex.ContainsKey(name);
+            }
+
+            public void Destroy(string name) {
+                if (!_imageIndex.TryGetValue(name, out var target)) return;
+                Object.Destroy(target);
+                _images.RemoveAt(_images.FindIndex(e => e.Name == name));
+                _imageIndex.Remove(name);
+            }
         }
     }
 }

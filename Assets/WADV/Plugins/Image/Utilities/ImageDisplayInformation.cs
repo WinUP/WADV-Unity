@@ -47,7 +47,6 @@ namespace WADV.Plugins.Image.Utilities {
             var position = targetTransform.localPosition;
             targetTransform.localPosition = new Vector3(position.x, position.y, 0);
             Transform?.ApplyTo(targetTransform);
-            targetTransform.SetSiblingIndex(layer);
             var targetImage = target.GetComponent<RawImage>() ?? target.AddComponent<RawImage>();
             targetImage.texture = Content.texture;
             targetImage.uvRect = Content.Uv.value;

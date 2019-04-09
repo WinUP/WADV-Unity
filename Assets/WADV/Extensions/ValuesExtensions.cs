@@ -4,10 +4,109 @@ using System.Text;
 using UnityEngine;
 
 namespace WADV.Extensions {
+    /// <summary>
+    /// 区间类型
+    /// </summary>
+    public enum IntervalType : byte {
+        /// <summary>
+        /// 开区间
+        /// </summary>
+        Open = 0b0101,
+        /// <summary>
+        /// 闭区间
+        /// </summary>
+        Closed = 0b1010,
+        /// <summary>
+        /// 左开右闭区间
+        /// </summary>
+        OpenClosed = 0b0110,
+        /// <summary>
+        /// 左闭右开区间
+        /// </summary>
+        ClosedOpen = 0b1001
+    }
+    
     public static class ValuesExtensions {
         public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key, out TValue value) {
             key = pair.Key;
             value = pair.Value;
+        }
+        
+        /// <summary>
+        /// 确定数值是否在指定范围内
+        /// </summary>
+        /// <param name="value">目标数值</param>
+        /// <param name="min">范围最小值</param>
+        /// <param name="max">范围最大值</param>
+        /// <param name="compareType">范围区间类型</param>
+        /// <returns></returns>
+        public static bool InRange(this int value, int min, int max, IntervalType compareType = IntervalType.ClosedOpen) {
+            if (value < min || value > max) return false;
+            if (((byte) compareType & 0b0100) != 0 && value == min) return false;
+            if (((byte) compareType & 0b0001) != 0 && value == max) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// 确定数值是否在指定范围内
+        /// </summary>
+        /// <param name="value">目标数值</param>
+        /// <param name="min">范围最小值</param>
+        /// <param name="max">范围最大值</param>
+        /// <param name="compareType">范围区间类型</param>
+        /// <returns></returns>
+        public static bool InRange(this float value, float min, float max, IntervalType compareType = IntervalType.ClosedOpen) {
+            if (value < min || value > max) return false;
+            if (((byte) compareType & 0b0100) != 0 && value.Equals(min)) return false;
+            if (((byte) compareType & 0b0001) != 0 && value.Equals(max)) return false;
+            return true;
+        }
+        
+        /// <summary>
+        /// 获取空间变换矩阵的逆变换矩阵
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static Matrix4x4 RevertTRS(this Matrix4x4 value) {
+            if (!value.ValidTRS()) throw new NotSupportedException($"Cannot get inverse transformation: {value} is not valid transformation matrix");
+            var scale = value.lossyScale;
+            return Matrix4x4.TRS(-value.GetTranslation(), Quaternion.Euler(-value.rotation.eulerAngles), new Vector3(1.0F / scale.x, 1.0F / scale.y, 1.0F / scale.z));
+        }
+
+        /// <summary>
+        /// 获取变换矩阵的平移分量
+        /// </summary>
+        /// <param name="value">当前矩阵</param>
+        /// <returns></returns>
+        public static Vector3 GetTranslation(this Matrix4x4 value) {
+            return new Vector3(value.m03, value.m13, value.m23);
+        }
+
+        /// <summary>
+        /// 将目标矩形与矩阵相乘
+        /// </summary>
+        /// <param name="value">当前矩阵</param>
+        /// <param name="target">目标矩形</param>
+        /// <returns></returns>
+        public static Rect MultiplyRect(this Matrix4x4 value, Rect target) {
+            var topLeft = value.MultiplyPoint(new Vector3(target.x, target.y, 0));
+            var topRight = value.MultiplyPoint(new Vector3(target.xMax, target.y, 0));
+            var bottomLeft = value.MultiplyPoint(new Vector3(target.x, target.yMax, 0));
+            var bottomRight = value.MultiplyPoint(new Vector3(target.xMax, target.yMax, 0));
+            var xMin = Mathf.Min(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+            var xMax = Mathf.Max(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+            var yMin = Mathf.Min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+            var yMax = Mathf.Max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+            return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
+        }
+
+        /// <summary>
+        /// 获取颜色除透明度外的分量
+        /// </summary>
+        /// <param name="value">目标颜色</param>
+        /// <returns></returns>
+        public static Vector3 PickSolid(this Color value) {
+            return new Vector3(value.r, value.g, value.b);
         }
 
         /// <summary>

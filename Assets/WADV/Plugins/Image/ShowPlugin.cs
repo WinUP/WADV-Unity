@@ -23,6 +23,12 @@ namespace WADV.Plugins.Image {
         private int _defaultLayer;
         private MainThreadPlaceholder _placeholder;
 
+        public ShowPlugin() {
+            _defaultTransform.Set(TransformValue.PropertyName.PositionX, 0);
+            _defaultTransform.Set(TransformValue.PropertyName.PositionY, 0);
+            _defaultTransform.Set(TransformValue.PropertyName.PositionZ, 0);
+        }
+
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var (mode, layer, effect, images) = AnalyseParameters(context);
             if (!images.Any()) return new NullValue();

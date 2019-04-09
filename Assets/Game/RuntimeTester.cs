@@ -46,23 +46,25 @@ namespace Game {
             var effect = GraphicEffect.CreateInstance<SingleGraphicEffect>(typeof(FadeIn), new Dictionary<string, SerializableValue>(), 1.0F, EasingType.QuadIn);
             await effect.Initialize();
             var content = new ImageMessageIntegration.ShowImageContent();
-            var backgroundTransform = new TransformValue();
-            backgroundTransform.Set(TransformValue.PropertyName.PositionX, 0);
-            backgroundTransform.Set(TransformValue.PropertyName.PositionY, 0);
-            var image1Transform = new TransformValue();
-            image1Transform.Set(TransformValue.PropertyName.PositionX, -225);
-            image1Transform.Set(TransformValue.PropertyName.PositionY, -156);
-            var image2Transform = new TransformValue();
-            image2Transform.Set(TransformValue.PropertyName.PositionX, 154);
-            image2Transform.Set(TransformValue.PropertyName.PositionY, -156);
-            content.Images = new[] {
-                new ImageDisplayInformation("Tomo", new ImageValue {source = "Resources://tomo13i"}, image1Transform) {layer = 1000},
-                new ImageDisplayInformation("Tsubasa", new ImageValue {source = "Resources://tubasa37i"}, image2Transform) {layer = 1000}
-            };
+
+            var shader = (await MessageService.ProcessAsync<ComputeShader>(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader))).Content;
+            var combiner = new Texture2DCombiner(800, 600, null);
+
+            var background = new ImageValue {source = "Resources://Classroom 2"};
+            await background.ReadTexture();
+            combiner.DrawTexture(background.texture, Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.identity, Vector3.one));
+            var image1 = new ImageValue {source = "Resources://tomo13i"};
+            await image1.ReadTexture();
+            combiner.DrawTexture(image1.texture, Matrix4x4.TRS(new Vector3(47.5F, 300, 0), Quaternion.Euler(0, 0, 15), new Vector3(0.833333F, 0.833333F, 1.0F)));
+//            var image2 = new ImageValue {source = "Resources://tubasa37i"};
+//            await image2.ReadTexture();
+//            combiner.DrawTexture(image2.texture, Matrix4x4.TRS(new Vector3(361.5F, 1, 0), Quaternion.identity, Vector3.one));
             content.Effect = effect;
-            await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
+            var combinedTransform = new TransformValue();
+            combinedTransform.Set(TransformValue.PropertyName.PositionX, 0);
+            combinedTransform.Set(TransformValue.PropertyName.PositionY, 0);
             content.Images = new[] {
-                new ImageDisplayInformation("Background", new ImageValue {source = "Resources://Classroom 2"}, backgroundTransform) {layer = 0}
+                new ImageDisplayInformation("Combined", new ImageValue {texture = combiner.Combine()}, combinedTransform)
             };
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
         }

@@ -40,6 +40,7 @@ namespace WADV {
             } else {
                 _canvas = new Texture2D(width, height, TextureFormat.RGBA32, false);
             }
+            FillArea(new RectInt(0, 0, width, height), Color.clear);
         }
         
         /// <summary>
@@ -87,15 +88,26 @@ namespace WADV {
         public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform, Color overlayColor) {
             var width = texture.width;
             var height = texture.height;
+            var area = transform.MultiplyRect(new Rect(0, 0, texture.width, texture.height)).CeilToRectInt();
+            transform = transform.RevertTRS();
             if (_renderCanvas == null) {
                 var pixels = texture.GetPixels();
                 var sizeX = _canvas.width;
                 var sizeY = _canvas.height;
-                for (var i = -1; ++i < width;) {
-                    for (var j = -1; ++j < height;) {
-                        var position = transform * new Vector4(i, j, 0, 0);
-                        if (position.x >= 0 && position.x < sizeX && position.y >= 0 && position.y < sizeY) {
-                            _canvas.SetPixel(i, j, pixels[i * width + j]);
+                var areaX = area.xMax;
+                var areaY = area.yMax;
+                for (var i = area.x - 1; ++i < areaY;) {
+                    if (!i.InRange(0, sizeY)) continue;
+                    for (var j = -1; ++j < areaX;) {
+                        if (!j.InRange(0, sizeX)) continue;
+                        var position = transform.MultiplyPoint(new Vector3(j, i, 0));
+                        if (!position.x.InRange(0, width) || !position.y.InRange(0, height)) continue;
+                        var (x, y) = (Mathf.FloorToInt(position.x), Mathf.FloorToInt(position.y));
+                        if (x >= 0 && x < sizeX && y >= 0 && y < sizeY) {
+                            var origin = _canvas.GetPixel(x, y);
+                            var target = pixels[i * width + j];
+                            var color = target.PickSolid() * target.a + origin.PickSolid() * (1.0F - target.a);
+                            _canvas.SetPixel(x, y, new Color(color.x, color.y, color.z, origin.a.Equals(0) ? target.a : origin.a));
                         }
                     }
                 }
