@@ -44,8 +44,8 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             _writeBack = writeBackFunction;
         }
 
-        public override SerializableValue Duplicate() {
-            return new WriteBackReferenceValue(ReferenceTarget.Duplicate(), _writeBack) {IsConstant = IsConstant};
+        public override SerializableValue Clone() {
+            return new WriteBackReferenceValue(ReferenceTarget.Clone(), _writeBack) {IsConstant = IsConstant};
         }
     }
 }

@@ -64,7 +64,7 @@ namespace WADV.Plugins.Image {
             );
         }
         
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             return new EffectValue(EffectType, Effect);
         }
 

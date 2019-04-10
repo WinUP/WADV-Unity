@@ -54,8 +54,8 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// </summary>
         public Dictionary<string, ReferenceValue> LocalVariables { get; private set; } = new Dictionary<string, ReferenceValue>();
         
-        public override SerializableValue Duplicate() {
-            return new ScopeValue {entrance = entrance, scriptId = scriptId, parentScope = parentScope, LocalVariables = LocalVariables.Duplicate()};
+        public override SerializableValue Clone() {
+            return new ScopeValue {entrance = entrance, scriptId = scriptId, parentScope = parentScope, LocalVariables = LocalVariables.Clone()};
         }
 
         public override Task BeforeDump(DumpRuntimeIntent.TaskLists tasks) {

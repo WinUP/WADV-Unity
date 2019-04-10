@@ -21,7 +21,7 @@ namespace WADV.Extensions {
         /// </summary>
         /// <param name="e">目标字典</param>
         /// <returns></returns>
-        public static Dictionary<TKey, TValue> Duplicate<TKey, TValue>(this Dictionary<TKey, TValue> e) {
+        public static Dictionary<TKey, TValue> Clone<TKey, TValue>(this Dictionary<TKey, TValue> e) {
             var result = new Dictionary<TKey, TValue>();
             foreach (var (key, value) in e) {
                 result.Add(key, value);

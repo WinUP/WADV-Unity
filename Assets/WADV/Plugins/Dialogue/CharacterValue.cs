@@ -25,7 +25,7 @@ namespace WADV.Plugins.Dialogue {
         public IStringConverter avatar;
             
         /// <inheritdoc />
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             return new CharacterValue {name = name, avatar = avatar};
         }
 

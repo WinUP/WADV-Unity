@@ -66,7 +66,7 @@ namespace WADV.Plugins.Unity {
             value = new Vector2(info.GetSingle("x"), info.GetSingle("y"));
         }
         
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             return new Vector2Value(value.x, value.y);
         }
 

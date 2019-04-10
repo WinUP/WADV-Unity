@@ -19,7 +19,7 @@ namespace WADV.VisualNovel.Interoperation {
         /// </summary>
         /// <returns></returns>
         [NotNull]
-        public abstract SerializableValue Duplicate();
+        public abstract SerializableValue Clone();
 
         public virtual Task BeforeDump(DumpRuntimeIntent.TaskLists tasks) {
             return Task.CompletedTask;

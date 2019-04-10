@@ -71,7 +71,7 @@ namespace WADV.Translation {
         /// 复制当前可翻译字符串列表
         /// </summary>
         /// <returns></returns>
-        public ScriptTranslation Duplicate() {
+        public ScriptTranslation Clone() {
             return new ScriptTranslation(_translatableStrings);
         }
 

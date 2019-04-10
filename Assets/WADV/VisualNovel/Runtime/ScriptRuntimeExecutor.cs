@@ -235,7 +235,7 @@ namespace WADV.VisualNovel.Runtime {
             MemoryStack.Push(new ScopeValue {
                 scriptId = Script.Header.Id,
                 entrance = Script.ReadLabelOffset(),
-                parentScope = ActiveScope?.Duplicate() as ScopeValue
+                parentScope = ActiveScope?.Clone() as ScopeValue
             });
         }
 
@@ -401,9 +401,9 @@ namespace WADV.VisualNovel.Runtime {
             var valueRight = MemoryStack.Pop();
             switch (operatorType) {
                 case OperatorType.PickChild:
-                    if (valueRight is IStringConverter rightStringConverter && rightStringConverter.ConvertToString(ActiveLanguage) == "Duplicate") {
-                        // 复制(Duplicate)由于统一实现的困难暂且由运行环境处理
-                        MemoryStack.Push(valueLeft.Duplicate());
+                    if (valueRight is IStringConverter rightStringConverter && rightStringConverter.ConvertToString(ActiveLanguage) == "Clone") {
+                        // 复制(Clone)由于统一实现的困难暂且由运行环境处理
+                        MemoryStack.Push(valueLeft.Clone());
                     } else if (valueLeft is IPickChildOperator leftPick) {
                         try {
                             MemoryStack.Push(leftPick.PickChild(valueRight, ActiveLanguage));

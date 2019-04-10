@@ -127,7 +127,7 @@ namespace WADV.Plugins.Unity {
             value = new Color32(r, g, b, a);
         }
         
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             return new ColorValue(new Color32(value.r, value.g, value.b, value.a));
         }
         

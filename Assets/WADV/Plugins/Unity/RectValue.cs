@@ -83,7 +83,7 @@ namespace WADV.Plugins.Unity {
             value = new Rect(info.GetSingle("x"), info.GetSingle("y"), info.GetSingle("w"), info.GetSingle("h"));
         }
 
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             return new RectValue(value.x, value.y, value.width, value.height);
         }
 

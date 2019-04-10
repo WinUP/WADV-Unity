@@ -67,8 +67,9 @@ namespace WADV.Extensions {
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
+        // ReSharper disable once InconsistentNaming
         public static Matrix4x4 RevertTRS(this Matrix4x4 value) {
-            if (!value.ValidTRS()) throw new NotSupportedException($"Cannot get inverse transformation: {value} is not valid transformation matrix");
+            if (!value.ValidTRS()) throw new NotSupportedException($"Cannot get reverted transformation: {value} is not valid transformation matrix");
             var scale = value.lossyScale;
             return Matrix4x4.TRS(-value.GetTranslation(), Quaternion.Euler(-value.rotation.eulerAngles), new Vector3(1.0F / scale.x, 1.0F / scale.y, 1.0F / scale.z));
         }
@@ -179,6 +180,16 @@ namespace WADV.Extensions {
         /// <returns></returns>
         public static RectInt FloorToRectInt(this Rect value) {
             return new RectInt(Mathf.FloorToInt(value.x), Mathf.FloorToInt(value.y), Mathf.FloorToInt(value.width), Mathf.FloorToInt(value.height));
+        }
+
+        /// <summary>
+        /// 移动矩形位置
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <param name="distance">移动距离</param>
+        /// <returns></returns>
+        public static Rect Move(this Rect value, Vector2 distance) {
+            return new Rect(value.x + distance.x, value.y + distance.y, value.width, value.height);
         }
 
         /// <summary>

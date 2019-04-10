@@ -185,7 +185,8 @@ namespace WADV.Plugins.Image {
                     if (i == 0) continue;
                     canvas.Clear(new RectInt(0, 0, images[i].Content.texture.width, images[i].Content.texture.height), images[i].displayMatrix);
                 } else {
-                    canvas.DrawTexture(images[i].Content.texture, images[i].displayMatrix, images[i].Content.Color.value);
+                    var pivot = new Vector2(images[i].Transform?.Get(TransformValue.PropertyName.PivotX) ?? 0.0F, images[i].Transform?.Get(TransformValue.PropertyName.PivotY) ?? 0.0F);
+                    canvas.DrawTexture(images[i].Content.texture, images[i].displayMatrix, images[i].Content.Color.value, pivot);
                 }
             }
             return canvas.Combine();

@@ -40,7 +40,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
     [Serializable]
     public class NullValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, ISubtractOperator, IMultiplyOperator, IDivideOperator,
                              INegativeOperator, IEqualOperator {
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             return new NullValue();
         }
 
@@ -73,7 +73,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         }
 
         public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
-            return target.Duplicate();
+            return target.Clone();
         }
 
         public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {

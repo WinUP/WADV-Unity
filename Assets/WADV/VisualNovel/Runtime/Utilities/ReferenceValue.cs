@@ -51,8 +51,8 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             _referenceTarget = referenceTarget;
         }
 
-        public override SerializableValue Duplicate() {
-            return new ReferenceValue {IsConstant = IsConstant, ReferenceTarget = ReferenceTarget.Duplicate()};
+        public override SerializableValue Clone() {
+            return new ReferenceValue {IsConstant = IsConstant, ReferenceTarget = ReferenceTarget.Clone()};
         }
 
         public override Task BeforeDump(DumpRuntimeIntent.TaskLists tasks) {

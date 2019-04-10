@@ -40,7 +40,7 @@ namespace WADV.Plugins.Unity {
             _hasData = (bool[]) info.GetValue("h", typeof(bool[]));
         }
         
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             var result = new TransformValue();
             for (var i = -1; ++i < 22;) {
                 result._data[i] = _data[i];
@@ -271,7 +271,7 @@ namespace WADV.Plugins.Unity {
         public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             if (!(target is TransformValue transformValue)) throw new NotSupportedException($"Unable to add TransformValue: target {target} is not TransformValue");
             var value = transformValue.Get(PropertyName.AnchorMinX);
-            var result = (TransformValue) Duplicate();
+            var result = (TransformValue) Clone();
             if (value.HasValue) {
                 result.Set(PropertyName.AnchorMinX, value);
             }
@@ -360,7 +360,7 @@ namespace WADV.Plugins.Unity {
 
         public SerializableValue SubtractWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             if (!(target is TransformValue transformValue)) throw new NotSupportedException($"Unable to add TransformValue: target {target} is not TransformValue");
-            var result = (TransformValue) Duplicate();
+            var result = (TransformValue) Clone();
             if (transformValue.Get(PropertyName.AnchorMinX).HasValue) {
                 result.Set(PropertyName.AnchorMinX, null);
             }

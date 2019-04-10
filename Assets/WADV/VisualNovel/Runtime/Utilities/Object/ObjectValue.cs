@@ -60,10 +60,10 @@ namespace WADV.VisualNovel.Runtime.Utilities.Object {
             _writeBackDelegate = OnReferenceValueChanged;
         }
 
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             return new ObjectValue {
-                _stringValues = _stringValues.Duplicate(),
-                _integerValues = _integerValues.Duplicate()
+                _stringValues = _stringValues.Clone(),
+                _integerValues = _integerValues.Clone()
             };
         }
         

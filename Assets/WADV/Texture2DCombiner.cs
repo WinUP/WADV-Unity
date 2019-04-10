@@ -65,7 +65,7 @@ namespace WADV {
         public Texture2DCombiner DrawTexture(Texture2D texture, Vector2Int position, Color overlayColor) {
             return Color.white.Equals(overlayColor)
                 ? DrawTexture(texture, position)
-                : DrawTexture(texture, Matrix4x4.Translate(new Vector3(position.x, position.y, 0)), overlayColor);
+                : DrawTexture(texture, Matrix4x4.Translate(new Vector3(position.x, position.y, 0)), overlayColor, Vector2.zero);
         }
         
         /// <summary>
@@ -75,7 +75,18 @@ namespace WADV {
         /// <param name="transform">变换矩阵</param>
         /// <returns></returns>
         public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform) {
-            return DrawTexture(texture, transform, Color.white);
+            return DrawTexture(texture, transform, Color.white, Vector2.zero);
+        }
+        
+        /// <summary>
+        /// 绘制Texture2D
+        /// </summary>
+        /// <param name="texture">目标Texture2D</param>
+        /// <param name="transform">变换矩阵</param>
+        /// <param name="pivot">变换轴点</param>
+        /// <returns></returns>
+        public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform, Vector2 pivot) {
+            return DrawTexture(texture, transform, Color.white, pivot);
         }
 
         /// <summary>
@@ -83,12 +94,16 @@ namespace WADV {
         /// </summary>
         /// <param name="texture">目标Texture2D</param>
         /// <param name="transform">变换矩阵</param>
-        /// <param name="overlayColor">眼叠加的颜色</param>
+        /// <param name="overlayColor">要叠加的颜色</param>
+        /// <param name="pivot">变换轴点</param>
         /// <returns></returns>
-        public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform, Color overlayColor) {
+        public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform, Color overlayColor, Vector2 pivot) {
             var width = texture.width;
             var height = texture.height;
-            var area = transform.MultiplyRect(new Rect(0, 0, texture.width, texture.height)).CeilToRectInt();
+            var distance = new Vector3(texture.width * pivot.x, texture.height * pivot.y, 0);
+            var area = transform.MultiplyRect(new Rect(-distance, new Vector2(texture.width, texture.height)))
+                                .Move(distance)
+                                .CeilToRectInt();
             transform = transform.RevertTRS();
             if (_renderCanvas == null) {
                 var pixels = texture.GetPixels();
@@ -96,19 +111,17 @@ namespace WADV {
                 var sizeY = _canvas.height;
                 var areaX = area.xMax;
                 var areaY = area.yMax;
-                for (var i = area.x - 1; ++i < areaY;) {
+                for (var i = area.y - 1; ++i < areaY;) {
                     if (!i.InRange(0, sizeY)) continue;
-                    for (var j = -1; ++j < areaX;) {
+                    for (var j = area.x - 1; ++j < areaX;) {
                         if (!j.InRange(0, sizeX)) continue;
-                        var position = transform.MultiplyPoint(new Vector3(j, i, 0));
-                        if (!position.x.InRange(0, width) || !position.y.InRange(0, height)) continue;
+                        var position = transform.MultiplyPoint(new Vector3(j, i, 0) - distance) + distance;
                         var (x, y) = (Mathf.FloorToInt(position.x), Mathf.FloorToInt(position.y));
-                        if (x >= 0 && x < sizeX && y >= 0 && y < sizeY) {
-                            var origin = _canvas.GetPixel(x, y);
-                            var target = pixels[i * width + j];
-                            var color = target.PickSolid() * target.a + origin.PickSolid() * (1.0F - target.a);
-                            _canvas.SetPixel(x, y, new Color(color.x, color.y, color.z, origin.a.Equals(0) ? target.a : origin.a));
-                        }
+                        if (!x.InRange(0, width) || !y.InRange(0, height)) continue;
+                        var origin = _canvas.GetPixel(j, i);
+                        var target = pixels[x + y * width];
+                        var color = target.PickSolid() * target.a + origin.PickSolid() * (1.0F - target.a);
+                        _canvas.SetPixel(j, i, new Color(color.x, color.y, color.z, origin.a.Equals(0) ? target.a : origin.a));
                     }
                 }
             } else {

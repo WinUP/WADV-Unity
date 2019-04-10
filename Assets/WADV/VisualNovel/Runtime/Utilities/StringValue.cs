@@ -73,7 +73,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             }
         }
 
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             return new StringValue {value = value};
         }
 

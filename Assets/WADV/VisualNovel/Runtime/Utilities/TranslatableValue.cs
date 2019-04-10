@@ -56,7 +56,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// </summary>
         public uint translationId;
 
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             return new TranslatableValue {scriptId = scriptId, translationId = translationId};
         }
         

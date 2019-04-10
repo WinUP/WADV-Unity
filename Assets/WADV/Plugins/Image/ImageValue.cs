@@ -102,10 +102,10 @@ namespace WADV.Plugins.Image {
             texture = await ResourceManager.Load<Texture2D>(source);
         }
         
-        public override SerializableValue Duplicate() {
+        public override SerializableValue Clone() {
             return new ImageValue {
-                Color = (ColorValue) Color.Duplicate(),
-                Uv = (RectValue) Uv.Duplicate(),
+                Color = (ColorValue) Color.Clone(),
+                Uv = (RectValue) Uv.Clone(),
                 source = source,
                 texture = texture
             };
