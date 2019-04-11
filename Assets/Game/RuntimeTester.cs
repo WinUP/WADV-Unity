@@ -48,7 +48,7 @@ namespace Game {
             var content = new ImageMessageIntegration.ShowImageContent();
 
             var shader = (await MessageService.ProcessAsync<ComputeShader>(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader))).Content;
-            var combiner = new Texture2DCombiner(800, 600, null);
+            var combiner = new Texture2DCombiner(800, 600, shader);
 
             var background = new ImageValue {source = "Resources://Classroom 2"};
             await background.ReadTexture();
@@ -56,9 +56,15 @@ namespace Game {
             var image1 = new ImageValue {source = "Resources://tomo13i"};
             await image1.ReadTexture();
             combiner.DrawTexture(image1.texture,
-                                 Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.Euler(0, 0, -15), new Vector3(1F, 1F, 1F)),
-                                 Color.white,
+                                 Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.Euler(0, 0, -15), Vector3.one),
                                  new Vector2(0.5F, 0.5F));
+            var image2 = new ImageValue{source = "Resources://tubasa37i"};
+            await image2.ReadTexture();
+            combiner.DrawTexture(image2.texture,
+                                 Matrix4x4.TRS(new Vector3(400, -300, 0), Quaternion.identity, new Vector3(1.2F, 1.2F, 1.2F)),
+                                 Color.white,
+                                 new Vector2(0.5F, 0.5F),
+                                 Texture2DCombiner.MixMode.AlphaMask);
             content.Effect = effect;
             var combinedTransform = new TransformValue();
             combinedTransform.Set(TransformValue.PropertyName.PositionX, 0);

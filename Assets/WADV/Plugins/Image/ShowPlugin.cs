@@ -181,11 +181,11 @@ namespace WADV.Plugins.Image {
             for (var i = -1; ++i < images.Length;) {
                 await images[i].Content.ReadTexture();
                 if (images[i].Content.texture == null) continue;
+                var pivot = new Vector2(images[i].Transform?.Get(TransformValue.PropertyName.PivotX) ?? 0.0F, images[i].Transform?.Get(TransformValue.PropertyName.PivotY) ?? 0.0F);
                 if (images[i].status == ImageStatus.OnScreen) {
                     if (i == 0) continue;
-                    canvas.Clear(new RectInt(0, 0, images[i].Content.texture.width, images[i].Content.texture.height), images[i].displayMatrix);
+                    canvas.DrawTexture(images[i].Content.texture, images[i].displayMatrix, images[i].Content.Color.value, pivot, Texture2DCombiner.MixMode.AlphaMask);
                 } else {
-                    var pivot = new Vector2(images[i].Transform?.Get(TransformValue.PropertyName.PivotX) ?? 0.0F, images[i].Transform?.Get(TransformValue.PropertyName.PivotY) ?? 0.0F);
                     canvas.DrawTexture(images[i].Content.texture, images[i].displayMatrix, images[i].Content.Color.value, pivot);
                 }
             }

@@ -8,26 +8,43 @@ RWTexture2D<float4> Canvas;
 float4 Size;
 
 Texture2D<float4> Source;
+float2 SourceSize;
+float2 PivotDistance;
 float4 Color;
 float4x4 Transform;
 
+half4 BilinearInterpolation(float2 sourcePosition) {
+    half u = sourcePosition.x - floor(sourcePosition.x);
+    half v = sourcePosition.y - floor(sourcePosition.y);
+    half4 topLeft = Source[int2(floor(sourcePosition.x), min(floor(sourcePosition.y) + 1, SourceSize.y))];
+    half4 bottomLeft = Source[floor(sourcePosition).xy];
+    half4 topRight = Source[int2(min(floor(sourcePosition.x) + 1, Size.x), min(floor(sourcePosition.y) + 1, SourceSize.y))];
+    half4 bottomRight = Source[int2(min(floor(sourcePosition.x) + 1, Size.x), floor(sourcePosition.y))];
+    return v * (u * topRight + (1 - u) * topLeft) + (1 - v) * (u * bottomRight + (1 - u) * bottomLeft);
+}
+
 [numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
 void SetTexture(uint3 id : SV_DispatchThreadID) {
-    id.x = clamp(id.x, 0, Size.z);
-    id.y = clamp(id.y, 0, Size.w);
-    float2 position = mul(Transform, float4(id, 0)).xy;
-    position.x = clamp(position.x + 1, 0, Size.x);
-    position.y = clamp(position.y + 1, 0, Size.y);
-    Canvas[position.xy] = Source[id.xy] * Color;
+    float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y).xy;
+    float2 sourcePosition = mul(Transform, float4(canvasPosition - PivotDistance, 0, 0)).xy + PivotDistance;
+    sourcePosition.x = clamp(sourcePosition.x, 0, SourceSize.x);
+    sourcePosition.y = clamp(sourcePosition.y, 0, SourceSize.y);
+    half4 originColor = Canvas[canvasPosition];
+    half4 targetColor = BilinearInterpolation(sourcePosition) * Color;
+    half4 result = targetColor * targetColor.a + originColor * (1 - targetColor.a);
+    result.a = originColor.a == 0 ? targetColor.a : originColor.a;
+    Canvas[canvasPosition] = result;
 }
 
 [numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
 void SetColor(uint3 id : SV_DispatchThreadID) {
-    id.x = clamp(id.x, 0, Size.z);
-    id.y = clamp(id.y, 0, Size.w);
-    float2 position = mul(Transform, float4(id, 0)).xy;
-    position.x = clamp(position.x + 1, 0, Size.x);
-    position.y = clamp(position.y + 1, 0, Size.y);
-    Canvas[position.xy] = Color;
+    float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y).xy;
+    float2 sourcePosition = mul(Transform, float4(canvasPosition - PivotDistance, 0, 0)).xy + PivotDistance;
+    sourcePosition.x = clamp(sourcePosition.x, 0, SourceSize.x);
+    sourcePosition.y = clamp(sourcePosition.y, 0, SourceSize.y);
+    half4 originColor = Canvas[canvasPosition];
+    half4 targetColor = BilinearInterpolation(sourcePosition) * Color;
+    half4 result = targetColor * targetColor.a + originColor * (1 - targetColor.a);
+    result.a = originColor.a == 0 ? targetColor.a : originColor.a;
+    Canvas[canvasPosition] = result;
 }
-

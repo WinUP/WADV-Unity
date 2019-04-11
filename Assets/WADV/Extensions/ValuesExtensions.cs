@@ -7,7 +7,8 @@ namespace WADV.Extensions {
     /// <summary>
     /// 区间类型
     /// </summary>
-    public enum IntervalType : byte {
+    [Flags]
+    public enum IntervalType {
         /// <summary>
         /// 开区间
         /// </summary>
@@ -84,7 +85,7 @@ namespace WADV.Extensions {
         }
 
         /// <summary>
-        /// 将目标矩形与矩阵相乘
+        /// 将目标矩形与矩阵相乘以获取包含结果区域的最小矩形
         /// </summary>
         /// <param name="value">当前矩阵</param>
         /// <param name="target">目标矩形</param>
@@ -98,7 +99,7 @@ namespace WADV.Extensions {
             var xMax = Mathf.Max(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
             var yMin = Mathf.Min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
             var yMax = Mathf.Max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
-            return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
+            return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
         }
 
         /// <summary>
@@ -218,6 +219,36 @@ namespace WADV.Extensions {
             var xMax = Mathf.Max(value.xMax, target.xMax);
             var yMax = Mathf.Max(value.yMax, target.yMax);
             return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
+        }
+        
+        /// <summary>
+        /// 获取当前矩形与目标矩形的重叠区域
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <param name="target">目标矩形</param>
+        /// <returns></returns>
+        public static RectInt OverlapWith(this RectInt value, RectInt target) {
+            var left = value.xMin > target.xMin ? value.xMin : target.xMin;
+            var right = value.xMax < target.xMax ? value.xMax : target.xMax;
+            var top = value.yMax < target.yMax ? value.yMax : target.yMax;
+            var bottom = value.yMin > target.yMin ? value.yMin : target.yMin;
+            if (top < bottom || right < left) return new RectInt(0, 0, 0, 0);
+            return new RectInt(left, bottom, right - left, top - bottom);
+        }
+
+        /// <summary>
+        /// 获取当前矩形与目标矩形的重叠区域
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <param name="target">目标矩形</param>
+        /// <returns></returns>
+        public static Rect OverlapWith(this Rect value, Rect target) {
+            var left = value.xMin > target.xMin ? value.xMin : target.xMin;
+            var right = value.xMax < target.xMax ? value.xMax : target.xMax;
+            var top = value.yMax < target.yMax ? value.yMax : target.yMax;
+            var bottom = value.yMin > target.yMin ? value.yMin : target.yMin;
+            if (top > bottom || right > left) return Rect.zero;
+            return Rect.MinMaxRect(left, bottom, right, top);
         }
         
         /// <summary>
