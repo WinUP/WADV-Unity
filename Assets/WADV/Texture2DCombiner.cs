@@ -7,8 +7,10 @@ namespace WADV {
     /// 支持GPU加速的Texture2D绘制工具
     /// </summary>
     public class Texture2DCombiner {
-        public const string ShaderSetTextureKernelName = "SetTexture";
-        public const string ShaderSetColorKernelName = "SetColor";
+        public const string ShaderDrawTextureOverlayKernelName = "DrawTextureOverlay";
+        public const string ShaderDrawTextureAlphaMaskKernelName = "DrawTextureAlphaMask";
+        public const string ShaderDrawTextureReversedAlphaMaskKernelName = "DrawTextureReversedAlphaMask";
+        public const string ShaderFillAreaKernelName = "FillArea";
         public static readonly int ShaderCanvasName = Shader.PropertyToID("Canvas");
         public static readonly int ShaderSizeName = Shader.PropertyToID("Size");
         public static readonly int ShaderSourceSizeName = Shader.PropertyToID("SourceSize");
@@ -22,7 +24,9 @@ namespace WADV {
         private readonly ComputeShader _shader;
         private readonly RenderTexture _renderCanvas;
         private readonly Texture2D _canvas;
-        private readonly int _addKernel;
+        private readonly int _overlayKernel;
+        private readonly int _alphaMaskKernel;
+        private readonly int _reversedAlphaMaskKernel;
         private readonly int _fillKernel;
 
         /// <summary>
@@ -36,9 +40,13 @@ namespace WADV {
                 _renderCanvas = new RenderTexture(width, height, 24) {enableRandomWrite = true};
                 _renderCanvas.enableRandomWrite = true;
                 _shader = shader;
-                _addKernel = _shader.FindKernel(ShaderSetTextureKernelName);
-                _fillKernel = _shader.FindKernel(ShaderSetColorKernelName);
-                shader.SetTexture(_addKernel, ShaderCanvasName, _renderCanvas);
+                _overlayKernel = _shader.FindKernel(ShaderDrawTextureOverlayKernelName);
+                _alphaMaskKernel = _shader.FindKernel(ShaderDrawTextureAlphaMaskKernelName);
+                _reversedAlphaMaskKernel = _shader.FindKernel(ShaderDrawTextureReversedAlphaMaskKernelName);
+                _fillKernel = _shader.FindKernel(ShaderFillAreaKernelName);
+                shader.SetTexture(_overlayKernel, ShaderCanvasName, _renderCanvas);
+                shader.SetTexture(_alphaMaskKernel, ShaderCanvasName, _renderCanvas);
+                shader.SetTexture(_reversedAlphaMaskKernel, ShaderCanvasName, _renderCanvas);
                 shader.SetTexture(_fillKernel, ShaderCanvasName, _renderCanvas);
             } else {
                 _canvas = new Texture2D(width, height, TextureFormat.RGBA32, false);
@@ -51,9 +59,10 @@ namespace WADV {
         /// </summary>
         /// <param name="texture">目标Texture2D</param>
         /// <param name="transform">变换矩阵</param>
+        /// <param name="mode">图像混合模式</param>
         /// <returns></returns>
-        public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform) {
-            return DrawTexture(texture, transform, Color.white, Vector2Int.zero);
+        public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform, MixMode mode = MixMode.Overlay) {
+            return DrawTexture(texture, transform, Color.white, Vector2Int.zero, mode);
         }
         
         /// <summary>
@@ -62,9 +71,10 @@ namespace WADV {
         /// <param name="texture">目标Texture2D</param>
         /// <param name="transform">变换矩阵</param>
         /// <param name="pivot">变换轴点</param>
+        /// <param name="mode">图像混合模式</param>
         /// <returns></returns>
-        public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform, Vector2 pivot) {
-            return DrawTexture(texture, transform, Color.white, pivot);
+        public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform, Vector2 pivot, MixMode mode = MixMode.Overlay) {
+            return DrawTexture(texture, transform, Color.white, pivot, mode);
         }
         
         /// <summary>
@@ -73,9 +83,10 @@ namespace WADV {
         /// <param name="texture">目标Texture2D</param>
         /// <param name="transform">变换矩阵</param>
         /// <param name="overlayColor">要叠加的颜色</param>
+        /// <param name="mode">图像混合模式</param>
         /// <returns></returns>
-        public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform, Color overlayColor) {
-            return DrawTexture(texture, transform, overlayColor, Vector2Int.zero);
+        public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform, Color overlayColor, MixMode mode = MixMode.Overlay) {
+            return DrawTexture(texture, transform, overlayColor, Vector2Int.zero, mode);
         }
 
         /// <summary>
@@ -98,7 +109,7 @@ namespace WADV {
                 var areaY = area.yMax;
                 for (var i = area.y - 1; ++i < areaY;) {
                     for (var j = area.x - 1; ++j < areaX;) {
-                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j + 0.5F, i + 0.5F) - distance) + distance - InterpolationOffset;
+                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) + InterpolationOffset - distance) + distance - InterpolationOffset;
                         if (!position.x.InRange(0, width) || !position.y.InRange(0, height)) continue;
                         var canvasPixelIndex = j - area.x + (i - area.y) * area.width;
                         var origin = canvasPixels[canvasPixelIndex];
@@ -108,13 +119,17 @@ namespace WADV {
                 }
                 _canvas.SetPixels(area.x, area.y, area.width, area.height, canvasPixels);
             } else {
+                var kernel = GetKernel(mode);
                 _shader.SetVector(ShaderSizeName, new Vector4(area.x, area.y, area.width, area.height));
-                _shader.SetTexture(_addKernel, ShaderSourceName, texture);
+                _shader.SetTexture(kernel, ShaderSourceName, texture);
                 _shader.SetVector(ShaderSourceSizeName, new Vector2(width, height));
                 _shader.SetVector(ShaderPivotDistanceName, distance);
                 _shader.SetVector(ShaderColorName, overlayColor);
                 _shader.SetMatrix(ShaderTransformName, transform);
-                _shader.Dispatch(_addKernel, Mathf.CeilToInt(area.width / 24.0F), Mathf.CeilToInt(area.height / 24.0F), 1);
+                var currentTexture = RenderTexture.active;
+                RenderTexture.active = _renderCanvas;
+                _shader.Dispatch(kernel, Mathf.CeilToInt(area.width / 24.0F), Mathf.CeilToInt(area.height / 24.0F), 1);
+                RenderTexture.active = currentTexture;
             }
             return this;
         }
@@ -169,18 +184,22 @@ namespace WADV {
                 var areaY = area.yMax;
                 for (var i = area.y - 1; ++i < areaY;) {
                     for (var j = area.x - 1; ++j < areaX;) {
-                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) - distance) + distance;
+                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) + InterpolationOffset - distance) + distance - InterpolationOffset;
                         if (!position.x.InRange(0, width) || !position.y.InRange(0, height)) continue;
                         canvasPixels[j - area.x + (i - area.y) * area.width] = targetColor;
                     }
                 }
                 _canvas.SetPixels(area.x, area.y, area.width, area.height, canvasPixels);
             } else {
+                _shader.SetVector(ShaderSizeName, new Vector4(area.x, area.y, area.width, area.height));
+                _shader.SetVector(ShaderSourceSizeName, new Vector2(width, height));
+                _shader.SetVector(ShaderPivotDistanceName, distance);
                 _shader.SetVector(ShaderColorName, targetColor);
                 _shader.SetMatrix(ShaderTransformName, transform);
-                _shader.SetVector(ShaderSizeName, new Vector4(_renderCanvas.width, _renderCanvas.height, area.width, area.height));
-                _shader.SetVector(ShaderSourceName, new Vector2(width, height));
+                var currentTexture = RenderTexture.active;
+                RenderTexture.active = _renderCanvas;
                 _shader.Dispatch(_fillKernel, Mathf.CeilToInt(width / 24.0F), Mathf.CeilToInt(height / 24.0F), 1);
+                RenderTexture.active = currentTexture;
             }
             return this;
         }
@@ -253,7 +272,9 @@ namespace WADV {
             area = transform.MultiplyRect(new Rect(-distance.x, -distance.y, width, height))
                             .Move(distance)
                             .CeilToRectInt()
-                            .OverlapWith(new RectInt(0, 0, _canvas.width, _canvas.height));
+                            .OverlapWith(_renderCanvas == null
+                                             ? new RectInt(0, 0, _canvas.width, _canvas.height)
+                                             : new RectInt(0, 0, _renderCanvas.width, _renderCanvas.height));
             transform = transform.RevertTRS();
         }
 
@@ -274,6 +295,17 @@ namespace WADV {
                     break;
             }
             return result;
+        }
+
+        private int GetKernel(MixMode mode) {
+            switch (mode) {
+                case MixMode.AlphaMask:
+                    return _alphaMaskKernel;
+                case MixMode.ReversedAlphaMask:
+                    return _reversedAlphaMaskKernel;
+                default:
+                    return _overlayKernel;
+            }
         }
 
         /// <summary>

@@ -58,13 +58,13 @@ namespace Game {
             combiner.DrawTexture(image1.texture,
                                  Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.Euler(0, 0, -15), Vector3.one),
                                  new Vector2(0.5F, 0.5F));
-            var image2 = new ImageValue{source = "Resources://tubasa37i"};
+            var image2 = new ImageValue {source = "Resources://tubasa37i"};
             await image2.ReadTexture();
             combiner.DrawTexture(image2.texture,
-                                 Matrix4x4.TRS(new Vector3(400, -300, 0), Quaternion.identity, new Vector3(1.2F, 1.2F, 1.2F)),
+                                 Matrix4x4.TRS(new Vector3(250, 0, 0), Quaternion.identity, new Vector3(1.2F, 1.2F, 1.2F)),
                                  Color.white,
                                  new Vector2(0.5F, 0.5F),
-                                 Texture2DCombiner.MixMode.AlphaMask);
+                                 Texture2DCombiner.MixMode.Overlay);
             content.Effect = effect;
             var combinedTransform = new TransformValue();
             combinedTransform.Set(TransformValue.PropertyName.PositionX, 0);

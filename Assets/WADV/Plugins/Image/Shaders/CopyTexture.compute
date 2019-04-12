@@ -1,5 +1,7 @@
-﻿#pragma kernel SetTexture
-#pragma kernel SetColor
+﻿#pragma kernel DrawTextureOverlay
+#pragma kernel DrawTextureAlphaMask
+#pragma kernel DrawTextureReversedAlphaMask
+#pragma kernel FillArea
 
 #define GROUP_SIZE_X 24
 #define GROUP_SIZE_Y 24
@@ -14,37 +16,58 @@ float4 Color;
 float4x4 Transform;
 
 half4 BilinearInterpolation(float2 sourcePosition) {
-    half u = sourcePosition.x - floor(sourcePosition.x);
-    half v = sourcePosition.y - floor(sourcePosition.y);
-    half4 topLeft = Source[int2(floor(sourcePosition.x), min(floor(sourcePosition.y) + 1, SourceSize.y))];
-    half4 bottomLeft = Source[floor(sourcePosition).xy];
-    half4 topRight = Source[int2(min(floor(sourcePosition.x) + 1, Size.x), min(floor(sourcePosition.y) + 1, SourceSize.y))];
-    half4 bottomRight = Source[int2(min(floor(sourcePosition.x) + 1, Size.x), floor(sourcePosition.y))];
-    return v * (u * topRight + (1 - u) * topLeft) + (1 - v) * (u * bottomRight + (1 - u) * bottomLeft);
+    int2 baseComponent = floor(sourcePosition);
+    half2 uv = sourcePosition - baseComponent;
+    half4 topLeft = Source[int2(baseComponent.x, min(baseComponent.y + 1, SourceSize.y))];
+    half4 bottomLeft = Source[baseComponent];
+    half4 topRight = Source[int2(min(baseComponent.x + 1, SourceSize.x), min(baseComponent.y + 1, SourceSize.y))];
+    half4 bottomRight = Source[int2(min(baseComponent.x + 1, SourceSize.x), baseComponent.y)];
+    return uv.y * (uv.x * topRight + (1 - uv.x) * topLeft) + (1 - uv.y) * (uv.x * bottomRight + (1 - uv.x) * bottomLeft);
 }
 
 [numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
-void SetTexture(uint3 id : SV_DispatchThreadID) {
-    float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y).xy;
-    float2 sourcePosition = mul(Transform, float4(canvasPosition - PivotDistance, 0, 0)).xy + PivotDistance;
-    sourcePosition.x = clamp(sourcePosition.x, 0, SourceSize.x);
-    sourcePosition.y = clamp(sourcePosition.y, 0, SourceSize.y);
-    half4 originColor = Canvas[canvasPosition];
-    half4 targetColor = BilinearInterpolation(sourcePosition) * Color;
-    half4 result = targetColor * targetColor.a + originColor * (1 - targetColor.a);
-    result.a = originColor.a == 0 ? targetColor.a : originColor.a;
-    Canvas[canvasPosition] = result;
+void DrawTextureAlphaMask(uint3 id : SV_DispatchThreadID) {
+    float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
+    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5 - PivotDistance, 0, 0)).xy + PivotDistance - 0.5;
+    if (sourcePosition.x >= 0 && sourcePosition.x < SourceSize.x && sourcePosition.y >=0 && sourcePosition.y < SourceSize.y) {
+        float4 originColor = Canvas[canvasPosition];
+        float4 targetColor = BilinearInterpolation(sourcePosition) * Color;
+        originColor.a = targetColor.a;
+        Canvas[canvasPosition] = originColor;
+    }
 }
 
 [numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
-void SetColor(uint3 id : SV_DispatchThreadID) {
-    float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y).xy;
-    float2 sourcePosition = mul(Transform, float4(canvasPosition - PivotDistance, 0, 0)).xy + PivotDistance;
-    sourcePosition.x = clamp(sourcePosition.x, 0, SourceSize.x);
-    sourcePosition.y = clamp(sourcePosition.y, 0, SourceSize.y);
-    half4 originColor = Canvas[canvasPosition];
-    half4 targetColor = BilinearInterpolation(sourcePosition) * Color;
-    half4 result = targetColor * targetColor.a + originColor * (1 - targetColor.a);
-    result.a = originColor.a == 0 ? targetColor.a : originColor.a;
-    Canvas[canvasPosition] = result;
+void DrawTextureReversedAlphaMask(uint3 id : SV_DispatchThreadID) {
+    float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
+    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5 - PivotDistance, 0, 0)).xy + PivotDistance - 0.5;
+    if (sourcePosition.x >= 0 && sourcePosition.x < SourceSize.x && sourcePosition.y >=0 && sourcePosition.y < SourceSize.y) {
+        float4 originColor = Canvas[canvasPosition];
+        float4 targetColor = BilinearInterpolation(sourcePosition) * Color;
+        originColor.a = 1 - targetColor.a;
+        Canvas[canvasPosition] = originColor;
+    }
+}
+
+[numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
+void DrawTextureOverlay(uint3 id : SV_DispatchThreadID) {
+    float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
+    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5 - PivotDistance, 0, 0)).xy + PivotDistance - 0.5;
+    if (sourcePosition.x >= 0 && sourcePosition.x < SourceSize.x && sourcePosition.y >=0 && sourcePosition.y < SourceSize.y) {
+        float4 originColor = Canvas[canvasPosition];
+        float4 targetColor = BilinearInterpolation(sourcePosition) * Color;
+        float4 result = targetColor * targetColor.a + originColor * (1 - targetColor.a);
+        result.a = originColor.a == 0 ? targetColor.a : originColor.a;
+        Canvas[canvasPosition] = result;
+    }
+}
+
+[numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
+void FillArea(uint3 id : SV_DispatchThreadID) {
+    float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
+    Canvas[canvasPosition] = Color;
+    // float2 sourcePosition = mul(Transform, float4(canvasPosition - PivotDistance, 0, 0)).xy + PivotDistance;
+    // if (sourcePosition.x >= 0 && sourcePosition.x < SourceSize.x && sourcePosition.y >=0 && sourcePosition.y < SourceSize.y) {
+    //     Canvas[canvasPosition] = Color;
+    // }
 }
