@@ -10,26 +10,24 @@ RWTexture2D<float4> Canvas;
 float4 Size;
 
 Texture2D<float4> Source;
-float2 SourceSize;
-float2 PivotDistance;
 float4 Color;
 float4x4 Transform;
 
 half4 BilinearInterpolation(float2 sourcePosition) {
     int2 baseComponent = floor(sourcePosition);
     half2 uv = sourcePosition - baseComponent;
-    half4 topLeft = Source[int2(baseComponent.x, min(baseComponent.y + 1, SourceSize.y))];
+    half4 topLeft = Source[int2(baseComponent.x, min(baseComponent.y + 1, Size.w))];
     half4 bottomLeft = Source[baseComponent];
-    half4 topRight = Source[int2(min(baseComponent.x + 1, SourceSize.x), min(baseComponent.y + 1, SourceSize.y))];
-    half4 bottomRight = Source[int2(min(baseComponent.x + 1, SourceSize.x), baseComponent.y)];
+    half4 topRight = Source[int2(min(baseComponent.x + 1, Size.z), min(baseComponent.y + 1, Size.w))];
+    half4 bottomRight = Source[int2(min(baseComponent.x + 1, Size.z), baseComponent.y)];
     return uv.y * (uv.x * topRight + (1 - uv.x) * topLeft) + (1 - uv.y) * (uv.x * bottomRight + (1 - uv.x) * bottomLeft);
 }
 
 [numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
 void DrawTextureAlphaMask(uint3 id : SV_DispatchThreadID) {
     float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
-    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5 - PivotDistance, 0, 0)).xy + PivotDistance - 0.5;
-    if (sourcePosition.x >= 0 && sourcePosition.x < SourceSize.x && sourcePosition.y >=0 && sourcePosition.y < SourceSize.y) {
+    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5, 0, 1.0)).xy - 0.5;
+    if (sourcePosition.x >= 0 && sourcePosition.x < Size.z && sourcePosition.y >=0 && sourcePosition.y < Size.w) {
         float4 originColor = Canvas[canvasPosition];
         float4 targetColor = BilinearInterpolation(sourcePosition) * Color;
         originColor.a = targetColor.a;
@@ -40,8 +38,8 @@ void DrawTextureAlphaMask(uint3 id : SV_DispatchThreadID) {
 [numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
 void DrawTextureReversedAlphaMask(uint3 id : SV_DispatchThreadID) {
     float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
-    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5 - PivotDistance, 0, 0)).xy + PivotDistance - 0.5;
-    if (sourcePosition.x >= 0 && sourcePosition.x < SourceSize.x && sourcePosition.y >=0 && sourcePosition.y < SourceSize.y) {
+    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5, 0, 1.0)).xy - 0.5;
+    if (sourcePosition.x >= 0 && sourcePosition.x < Size.z && sourcePosition.y >=0 && sourcePosition.y < Size.w) {
         float4 originColor = Canvas[canvasPosition];
         float4 targetColor = BilinearInterpolation(sourcePosition) * Color;
         originColor.a = 1 - targetColor.a;
@@ -52,8 +50,8 @@ void DrawTextureReversedAlphaMask(uint3 id : SV_DispatchThreadID) {
 [numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
 void DrawTextureOverlay(uint3 id : SV_DispatchThreadID) {
     float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
-    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5 - PivotDistance, 0, 0)).xy + PivotDistance - 0.5;
-    if (sourcePosition.x >= 0 && sourcePosition.x < SourceSize.x && sourcePosition.y >=0 && sourcePosition.y < SourceSize.y) {
+    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5, 0, 1.0)).xy - 0.5;
+    if (sourcePosition.x >= 0 && sourcePosition.x < Size.z && sourcePosition.y >=0 && sourcePosition.y < Size.w) {
         float4 originColor = Canvas[canvasPosition];
         float4 targetColor = BilinearInterpolation(sourcePosition) * Color;
         float4 result = targetColor * targetColor.a + originColor * (1 - targetColor.a);
@@ -65,9 +63,8 @@ void DrawTextureOverlay(uint3 id : SV_DispatchThreadID) {
 [numthreads(GROUP_SIZE_X,GROUP_SIZE_Y,1)]
 void FillArea(uint3 id : SV_DispatchThreadID) {
     float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
-    Canvas[canvasPosition] = Color;
-    // float2 sourcePosition = mul(Transform, float4(canvasPosition - PivotDistance, 0, 0)).xy + PivotDistance;
-    // if (sourcePosition.x >= 0 && sourcePosition.x < SourceSize.x && sourcePosition.y >=0 && sourcePosition.y < SourceSize.y) {
-    //     Canvas[canvasPosition] = Color;
-    // }
+    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5, 0, 1.0)).xy - 0.5;
+    if (sourcePosition.x >= 0 && sourcePosition.x < Size.z && sourcePosition.y >=0 && sourcePosition.y < Size.w) {
+        Canvas[canvasPosition] = Color;
+    }
 }

@@ -101,7 +101,7 @@ namespace WADV {
         public Texture2DCombiner DrawTexture(Texture2D texture, Matrix4x4 transform, Color overlayColor, Vector2 pivot, MixMode mode = MixMode.Overlay) {
             var width = texture.width;
             var height = texture.height;
-            PrepareTransform(ref transform, in pivot, in width, in height, out var distance, out var area);
+            PrepareTransform(ref transform, in pivot, in width, in height, out var area);
             if (_renderCanvas == null) {
                 var pixels = texture.GetPixels();
                 var canvasPixels = _canvas.GetPixels(area.x, area.y, area.width, area.height);
@@ -109,7 +109,7 @@ namespace WADV {
                 var areaY = area.yMax;
                 for (var i = area.y - 1; ++i < areaY;) {
                     for (var j = area.x - 1; ++j < areaX;) {
-                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) + InterpolationOffset - distance) + distance - InterpolationOffset;
+                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) + InterpolationOffset) - InterpolationOffset;
                         if (!position.x.InRange(0, width) || !position.y.InRange(0, height)) continue;
                         var canvasPixelIndex = j - area.x + (i - area.y) * area.width;
                         var origin = canvasPixels[canvasPixelIndex];
@@ -120,10 +120,8 @@ namespace WADV {
                 _canvas.SetPixels(area.x, area.y, area.width, area.height, canvasPixels);
             } else {
                 var kernel = GetKernel(mode);
-                _shader.SetVector(ShaderSizeName, new Vector4(area.x, area.y, area.width, area.height));
+                _shader.SetVector(ShaderSizeName, new Vector4(area.x, area.y, width, height));
                 _shader.SetTexture(kernel, ShaderSourceName, texture);
-                _shader.SetVector(ShaderSourceSizeName, new Vector2(width, height));
-                _shader.SetVector(ShaderPivotDistanceName, distance);
                 _shader.SetVector(ShaderColorName, overlayColor);
                 _shader.SetMatrix(ShaderTransformName, transform);
                 var currentTexture = RenderTexture.active;
@@ -177,28 +175,27 @@ namespace WADV {
         public Texture2DCombiner FillArea(Vector2Int size, Matrix4x4 transform, Color targetColor, Vector2 pivot) {
             var width = size.x;
             var height = size.y;
-            PrepareTransform(ref transform, in pivot, in width, in height, out var distance, out var area);
+            PrepareTransform(ref transform, in pivot, in width, in height, out var area);
             if (_renderCanvas == null) {
                 var canvasPixels = _canvas.GetPixels(area.x, area.y, area.width, area.height);
                 var areaX = area.xMax;
                 var areaY = area.yMax;
                 for (var i = area.y - 1; ++i < areaY;) {
                     for (var j = area.x - 1; ++j < areaX;) {
-                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) + InterpolationOffset - distance) + distance - InterpolationOffset;
+                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) + InterpolationOffset) - InterpolationOffset;
                         if (!position.x.InRange(0, width) || !position.y.InRange(0, height)) continue;
                         canvasPixels[j - area.x + (i - area.y) * area.width] = targetColor;
                     }
                 }
                 _canvas.SetPixels(area.x, area.y, area.width, area.height, canvasPixels);
             } else {
-                _shader.SetVector(ShaderSizeName, new Vector4(area.x, area.y, area.width, area.height));
-                _shader.SetVector(ShaderSourceSizeName, new Vector2(width, height));
-                _shader.SetVector(ShaderPivotDistanceName, distance);
+                _shader.SetVector(ShaderSizeName, new Vector4(area.x, area.y, width, height));
                 _shader.SetVector(ShaderColorName, targetColor);
                 _shader.SetMatrix(ShaderTransformName, transform);
                 var currentTexture = RenderTexture.active;
                 RenderTexture.active = _renderCanvas;
-                _shader.Dispatch(_fillKernel, Mathf.CeilToInt(width / 24.0F), Mathf.CeilToInt(height / 24.0F), 1);
+                var x = Mathf.CeilToInt(width / 24.0F);
+                _shader.Dispatch(_fillKernel, Mathf.CeilToInt(area.width / 24.0F), Mathf.CeilToInt(area.height / 24.0F), 1);
                 RenderTexture.active = currentTexture;
             }
             return this;
@@ -267,15 +264,17 @@ namespace WADV {
             return v * (u * topRight + (1 - u) * topLeft) + (1 - v) * (u * bottomRight + (1 - u) * bottomLeft);
         }
         
-        private void PrepareTransform(ref Matrix4x4 transform, in Vector2 pivot, in int width, in int height, out Vector2 distance, out RectInt area) {
-            distance = new Vector2(width * pivot.x, height * pivot.y);
-            area = transform.MultiplyRect(new Rect(-distance.x, -distance.y, width, height))
-                            .Move(distance)
-                            .CeilToRectInt()
+        private void PrepareTransform(ref Matrix4x4 transform, in Vector2 pivot, in int width, in int height, out RectInt area) {
+            var distance = new Vector2(width, height) * pivot;
+            var translation = transform.GetTranslation();
+            transform.SetTranslation(Vector3.zero);
+            transform.SetTranslation(translation - transform.MultiplyPoint(distance));
+            area = transform.MultiplyRect(new Rect(0, 0, width, height))
+                            .MaximizeToRectInt()
                             .OverlapWith(_renderCanvas == null
                                              ? new RectInt(0, 0, _canvas.width, _canvas.height)
                                              : new RectInt(0, 0, _renderCanvas.width, _renderCanvas.height));
-            transform = transform.RevertTRS();
+            transform = transform.inverse;
         }
 
         private static Color MixColor(in Color origin, in Color target, MixMode mode) {

@@ -62,18 +62,6 @@ namespace WADV.Extensions {
             if (((byte) compareType & 0b0001) != 0 && value.Equals(max)) return false;
             return true;
         }
-        
-        /// <summary>
-        /// 获取空间变换矩阵的逆变换矩阵
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        // ReSharper disable once InconsistentNaming
-        public static Matrix4x4 RevertTRS(this Matrix4x4 value) {
-            if (!value.ValidTRS()) throw new NotSupportedException($"Cannot get reverted transformation: {value} is not valid transformation matrix");
-            var scale = value.lossyScale;
-            return Matrix4x4.TRS(-value.GetTranslation(), Quaternion.Euler(-value.rotation.eulerAngles), new Vector3(1.0F / scale.x, 1.0F / scale.y, 1.0F / scale.z));
-        }
 
         /// <summary>
         /// 获取变换矩阵的平移分量
@@ -82,6 +70,17 @@ namespace WADV.Extensions {
         /// <returns></returns>
         public static Vector3 GetTranslation(this Matrix4x4 value) {
             return new Vector3(value.m03, value.m13, value.m23);
+        }
+
+        /// <summary>
+        /// 设置变换矩阵的平移分量
+        /// </summary>
+        /// <param name="value">当前矩阵</param>
+        /// <param name="translation">目标平移分量</param>
+        public static void SetTranslation(this ref Matrix4x4 value, Vector3 translation) {
+            value.m03 = translation.x;
+            value.m13 = translation.y;
+            value.m23 = translation.z;
         }
 
         /// <summary>
@@ -107,8 +106,36 @@ namespace WADV.Extensions {
         /// </summary>
         /// <param name="value">目标颜色</param>
         /// <returns></returns>
-        public static Vector3 PickSolid(this Color value) {
+        public static Vector3 Rgb(this Color value) {
             return new Vector3(value.r, value.g, value.b);
+        }
+        
+        /// <summary>
+        /// 转换为二维向量
+        /// </summary>
+        /// <param name="value">当前向量</param>
+        /// <returns></returns>
+        public static Vector2 Xy(this Vector3 value) {
+            return new Vector2(value.x, value.y);
+        }
+
+        
+        /// <summary>
+        /// 转换为二维向量
+        /// </summary>
+        /// <param name="value">当前向量</param>
+        /// <returns></returns>
+        public static Vector2 Xy(this Vector4 value) {
+            return new Vector2(value.x, value.y);
+        }
+        
+        /// <summary>
+        /// 转换为三维向量
+        /// </summary>
+        /// <param name="value">当前向量</param>
+        /// <returns></returns>
+        public static Vector3 Xyz(this Vector4 value) {
+            return new Vector3(value.x, value.y, value.z);
         }
 
         /// <summary>
@@ -154,6 +181,12 @@ namespace WADV.Extensions {
         /// <returns></returns>
         public static Rect ToRect(this RectInt value) {
             return new Rect(value.x, value.y, value.width, value.height);
+        }
+
+        public static RectInt MaximizeToRectInt(this Rect value) {
+            var x = value.x < 0 ? Mathf.FloorToInt(value.x) : Mathf.CeilToInt(value.x);
+            var y = value.y < 0 ? Mathf.FloorToInt(value.y) : Mathf.CeilToInt(value.y);
+            return new RectInt(x, y, Mathf.CeilToInt(value.width), Mathf.CeilToInt(value.height));
         }
         
         /// <summary>

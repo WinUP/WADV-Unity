@@ -55,16 +55,14 @@ namespace Game {
             combiner.DrawTexture(background.texture, Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.identity, Vector3.one));
             var image1 = new ImageValue {source = "Resources://tomo13i"};
             await image1.ReadTexture();
-            combiner.DrawTexture(image1.texture,
-                                 Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.Euler(0, 0, -15), Vector3.one),
-                                 new Vector2(0.5F, 0.5F));
+            combiner.DrawTexture(image1.texture, Matrix4x4.TRS(new Vector3(-50, -100, 0), Quaternion.Euler(0, 0, -15), Vector3.one));
             var image2 = new ImageValue {source = "Resources://tubasa37i"};
             await image2.ReadTexture();
             combiner.DrawTexture(image2.texture,
-                                 Matrix4x4.TRS(new Vector3(250, 0, 0), Quaternion.identity, new Vector3(1.2F, 1.2F, 1.2F)),
-                                 Color.white,
+                                 Matrix4x4.TRS(new Vector3(600, 100, 0), Quaternion.identity, new Vector3(1.2F, 1.2F, 1.2F)),
+                                 new Color(1.0F, 1.0F, 1.0F, 0.5F),
                                  new Vector2(0.5F, 0.5F),
-                                 Texture2DCombiner.MixMode.Overlay);
+                                 Texture2DCombiner.MixMode.ReversedAlphaMask);
             content.Effect = effect;
             var combinedTransform = new TransformValue();
             combinedTransform.Set(TransformValue.PropertyName.PositionX, 0);
