@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using WADV;
-using WADV.Extensions;
 using WADV.MessageSystem;
 using WADV.Plugins.Dialogue;
 using WADV.Plugins.Image;
@@ -9,7 +8,6 @@ using WADV.Plugins.Image.Effects;
 using WADV.Plugins.Image.Utilities;
 using WADV.Plugins.Input;
 using WADV.Plugins.Unity;
-using WADV.Thread;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Runtime;
 using WADV.VisualNovel.Runtime.Utilities;

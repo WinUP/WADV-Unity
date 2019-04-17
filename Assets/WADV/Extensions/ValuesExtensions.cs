@@ -4,29 +4,6 @@ using System.Text;
 using UnityEngine;
 
 namespace WADV.Extensions {
-    /// <summary>
-    /// 区间类型
-    /// </summary>
-    [Flags]
-    public enum IntervalType {
-        /// <summary>
-        /// 开区间
-        /// </summary>
-        Open = 0b0101,
-        /// <summary>
-        /// 闭区间
-        /// </summary>
-        Closed = 0b1010,
-        /// <summary>
-        /// 左开右闭区间
-        /// </summary>
-        OpenClosed = 0b0110,
-        /// <summary>
-        /// 左闭右开区间
-        /// </summary>
-        ClosedOpen = 0b1001
-    }
-    
     public static class ValuesExtensions {
         public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key, out TValue value) {
             key = pair.Key;
@@ -99,43 +76,6 @@ namespace WADV.Extensions {
             var yMin = Mathf.Min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
             var yMax = Mathf.Max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
             return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
-        }
-
-        /// <summary>
-        /// 获取颜色除透明度外的分量
-        /// </summary>
-        /// <param name="value">目标颜色</param>
-        /// <returns></returns>
-        public static Vector3 Rgb(this Color value) {
-            return new Vector3(value.r, value.g, value.b);
-        }
-        
-        /// <summary>
-        /// 转换为二维向量
-        /// </summary>
-        /// <param name="value">当前向量</param>
-        /// <returns></returns>
-        public static Vector2 Xy(this Vector3 value) {
-            return new Vector2(value.x, value.y);
-        }
-
-        
-        /// <summary>
-        /// 转换为二维向量
-        /// </summary>
-        /// <param name="value">当前向量</param>
-        /// <returns></returns>
-        public static Vector2 Xy(this Vector4 value) {
-            return new Vector2(value.x, value.y);
-        }
-        
-        /// <summary>
-        /// 转换为三维向量
-        /// </summary>
-        /// <param name="value">当前向量</param>
-        /// <returns></returns>
-        public static Vector3 Xyz(this Vector4 value) {
-            return new Vector3(value.x, value.y, value.z);
         }
 
         /// <summary>
@@ -319,7 +259,7 @@ namespace WADV.Extensions {
         /// <param name="times">重复次数</param>
         /// <returns></returns>
         public static string Repeat(this string value, int times) {
-            if (times < 0) throw new NotSupportedException("Unable to ");
+            if (times < 0) throw new NotSupportedException($"Unable to repeat string {value} with times {times}: times must not be negative number");
             if (times == 0) return "";
             if (times == 1) return value;
             var result = new StringBuilder(value, value.Length * times);
@@ -339,7 +279,7 @@ namespace WADV.Extensions {
         }
 
         /// <summary>
-        /// 统一所有换行符
+        /// 统一所有换行符至\n
         /// </summary>
         /// <param name="value">目标字符串</param>
         /// <returns></returns>
@@ -348,7 +288,7 @@ namespace WADV.Extensions {
         }
 
         /// <summary>
-        /// 解析模板字符串
+        /// 解析双大括号模板字符串
         /// </summary>
         /// <param name="value">目标字符串</param>
         /// <param name="parts">模板替换项</param>

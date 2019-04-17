@@ -1,14 +1,10 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using WADV.Extensions;
 using WADV.Intents;
 using WADV.MessageSystem;
-using WADV.Thread;
-using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Runtime;
-using WADV.VisualNovel.Runtime.Utilities;
 
 namespace WADV {
     /// <summary>

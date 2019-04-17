@@ -71,7 +71,10 @@
     <Compile Include="Assets\WADV\EasingType.cs" />
     <Compile Include="Assets\WADV\Extensions\AsyncExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\IntervalType.cs" />
     <Compile Include="Assets\WADV\Extensions\ReflectionExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\SwizzleExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\SwizzleItem.cs" />
     <Compile Include="Assets\WADV\Extensions\UnityGraphicExtensions.cs" />
     <Compile Include="Assets\WADV\Extensions\ValuesExtensions.cs" />
     <Compile Include="Assets\WADV\GraphicColorFade.cs" />

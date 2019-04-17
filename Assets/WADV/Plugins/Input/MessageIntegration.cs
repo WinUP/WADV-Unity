@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using WADV.MessageSystem;
 using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Input {
