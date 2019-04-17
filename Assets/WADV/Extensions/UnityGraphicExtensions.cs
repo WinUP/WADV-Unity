@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using JetBrains.Annotations;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace WADV.Extensions {
@@ -27,6 +29,18 @@ namespace WADV.Extensions {
         /// <returns></returns>
         public static Texture2D CopyAsTexture2D(this RenderTexture value) {
             return CopyAsTexture2D(value, new RectInt(0, 0, value.width, value.height));
+        }
+
+        /// <summary>
+        /// 激活渲染材质
+        /// </summary>
+        /// <param name="value">目标渲染材质</param>
+        /// <returns></returns>
+        [CanBeNull]
+        public static RenderTexture Active(this RenderTexture value) {
+            var current = RenderTexture.active;
+            RenderTexture.active = value;
+            return current;
         }
         
         /// <summary>

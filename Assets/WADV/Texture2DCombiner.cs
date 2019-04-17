@@ -124,8 +124,7 @@ namespace WADV {
                 _shader.SetTexture(kernel, ShaderSourceName, texture);
                 _shader.SetVector(ShaderColorName, overlayColor);
                 _shader.SetMatrix(ShaderTransformName, transform);
-                var currentTexture = RenderTexture.active;
-                RenderTexture.active = _renderCanvas;
+                var currentTexture = _renderCanvas.Active();
                 _shader.Dispatch(kernel, Mathf.CeilToInt(area.width / 24.0F), Mathf.CeilToInt(area.height / 24.0F), 1);
                 RenderTexture.active = currentTexture;
             }
@@ -192,9 +191,7 @@ namespace WADV {
                 _shader.SetVector(ShaderSizeName, new Vector4(area.x, area.y, width, height));
                 _shader.SetVector(ShaderColorName, targetColor);
                 _shader.SetMatrix(ShaderTransformName, transform);
-                var currentTexture = RenderTexture.active;
-                RenderTexture.active = _renderCanvas;
-                var x = Mathf.CeilToInt(width / 24.0F);
+                var currentTexture = _renderCanvas.Active();
                 _shader.Dispatch(_fillKernel, Mathf.CeilToInt(area.width / 24.0F), Mathf.CeilToInt(area.height / 24.0F), 1);
                 RenderTexture.active = currentTexture;
             }

@@ -17,21 +17,33 @@ namespace WADV.Plugins.Image {
             foreach (var (key, value) in context.StringParameters) {
                 var name = key.ConvertToString(context.Language);
                 switch (name) {
+                    case "Texture":
+                        result.Texture = value is Texture2DValue texture2DValue ? texture2DValue : throw new ArgumentException($"Unable to create image: texture {value} is not Texture2DValue");
+                        break;
                     case "Color":
                         result.Color = value is ColorValue colorValue ? colorValue : throw new ArgumentException($"Unable to create image: color {value} is not ColorValue");
                         break;
                     case "Source":
-                        result.source = StringValue.TryParse(value, context.Language);
+                        result.Texture.source = StringValue.TryParse(value, context.Language);
+                        result.Texture.texture = null;
                         break;
                     case "FlipX":
-                        flipX = true;
+                        if (value == null || value is NullValue || BooleanValue.TryParse(value, context.Language)) {
+                            flipX = true;
+                        }
                         break;
                     case "FlipY":
-                        flipY = true;
+                        if (value == null || value is NullValue || BooleanValue.TryParse(value, context.Language)) {
+                            flipY = true;
+                        }
                         break;
                     case "FlipXy":
                     case "FlipXY":
-                        flipX = flipY = true;
+                    case "FlipYx":
+                    case "FlipYX":
+                        if (value == null || value is NullValue || BooleanValue.TryParse(value, context.Language)) {
+                            flipX = flipY = true;
+                        }
                         break;
                     case "Uv":
                     case "UV":
@@ -40,11 +52,11 @@ namespace WADV.Plugins.Image {
                         break;
                 }
             }
-            if (flipX) {
-                result.Uv = new RectValue(result.Uv.value.x + 1, result.Uv.value.y, result.Uv.value.width * -1, result.Uv.value.height);
-            }
-            if (flipY) {
-                result.Uv = new RectValue(result.Uv.value.x, result.Uv.value.y + 1, result.Uv.value.width, result.Uv.value.height * -1);
+            if (flipX || flipY) {
+                result.Uv = new RectValue(result.Uv.value.x + (flipX ? 1 : 0),
+                                          result.Uv.value.y + (flipY ? 1 : 0),
+                                          result.Uv.value.width * (flipX ? -1 : 1),
+                                          result.Uv.value.height * (flipY ? -1 : 1));
             }
             return Task.FromResult<SerializableValue>(result);
         }

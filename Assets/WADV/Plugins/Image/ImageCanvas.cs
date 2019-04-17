@@ -87,9 +87,9 @@ namespace WADV.Plugins.Image {
 
         private async Task ShowImages(ImageMessageIntegration.ShowImageContent content) {
             if (content.Effect == null) {
-                await Dispatcher.WaitAll(content.Images.Select(e => e.Content.ReadTexture()));
+                await Dispatcher.WaitAll(content.Images.Select(e => e.Content.Texture.ReadTexture()));
                 foreach (var image in content.Images) {
-                    if (image.Content.texture == null) continue;
+                    if (image.Content.Texture.texture == null) continue;
                     if (_images.Contains(image.Name)) {
                         image.ApplyTo(_images.Find(image.Name), _root);
                     } else {
@@ -100,8 +100,8 @@ namespace WADV.Plugins.Image {
                 var tasks = new List<Task>();
                 var newImages = new List<RawImage>();
                 foreach (var image in content.Images) {
-                    await image.Content.ReadTexture();
-                    if (image.Content.texture == null) continue;
+                    await image.Content.Texture.ReadTexture();
+                    if (image.Content.Texture.texture == null) continue;
                     if (_images.Contains(image.Name)) {
                         tasks.Add(PlayOnExistedImage(image, content.Effect));
                     } else {
@@ -129,7 +129,7 @@ namespace WADV.Plugins.Image {
         private async Task PlayOnExistedImage(ImageDisplayInformation target, SingleGraphicEffect effect) {
             if (effect == null) return;
             var component = _images.Find(target.Name);
-            await effect.PlayEffect(new[] {component.GetComponent<RawImage>()}, target.Content.texture);
+            await effect.PlayEffect(new[] {component.GetComponent<RawImage>()}, target.Content.Texture.texture);
             target.ApplyTo(component, _root);
         }
         

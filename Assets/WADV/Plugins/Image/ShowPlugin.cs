@@ -27,6 +27,12 @@ namespace WADV.Plugins.Image {
             _defaultTransform.Set(TransformValue.PropertyName.PositionX, 0);
             _defaultTransform.Set(TransformValue.PropertyName.PositionY, 0);
             _defaultTransform.Set(TransformValue.PropertyName.PositionZ, 0);
+            _defaultTransform.Set(TransformValue.PropertyName.AnchorMinX, 0);
+            _defaultTransform.Set(TransformValue.PropertyName.AnchorMinY, 0);
+            _defaultTransform.Set(TransformValue.PropertyName.AnchorMaxX, 0);
+            _defaultTransform.Set(TransformValue.PropertyName.AnchorMaxY, 0);
+            _defaultTransform.Set(TransformValue.PropertyName.PivotX, 0);
+            _defaultTransform.Set(TransformValue.PropertyName.PivotY, 0);
         }
 
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
@@ -179,14 +185,14 @@ namespace WADV.Plugins.Image {
                 : null;
             var canvas = new Texture2DCombiner(canvasSize.x, canvasSize.y, shader);
             for (var i = -1; ++i < images.Length;) {
-                await images[i].Content.ReadTexture();
-                if (images[i].Content.texture == null) continue;
+                await images[i].Content.Texture.ReadTexture();
+                if (images[i].Content.Texture.texture == null) continue;
                 var pivot = new Vector2(images[i].Transform?.Get(TransformValue.PropertyName.PivotX) ?? 0.0F, images[i].Transform?.Get(TransformValue.PropertyName.PivotY) ?? 0.0F);
                 if (images[i].status == ImageStatus.OnScreen) {
                     if (i == 0) continue;
-                    canvas.DrawTexture(images[i].Content.texture, images[i].displayMatrix, images[i].Content.Color.value, pivot, Texture2DCombiner.MixMode.AlphaMask);
+                    canvas.DrawTexture(images[i].Content.Texture.texture, images[i].displayMatrix, images[i].Content.Color.value, pivot, Texture2DCombiner.MixMode.AlphaMask);
                 } else {
-                    canvas.DrawTexture(images[i].Content.texture, images[i].displayMatrix, images[i].Content.Color.value, pivot);
+                    canvas.DrawTexture(images[i].Content.Texture.texture, images[i].displayMatrix, images[i].Content.Color.value, pivot);
                 }
             }
             return canvas.Combine();
@@ -226,7 +232,7 @@ namespace WADV.Plugins.Image {
             transform.Set(TransformValue.PropertyName.PositionX, position.x);
             transform.Set(TransformValue.PropertyName.PositionY, position.y);
             var content = new ImageMessageIntegration.ShowImageContent {
-                Images = new[] {new ImageDisplayInformation(name, new ImageValue {texture = canvas}, transform) {layer = layer, status = ImageStatus.PrepareToShow}}
+                Images = new[] {new ImageDisplayInformation(name, new ImageValue {Texture = new Texture2DValue {texture = canvas}}, transform) {layer = layer, status = ImageStatus.PrepareToShow}}
             };
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
             return name;
@@ -241,7 +247,7 @@ namespace WADV.Plugins.Image {
         private static async Task PlayOverlayEffect(string name, Texture2D target, SingleGraphicEffect effect) {
             var content = new ImageMessageIntegration.ShowImageContent {
                 Effect = effect,
-                Images = new[] {new ImageDisplayInformation(name, new ImageValue {texture = target}, null)}
+                Images = new[] {new ImageDisplayInformation(name, new ImageValue {Texture = new Texture2DValue {texture = target}}, null)}
             };
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
         }

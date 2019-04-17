@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using WADV;
+using WADV.Extensions;
 using WADV.MessageSystem;
 using WADV.Plugins.Dialogue;
 using WADV.Plugins.Image;
@@ -8,6 +9,7 @@ using WADV.Plugins.Image.Effects;
 using WADV.Plugins.Image.Utilities;
 using WADV.Plugins.Input;
 using WADV.Plugins.Unity;
+using WADV.Thread;
 using WADV.VisualNovel.Interoperation;
 using WADV.VisualNovel.Runtime;
 using WADV.VisualNovel.Runtime.Utilities;
@@ -41,33 +43,40 @@ namespace Game {
         }
 
         public async void TestImage() {
-            var effect = GraphicEffect.CreateInstance<SingleGraphicEffect>(typeof(FadeIn), new Dictionary<string, SerializableValue>(), 1.0F, EasingType.QuadIn);
-            await effect.Initialize();
+            var background = new ImageValue {Texture = new Texture2DValue {source = "Resources://Classroom 2"}};
+            await background.Texture.ReadTexture();
+            var tomo = new ImageValue {Texture = new Texture2DValue {source = "Resources://tomo13i"}};
+            await tomo.Texture.ReadTexture();
+            var tsubasa = new ImageValue {Texture = new Texture2DValue {source = "Resources://tubasa37i"}};
+            await tsubasa.Texture.ReadTexture();
+            var effect1 = GraphicEffect.CreateInstance<SingleGraphicEffect>(typeof(FadeIn), new Dictionary<string, SerializableValue>(), 1.0F, EasingType.QuadIn);
+            await effect1.Initialize();
+            var effect2 = GraphicEffect.CreateInstance<SingleGraphicEffect>(typeof(AlphaMaskTransition), new Dictionary<string, SerializableValue> {
+                {"Mask", new Texture2DValue {source = "Resources://Mask/RoundFadeToLeft"}},
+                {"Threshold", new FloatValue {value = 0.2F}}
+            }, 1.0F, EasingType.QuadIn);
+            await effect2.Initialize();
+            
             var content = new ImageMessageIntegration.ShowImageContent();
-
-            var shader = (await MessageService.ProcessAsync<ComputeShader>(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader))).Content;
-            var combiner = new Texture2DCombiner(800, 600, shader);
-
-            var background = new ImageValue {source = "Resources://Classroom 2"};
-            await background.ReadTexture();
-            combiner.DrawTexture(background.texture, Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.identity, Vector3.one));
-            var image1 = new ImageValue {source = "Resources://tomo13i"};
-            await image1.ReadTexture();
-            combiner.DrawTexture(image1.texture, Matrix4x4.TRS(new Vector3(-50, -100, 0), Quaternion.Euler(0, 0, -15), Vector3.one));
-            var image2 = new ImageValue {source = "Resources://tubasa37i"};
-            await image2.ReadTexture();
-            combiner.DrawTexture(image2.texture,
-                                 Matrix4x4.TRS(new Vector3(600, 100, 0), Quaternion.identity, new Vector3(1.2F, 1.2F, 1.2F)),
-                                 new Color(1.0F, 1.0F, 1.0F, 0.5F),
-                                 new Vector2(0.5F, 0.5F),
-                                 Texture2DCombiner.MixMode.ReversedAlphaMask);
-            content.Effect = effect;
-            var combinedTransform = new TransformValue();
-            combinedTransform.Set(TransformValue.PropertyName.PositionX, 0);
-            combinedTransform.Set(TransformValue.PropertyName.PositionY, 0);
+            var transform = new TransformValue();
+            transform.Set(TransformValue.PropertyName.PositionX, 0);
+            transform.Set(TransformValue.PropertyName.PositionY, -350);
+            transform.Set(TransformValue.PropertyName.PivotX, 0);
+            transform.Set(TransformValue.PropertyName.PivotY, 0);
+            transform.Set(TransformValue.PropertyName.AnchorMinX, 0);
+            transform.Set(TransformValue.PropertyName.AnchorMinY, 0);
+            transform.Set(TransformValue.PropertyName.AnchorMaxX, 0);
+            transform.Set(TransformValue.PropertyName.AnchorMaxY, 0);
             content.Images = new[] {
-                new ImageDisplayInformation("Combined", new ImageValue {texture = combiner.Combine()}, combinedTransform)
+                new ImageDisplayInformation("Tomo", tomo, transform)
             };
+            content.Effect = effect1;
+            await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
+            await Dispatcher.WaitForSeconds(2.0F);
+            content.Images = new[] {
+                new ImageDisplayInformation("Tomo", tsubasa, transform)
+            };
+            content.Effect = effect2;
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
         }
     }

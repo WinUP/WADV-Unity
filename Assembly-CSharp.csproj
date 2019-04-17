@@ -114,6 +114,7 @@
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\EmptyDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\SimpleDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\EffectPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Effects\AlphaMaskTransition.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeIn.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeOut.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\Effects\FrameGraphicEffect.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="Assets\WADV\Plugins\Unity\ColorValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Unity\RectPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Unity\RectValue.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\Texture2DValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Unity\TransformPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Unity\TransformValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Unity\Vector2Plugin.cs" />

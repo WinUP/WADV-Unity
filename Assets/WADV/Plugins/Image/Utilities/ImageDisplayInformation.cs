@@ -39,16 +39,16 @@ namespace WADV.Plugins.Image.Utilities {
             if (layoutRoot != null && targetTransform.parent != layoutRoot) {
                 targetTransform.SetParent(layoutRoot);
             }
-            if (Content.texture != null) {
-                targetTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Content.texture.height);
-                targetTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Content.texture.width);
+            if (Content.Texture.texture != null) {
+                targetTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Content.Texture.texture.height);
+                targetTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Content.Texture.texture.width);
                 targetTransform.localScale = Vector3.one;
             }
             var position = targetTransform.localPosition;
             targetTransform.localPosition = new Vector3(position.x, position.y, 0);
             Transform?.ApplyTo(targetTransform);
             var targetImage = target.GetComponent<RawImage>() ?? target.AddComponent<RawImage>();
-            targetImage.texture = Content.texture;
+            targetImage.texture = Content.Texture.texture;
             targetImage.uvRect = Content.Uv.value;
             targetImage.color = Content.Color.value;
         }
