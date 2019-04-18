@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
+using WADV.Intents;
 using WADV.Resource;
 using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
@@ -33,6 +35,7 @@ namespace WADV.Plugins.Unity {
     ///     <item><description>相等比较互操作器</description></item>
     /// </list>
     /// </summary>
+    /// <remarks>注意：只有材质实例而没有材质地址的值无法被保存，因而会在读取时变为空材质</remarks>
     [Serializable]
     public class Texture2DValue : SerializableValue, ISerializable, IStringConverter, IEqualOperator {
         /// <summary>
@@ -45,10 +48,15 @@ namespace WADV.Plugins.Unity {
         /// </summary>
         [CanBeNull] public string source;
         
+        private static readonly List<Texture2DValue> ReloadedList = new List<Texture2DValue>();
+        
         public Texture2DValue() { }
         
         protected Texture2DValue(SerializationInfo info, StreamingContext context) {
             source = info.GetString("s");
+            if (info.GetBoolean("t") && !ReloadedList.Contains(this)) {
+                ReloadedList.Add(this);
+            }
         }
         
         public override SerializableValue Clone() {
@@ -61,8 +69,16 @@ namespace WADV.Plugins.Unity {
         [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
             info.AddValue("s", source);
+            info.AddValue("t", texture != null && !string.IsNullOrEmpty(source));
         }
-        
+
+        public override async Task BeforeRead(DumpRuntimeIntent.TaskLists tasks) {
+            if (ReloadedList.Contains(this)) {
+                ReloadedList.Remove(this);
+                await ReadTexture();
+            }
+        }
+
         /// <summary>
         /// 根据材质地址读取材质（不会重复读取）
         /// </summary>

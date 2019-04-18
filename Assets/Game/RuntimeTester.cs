@@ -51,7 +51,7 @@ namespace Game {
             await tsubasa.Texture.ReadTexture();
             var effect1 = GraphicEffect.CreateInstance<SingleGraphicEffect>(typeof(FadeIn), new Dictionary<string, SerializableValue>(), 1.0F, EasingType.QuadIn);
             await effect1.Initialize();
-            var effect2 = GraphicEffect.CreateInstance<SingleGraphicEffect>(typeof(AlphaMaskTransition), new Dictionary<string, SerializableValue> {
+            var effect2 = GraphicEffect.CreateInstance<SingleGraphicEffect>(typeof(TextureMaskTransition), new Dictionary<string, SerializableValue> {
                 {"Mask", new Texture2DValue {source = "Resources://Mask/RoundFadeToLeft"}},
                 {"Threshold", new FloatValue {value = 0.2F}}
             }, 1.0F, EasingType.QuadIn);
