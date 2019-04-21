@@ -127,7 +127,7 @@ namespace WADV.VisualNovel.Runtime {
                 case OperationCode.DIV:
                     CreateBinaryOperation(OperatorType.Divide);
                     break;
-                case OperationCode.NEGATIVE:
+                case OperationCode.NEG:
                     CreateToNegative();
                     break;
                 case OperationCode.EQL:

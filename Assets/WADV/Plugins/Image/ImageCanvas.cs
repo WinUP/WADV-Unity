@@ -39,8 +39,8 @@ namespace WADV.Plugins.Image {
             return message;
         }
 
-        private async Task UpdateImages(IReadOnlyList<ImageDisplayInformation> images) {
-            var length = images.Count;
+        private async Task UpdateImages(ImageDisplayInformation[] images) {
+            var length = images.Length;
             var extraImages = new List<string>();
             for (var i = -1; ++i < length;) {
                 var image = images[i];
@@ -57,10 +57,9 @@ namespace WADV.Plugins.Image {
             }
             await Dispatcher.NextUpdate();
             for (var i = -1; ++i < length;) {
-                var image = images[i];
-                image.displayMatrix = GetMatrix(_images.Find(image.Name));
-                if (extraImages.TryRemove(image.Name)) {
-                    DestroyImage(image.Name);
+                images[i].displayMatrix = GetMatrix(_images.Find(images[i].Name));
+                if (extraImages.TryRemove(images[i].Name)) {
+                    DestroyImage(images[i].Name);
                 }
             }
         }

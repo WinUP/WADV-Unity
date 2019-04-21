@@ -43,41 +43,24 @@ namespace Game {
         }
 
         public async void TestImage() {
-            var background = new ImageValue {Texture = new Texture2DValue {source = "Resources://Classroom 2"}};
-            await background.Texture.ReadTexture();
-            var tomo = new ImageValue {Texture = new Texture2DValue {source = "Resources://tomo13i"}};
-            await tomo.Texture.ReadTexture();
-            var tsubasa = new ImageValue {Texture = new Texture2DValue {source = "Resources://tubasa37i"}};
-            await tsubasa.Texture.ReadTexture();
-            var effect1 = GraphicEffect.CreateInstance<SingleGraphicEffect>(typeof(FadeIn), new Dictionary<string, SerializableValue>(), 1.0F, EasingType.QuadIn);
-            await effect1.Initialize();
-            var effect2 = GraphicEffect.CreateInstance<SingleGraphicEffect>(typeof(TextureMaskTransition), new Dictionary<string, SerializableValue> {
+            // @effect = [Effect Type=AlphaMask Time=1.0 Easing=QuadIn Threshold=0.2 Mask=[Texture2D Source='Resources://Mask/RoundFadeToLeft']]
+            var effect = GraphicEffect.CreateInstance<SingleGraphicEffect>(typeof(TextureMaskTransition), new Dictionary<string, SerializableValue> {
                 {"Mask", new Texture2DValue {source = "Resources://Mask/RoundFadeToLeft"}},
                 {"Threshold", new FloatValue {value = 0.2F}}
             }, 1.0F, EasingType.QuadIn);
-            await effect2.Initialize();
-            
-            var content = new ImageMessageIntegration.ShowImageContent();
-            var transform = new TransformValue();
-            transform.Set(TransformValue.PropertyName.PositionX, 0);
-            transform.Set(TransformValue.PropertyName.PositionY, -350);
-            transform.Set(TransformValue.PropertyName.PivotX, 0);
-            transform.Set(TransformValue.PropertyName.PivotY, 0);
-            transform.Set(TransformValue.PropertyName.AnchorMinX, 0);
-            transform.Set(TransformValue.PropertyName.AnchorMinY, 0);
-            transform.Set(TransformValue.PropertyName.AnchorMaxX, 0);
-            transform.Set(TransformValue.PropertyName.AnchorMaxY, 0);
-            content.Images = new[] {
-                new ImageDisplayInformation("Tomo", tomo, transform)
-            };
-            content.Effect = effect1;
-            await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
-            await Dispatcher.WaitForSeconds(2.0F);
-            content.Images = new[] {
-                new ImageDisplayInformation("Tomo", tsubasa, transform)
-            };
-            content.Effect = effect2;
-            await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
+            await effect.Initialize();
+            // [Show @effect Layer=100 [Image Source='Resources://tomo13i'] Name=Tomo PositionX=0 PositionY=-350]
+            var context = PluginExecuteContext.Create(new ScriptRuntime("Entrance"));
+            context.Parameters.Add(new EffectValue("AlphaMask", effect), new NullValue());
+            context.Parameters.Add(new StringValue {value = "Layer"}, new IntegerValue {value = 100});
+            context.Parameters.Add(new StringValue {value = "Name"}, new StringValue {value = "Tomo"});
+            context.Parameters.Add(new StringValue {value = "PositionX"}, new IntegerValue {value = 0});
+            context.Parameters.Add(new StringValue {value = "PositionY"}, new IntegerValue {value = -350});
+            // Call plugin
+            var plugin = PluginManager.Find("Show");
+            if (plugin != null) {
+                await plugin.Execute(context);
+            }
         }
     }
 }

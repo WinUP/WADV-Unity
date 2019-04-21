@@ -275,7 +275,7 @@ namespace WADV.VisualNovel.Compiler {
         /// <para>格式：<code>33</code></para>
         /// <para>栈结构要求：栈不能为空</para>
         /// </summary>
-        NEGATIVE,
+        NEG,
         /// <summary>
         /// 取出栈顶两个元素并放入其真值比较结果
         /// <para>格式：<code>34</code></para>

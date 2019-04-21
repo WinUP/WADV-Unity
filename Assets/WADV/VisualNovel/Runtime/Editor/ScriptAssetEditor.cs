@@ -213,8 +213,8 @@ namespace WADV.VisualNovel.Runtime.Editor {
                 case OperationCode.DIV:
                     assemblyContent.AppendLine(position, "div");
                     break;
-                case OperationCode.NEGATIVE:
-                    assemblyContent.AppendLine(position, "negative");
+                case OperationCode.NEG:
+                    assemblyContent.AppendLine(position, "neg");
                     break;
                 case OperationCode.EQL:
                     assemblyContent.AppendLine(position, "eql");

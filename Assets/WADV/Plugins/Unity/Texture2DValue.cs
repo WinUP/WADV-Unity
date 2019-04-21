@@ -35,7 +35,7 @@ namespace WADV.Plugins.Unity {
     ///     <item><description>相等比较互操作器</description></item>
     /// </list>
     /// </summary>
-    /// <remarks>注意：只有材质实例而没有材质地址的值无法被保存，因而会在读取时变为空材质</remarks>
+    /// <remarks>注意：材质实例不会被序列化，因而没有设置地址的材质会以空材质的形式保存</remarks>
     [Serializable]
     public class Texture2DValue : SerializableValue, ISerializable, IStringConverter, IEqualOperator {
         /// <summary>
