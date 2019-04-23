@@ -42,6 +42,7 @@ namespace WADV.Plugins.Image {
         private async Task UpdateImages(ImageDisplayInformation[] images) {
             var length = images.Length;
             var extraImages = new List<string>();
+            var readingTasks = new List<Task>();
             for (var i = -1; ++i < length;) {
                 var image = images[i];
                 switch (image.status) {
@@ -51,10 +52,12 @@ namespace WADV.Plugins.Image {
                         break;
                     default:
                         extraImages.Add(image.Name);
+                        readingTasks.Add(image.Content.Texture.ReadTexture());
                         CreateImageObject(image).GetComponent<RawImage>().color = Color.clear;
                         break;
                 }
             }
+            await Dispatcher.WaitAll(readingTasks);
             await Dispatcher.NextUpdate();
             for (var i = -1; ++i < length;) {
                 images[i].displayMatrix = GetMatrix(_images.Find(images[i].Name));

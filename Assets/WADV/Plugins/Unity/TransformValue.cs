@@ -42,10 +42,8 @@ namespace WADV.Plugins.Unity {
         
         public override SerializableValue Clone() {
             var result = new TransformValue();
-            for (var i = -1; ++i < 22;) {
-                result._data[i] = _data[i];
-                result._hasData[i] = _hasData[i];
-            }
+            Array.Copy(_data, result._data, 21);
+            Array.Copy(_hasData, result._hasData, 21);
             return result;
         }
         

@@ -61,17 +61,29 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// <returns></returns>
         public static float TryParse(SerializableValue value, string language = TranslationManager.DefaultLanguage) {
             switch (value) {
+                case BooleanValue booleanTarget:
+                    return booleanTarget.ConvertToFloat(language);
+                case FloatValue floatTarget:
+                    return floatTarget.value;
+                case IntegerValue integerTarget:
+                    return integerTarget.ConvertToFloat(language);
+                case NullValue nullTarget:
+                    return nullTarget.ConvertToFloat(language);
+                case StringValue stringTarget:
+                    return stringTarget.ConvertToFloat(language);
+                case TranslatableValue translatableTarget:
+                    return translatableTarget.ConvertToFloat(language);
                 case IFloatConverter floatTarget:
                     return floatTarget.ConvertToFloat(language);
                 case IIntegerConverter intTarget:
                     return intTarget.ConvertToInteger(language);
+                case IBooleanConverter boolTarget:
+                    return boolTarget.ConvertToBoolean(language) ? 1.0F : 0.0F;
                 case IStringConverter stringTarget:
                     var stringValue = stringTarget.ConvertToString(language);
                     if (int.TryParse(stringValue, out var intValue)) return intValue;
                     if (float.TryParse(stringValue, out var floatValue)) return floatValue;
                     throw new NotSupportedException($"Unable to convert {stringValue} to float: unsupported string format");
-                case IBooleanConverter boolTarget:
-                    return boolTarget.ConvertToBoolean(language) ? 1.0F : 0.0F;
                 default:
                     throw new NotSupportedException($"Unable to convert {value} to float: unsupported format");
             }

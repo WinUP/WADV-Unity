@@ -109,11 +109,9 @@ namespace WADV.Plugins.Image {
                         effect = effectValue;
                         break;
                     case ImageValue imageValue:
-                        if (currentImage == null) {
-                            currentImage = imageValue;
-                            continue;
+                        if (currentImage != null) {
+                            AddImage();
                         }
-                        AddImage();
                         currentImage = imageValue;
                         currentTransform = new TransformValue();
                         break;
@@ -199,6 +197,7 @@ namespace WADV.Plugins.Image {
         }
         
         private ImageDisplayInformation[] FindPreBindImages(string[] names) {
+            if (!_images.Any()) return new ImageDisplayInformation[] { };
             var minLayer = _images.Where(e => names.Contains(e.Key)).Select(e => e.Value.layer).Min();
             var targets = _images.Where(e => e.Value.layer >= minLayer).Select(e => e.Value).ToArray();
             for (var i = -1; ++i < targets.Length;) {
@@ -227,10 +226,18 @@ namespace WADV.Plugins.Image {
         }
 
         private static async Task<string> PlaceOverlayCanvas(Texture2D canvas, Vector2Int position, int layer) {
+            if (canvas == null) return null;
             var name = $"OVERLAY{{{Guid.NewGuid().ToString().ToUpper()}}}";
             var transform = new TransformValue();
             transform.Set(TransformValue.PropertyName.PositionX, position.x);
             transform.Set(TransformValue.PropertyName.PositionY, position.y);
+            transform.Set(TransformValue.PropertyName.PositionZ, 0);
+            transform.Set(TransformValue.PropertyName.AnchorMinX, 0);
+            transform.Set(TransformValue.PropertyName.AnchorMinY, 0);
+            transform.Set(TransformValue.PropertyName.AnchorMaxX, 0);
+            transform.Set(TransformValue.PropertyName.AnchorMaxY, 0);
+            transform.Set(TransformValue.PropertyName.PivotX, 0);
+            transform.Set(TransformValue.PropertyName.PivotY, 0);
             var content = new ImageMessageIntegration.ShowImageContent {
                 Images = new[] {new ImageDisplayInformation(name, new ImageValue {Texture = new Texture2DValue {texture = canvas}}, transform) {layer = layer, status = ImageStatus.PrepareToShow}}
             };
@@ -239,6 +246,7 @@ namespace WADV.Plugins.Image {
         }
         
         private async Task RemoveHiddenSeparateImages(string[] names) {
+            if (!names.Any()) return;
             var content = new ImageMessageIntegration.HideImageContent {Names = names};
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.HideImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.HideImage, content));
             _images.RemoveAll(names);
@@ -261,6 +269,7 @@ namespace WADV.Plugins.Image {
         }
 
         private static async Task RemoveOverlayImage(string overlayName) {
+            if (string.IsNullOrEmpty(overlayName)) return;
             var content = new ImageMessageIntegration.HideImageContent {Names = new[] {overlayName}};
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.HideImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.HideImage, content));
         }

@@ -60,12 +60,28 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// <returns></returns>
         public static string TryParse(SerializableValue value, string language = TranslationManager.DefaultLanguage) {
             switch (value) {
+                case BooleanValue booleanTarget:
+                    return booleanTarget.ConvertToString(language);
+                case FloatValue floatTarget:
+                    return floatTarget.ConvertToString(language);
+                case IntegerValue integerTarget:
+                    return integerTarget.ConvertToString(language);
+                case NullValue nullTarget:
+                    return nullTarget.ConvertToString(language);
+                case ReferenceValue referenceTarget:
+                    return referenceTarget.ConvertToString(language);
+                case ScopeValue scopeTarget:
+                    return scopeTarget.ConvertToString(language);
+                case StringValue stringTarget:
+                    return stringTarget.value;
+                case TranslatableValue translatableTarget:
+                    return translatableTarget.ConvertToString(language);
+                case IStringConverter stringTarget:
+                    return stringTarget.ConvertToString(language);
                 case IFloatConverter floatTarget:
                     return floatTarget.ConvertToFloat(language).ToString(CultureInfo.InvariantCulture);
                 case IIntegerConverter intTarget:
                     return intTarget.ConvertToInteger(language).ToString(CultureInfo.InvariantCulture);
-                case IStringConverter stringTarget:
-                    return stringTarget.ConvertToString(language);
                 case IBooleanConverter boolTarget:
                     return boolTarget.ConvertToBoolean(language) ? "True" : "False";
                 default:

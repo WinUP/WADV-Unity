@@ -60,17 +60,29 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// <returns></returns>
         public static int TryParse(SerializableValue value, string language = TranslationManager.DefaultLanguage) {
             switch (value) {
+                case BooleanValue booleanTarget:
+                    return booleanTarget.ConvertToInteger(language);
+                case FloatValue floatTarget:
+                    return floatTarget.ConvertToInteger(language);
+                case IntegerValue integerTarget:
+                    return integerTarget.value;
+                case NullValue nullTarget:
+                    return nullTarget.ConvertToInteger(language);
+                case StringValue stringTarget:
+                    return stringTarget.ConvertToInteger(language);
+                case TranslatableValue translatableTarget:
+                    return translatableTarget.ConvertToInteger(language);
                 case IIntegerConverter intTarget:
                     return intTarget.ConvertToInteger(language);
                 case IFloatConverter floatTarget:
                     return Mathf.RoundToInt(floatTarget.ConvertToFloat(language));
+                case IBooleanConverter boolTarget:
+                    return boolTarget.ConvertToBoolean(language) ? 1 : 0;
                 case IStringConverter stringTarget:
                     var stringValue = stringTarget.ConvertToString(language);
                     if (int.TryParse(stringValue, out var intValue)) return intValue;
                     if (float.TryParse(stringValue, out var floatValue)) return Mathf.RoundToInt(floatValue);
                     throw new NotSupportedException($"Unable to convert {stringValue} to integer: unsupported string format");
-                case IBooleanConverter boolTarget:
-                    return boolTarget.ConvertToBoolean(language) ? 1 : 0;
                 default:
                     throw new NotSupportedException($"Unable to convert {value} to integer: unsupported format");
             }

@@ -49,10 +49,12 @@ namespace Game {
                 {"Threshold", new FloatValue {value = 0.2F}}
             }, 1.0F, EasingType.QuadIn);
             await effect.Initialize();
-            // [Show @effect Layer=100 [Image Source='Resources://tomo13i'] Name=Tomo PositionX=0 PositionY=-350]
-            var context = PluginExecuteContext.Create(new ScriptRuntime("Entrance"));
+            // [Show @effect Layer=100 Bind=Canvas [Image Source='Resources://tomo13i'] Name=Tomo PositionX=0 PositionY=-350]
+            var context = PluginExecuteContext.Create(new ScriptRuntime("!Entrance"));
             context.Parameters.Add(new EffectValue("AlphaMask", effect), new NullValue());
             context.Parameters.Add(new StringValue {value = "Layer"}, new IntegerValue {value = 100});
+            context.Parameters.Add(new StringValue {value = "Bind"}, new StringValue {value = "Canvas"});
+            context.Parameters.Add(new ImageValue {Texture = new Texture2DValue {source = "Resources://tomo13i"}}, new NullValue());
             context.Parameters.Add(new StringValue {value = "Name"}, new StringValue {value = "Tomo"});
             context.Parameters.Add(new StringValue {value = "PositionX"}, new IntegerValue {value = 0});
             context.Parameters.Add(new StringValue {value = "PositionY"}, new IntegerValue {value = -350});
