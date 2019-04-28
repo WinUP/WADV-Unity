@@ -1,0 +1,10 @@
+﻿@Effect = [Effect Type=TextureMask Duration=1.0 Easing=QuadIn Threshold=0.2 Mask=[Texture2D Source='Resources://Mask/RoundFadeToLeft']]
+@Tomo = [Image Source='Resources://tomo13i']
+@Tsubasa = [Image Source='Resources://tubasa37i']
+
+[Show @Effect Bind=Canvas Layer=100 [Image Source='Resources://tomo13i'] Name=Tomo PositionX=0 PositionY=-350]
+
+[Pause 2.0]
+
+;if @Tomo != @null * @Tsubasa != @null
+    [Show @Effect Bind=Canvas @Tomo Name=Tomo PositionX=400 PositionY=-350 @Tsubasa Name=Tsubasa PositionX=0 PositionY=-350]

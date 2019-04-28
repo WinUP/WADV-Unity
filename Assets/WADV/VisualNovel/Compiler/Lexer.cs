@@ -191,7 +191,7 @@ namespace WADV.VisualNovel.Compiler {
                     if (file[nextSeparator] == '-' && file[nextSeparator + 1] >= '0' && file[nextSeparator + 1] <= '9') { // 负数
                         var initialEndPosition = nextSeparator;
                         file.Move(initialEndPosition + 1);
-                        nextSeparator = file.IndexOfWithEscapeRecognize(Keywords.Separators);
+                        nextSeparator = file.IndexOfWithEscapeRecognize(Keywords.Separators) + 1;
                         file.Move(-initialEndPosition - 1);
                     }
                     var content = file.CopyContent(nextSeparator).Trim();

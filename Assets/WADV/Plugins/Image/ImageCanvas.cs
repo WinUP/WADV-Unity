@@ -13,6 +13,8 @@ namespace WADV.Plugins.Image {
     [RequireComponent(typeof(Canvas))]
     public class ImageCanvas : MonoMessengerBehaviour {
         private readonly ImageList _images = new ImageList();
+        private readonly ImageList _tempImages = new ImageList();
+        private static Texture2D _defaultTexture;
         private RectTransform _root;
 
         public ComputeShader computeShader;
@@ -22,6 +24,11 @@ namespace WADV.Plugins.Image {
 
         private void Start() {
             _root = GetComponent<RectTransform>();
+            if (_defaultTexture == null) {
+                _defaultTexture = new Texture2D(1, 1);
+                _defaultTexture.SetPixel(0, 0, Color.clear);
+                _defaultTexture.Apply(false);
+            }
         }
 
         public override async Task<Message> Receive(Message message) {
@@ -53,16 +60,18 @@ namespace WADV.Plugins.Image {
                     default:
                         extraImages.Add(image.Name);
                         readingTasks.Add(image.Content.Texture.ReadTexture());
-                        CreateImageObject(image).GetComponent<RawImage>().color = Color.clear;
+                        CreateImageObject(image, true).GetComponent<RawImage>().color = Color.clear;
                         break;
                 }
             }
             await Dispatcher.WaitAll(readingTasks);
             await Dispatcher.NextUpdate();
             for (var i = -1; ++i < length;) {
-                images[i].displayMatrix = GetMatrix(_images.Find(images[i].Name));
                 if (extraImages.TryRemove(images[i].Name)) {
-                    DestroyImage(images[i].Name);
+                    images[i].displayMatrix = GetMatrix(_tempImages.Find(images[i].Name));
+                    DestroyTempImage(images[i].Name);
+                } else {
+                    images[i].displayMatrix = GetMatrix(_images.Find(images[i].Name));
                 }
             }
         }
@@ -100,17 +109,13 @@ namespace WADV.Plugins.Image {
                 }
             } else {
                 var tasks = new List<Task>();
-                var newImages = new List<RawImage>();
                 foreach (var image in content.Images) {
                     await image.Content.Texture.ReadTexture();
                     if (image.Content.Texture.texture == null) continue;
-                    if (_images.Contains(image.Name)) {
-                        tasks.Add(PlayOnExistedImage(image, content.Effect));
-                    } else {
-                        newImages.Add(CreateImageObject(image).GetComponent<RawImage>());
-                    }
+                    tasks.Add(_images.Contains(image.Name)
+                        ? PlayOnExistedImage(image, content.Effect)
+                        : PlayOnNewImage(image, content.Effect));
                 }
-                tasks.Add(content.Effect.PlayEffect(newImages, null));
                 await Dispatcher.WaitAll(tasks);
             }
         }
@@ -119,20 +124,34 @@ namespace WADV.Plugins.Image {
             _images.Destroy(target);
         }
 
-        private GameObject CreateImageObject(ImageDisplayInformation image) {
+        private void DestroyTempImage(string target) {
+            _tempImages.Destroy(target);
+        }
+
+        private GameObject CreateImageObject(ImageDisplayInformation image, bool isTemp = false) {
             var target = new GameObject(image.Name);
             target.AddComponent<RectTransform>();
             target.AddComponent<RawImage>();
             image.ApplyTo(target, _root);
-            target.GetComponent<RectTransform>().SetSiblingIndex(_images.Add(image.Name, target, image.layer));
+            var list = isTemp ? _tempImages : _images;
+            target.GetComponent<RectTransform>().SetSiblingIndex(list.Add(image.Name, target, image.layer));
             return target;
         }
 
         private async Task PlayOnExistedImage(ImageDisplayInformation target, SingleGraphicEffect effect) {
             if (effect == null) return;
             var component = _images.Find(target.Name);
-            await effect.PlayEffect(new[] {component.GetComponent<RawImage>()}, target.Content.Texture.texture);
+            var rawImage = component.GetComponent<RawImage>();
+            await effect.PlayEffect(new[] {rawImage}, target.Content.Texture.texture);
             target.ApplyTo(component, _root);
+        }
+
+        private async Task PlayOnNewImage(ImageDisplayInformation target, SingleGraphicEffect effect) {
+            var rawImage = CreateImageObject(target).GetComponent<RawImage>();
+            rawImage.texture = _defaultTexture;
+            await effect.PlayEffect(new[] {rawImage}, target.Content.Texture.texture);
+            rawImage.texture = target.Content.Texture.texture;
+            rawImage.material = null;
         }
         
         private class ImageList {

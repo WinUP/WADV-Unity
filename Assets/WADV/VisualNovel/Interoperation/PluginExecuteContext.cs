@@ -17,7 +17,7 @@ namespace WADV.VisualNovel.Interoperation {
         /// <summary>
         /// 获取完整参数列表
         /// </summary>
-        public Dictionary<SerializableValue, SerializableValue> Parameters { get; }
+        public List<KeyValuePair<SerializableValue, SerializableValue>> Parameters { get; }
 
         /// <summary>
         /// 获取当前激活的语言（等价于使用Runtime.ActiveLanguage）
@@ -29,7 +29,7 @@ namespace WADV.VisualNovel.Interoperation {
         /// </summary>
         public IEnumerable<KeyValuePair<IStringConverter, SerializableValue>> StringParameters => new StringParameterEnumerator(Parameters);
 
-        private PluginExecuteContext(Dictionary<SerializableValue, SerializableValue> parameters) {
+        private PluginExecuteContext(List<KeyValuePair<SerializableValue, SerializableValue>> parameters) {
             Parameters = parameters;
         }
 
@@ -39,7 +39,7 @@ namespace WADV.VisualNovel.Interoperation {
         /// <param name="runtime">执行环境</param>
         /// <returns></returns>
         public static PluginExecuteContext Create(ScriptRuntime runtime) {
-            return new PluginExecuteContext(new Dictionary<SerializableValue, SerializableValue>()) {Runtime = runtime};
+            return new PluginExecuteContext(new List<KeyValuePair<SerializableValue, SerializableValue>>()) {Runtime = runtime};
         }
 
         /// <summary>
@@ -48,8 +48,17 @@ namespace WADV.VisualNovel.Interoperation {
         /// <param name="runtime">执行环境</param>
         /// <param name="parameters">参数列表</param>
         /// <returns></returns>
-        public static PluginExecuteContext Create(ScriptRuntime runtime, Dictionary<SerializableValue, SerializableValue> parameters) {
+        public static PluginExecuteContext Create(ScriptRuntime runtime, List<KeyValuePair<SerializableValue, SerializableValue>> parameters) {
             return new PluginExecuteContext(parameters) {Runtime = runtime};
+        }
+
+        /// <summary>
+        /// 添加一个参数
+        /// </summary>
+        /// <param name="key">参数名</param>
+        /// <param name="value">参数值</param>
+        public void AddParameter(SerializableValue key, SerializableValue value) {
+            Parameters.Add(new KeyValuePair<SerializableValue, SerializableValue>(key, value));
         }
         
         /// <summary>
@@ -77,10 +86,10 @@ namespace WADV.VisualNovel.Interoperation {
         }
 
         private class StringParameterEnumerator : IEnumerator<KeyValuePair<IStringConverter, SerializableValue>>, IEnumerable<KeyValuePair<IStringConverter, SerializableValue>> {
-            private readonly Dictionary<SerializableValue, SerializableValue> _parameters;
-            private Dictionary<SerializableValue, SerializableValue>.Enumerator _enumerator;
+            private readonly List<KeyValuePair<SerializableValue, SerializableValue>> _parameters;
+            private List<KeyValuePair<SerializableValue, SerializableValue>>.Enumerator _enumerator;
             
-            public StringParameterEnumerator(Dictionary<SerializableValue, SerializableValue> parameters) {
+            public StringParameterEnumerator(List<KeyValuePair<SerializableValue, SerializableValue>> parameters) {
                 _parameters = parameters;
                 _enumerator = _parameters.GetEnumerator();
             }

@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: ab0b78e6b103b1c4bbafd74dfec6832b
+ScriptedImporter:
+  fileIDToRecycleName:
+    11400000: VNBinary:Assets/Resources/Logic/Distribution/Test.vnb
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 68ff66daf20d4aa3a565af206164ba39, type: 3}

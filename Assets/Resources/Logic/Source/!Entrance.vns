@@ -2,7 +2,7 @@
 // 变量取值顺序：当前域变量表->当前域常量表->上一层变量表->上一层常量表->再上一层……
 // 变量为一级值传递，变量内所有非一级资源均为引用传递
 
-@Utilities = ;import Utilities
+@Utilities = (;import Utilities)
 
 @applicationName = @Utilities->ApplicationName
 
@@ -99,18 +99,3 @@
 @temp = (;call runner)
 #测试 闭包测试，第二次为3: [@temp]
 @runner = @temp = @null
-
-[Show
-    [Image Color=[Color #FFFFFF] FlipX FlipY UV=[Rect X=0 Y=0 Size=[Vector2 X=1 Y=1]] Source='Resources://Background/Classroom 2']
-    Name=Background PositionX=100 PositionY=50
-    
-    [Image Color=[Color #FFFFFFFF] FlipX FlipY UV=[Rect X=0 Y=0 Size=[Vector2 X=100 Y=100]] Source='Resources://Character/Tomo/1']
-    Name=Left Transform=[Transform Scale=1.03 Rotate=[Vector3 X=0 Y=0 Z=45] Position=[Vector2 X=100 Y=200]]
-    
-    Effect=@Utilities->RoundFadeToLeft1.0Linear
-    Layer=100
-    Bind=Container/Screen/Minimal/None]
-
-[Pause 2.0]
-
-[Hide Background Left Effect=@Utilities->RoundFadeToLeft1.0Linear Bind=Container/Screen/Minimal/None]

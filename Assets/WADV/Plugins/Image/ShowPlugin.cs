@@ -55,9 +55,11 @@ namespace WADV.Plugins.Image {
             var targetCanvas = await BindImages(images);
             RectInt displayArea;
             (overlayCanvas, targetCanvas, displayArea) = CutDisplayArea(new RectInt(0, 0, targetCanvas.width, targetCanvas.height), overlayCanvas, targetCanvas, mode);
-            var overlayName = await PlaceOverlayCanvas(overlayCanvas, displayArea.position, layer);
+            var overlayName = $"OVERLAY{{{Guid.NewGuid().ToString().ToUpper()}}}";
+            var overlayTransform = CreateOverlayTransform(displayArea.position);
+            await PlaceOverlayCanvas(overlayName, overlayCanvas, overlayTransform, layer);
             await RemoveHiddenSeparateImages(names);
-            await PlayOverlayEffect(overlayName, targetCanvas, effect.Effect as SingleGraphicEffect);
+            await PlayOverlayEffect(overlayName, targetCanvas, effect.Effect as SingleGraphicEffect, overlayTransform);
             await PlaceNewImages(images);
             await RemoveOverlayImage(overlayName);
             for (var i = -1; ++i < images.Length;) {
@@ -92,12 +94,9 @@ namespace WADV.Plugins.Image {
             string currentName = null;
             TransformValue currentTransform = null;
             void AddImage() {
-                // ReSharper disable once AccessToModifiedClosure
-                var existed = images.FindIndex(e => e.Content.EqualsWith(currentImage, context.Language));
-                if (existed > -1) {
-                    images.RemoveAt(existed);
-                }
                 if (string.IsNullOrEmpty(currentName)) throw new MissingMemberException($"Unable to create show command: missing image name for {currentImage.ConvertToString(context.Language)}");
+                // ReSharper disable once AccessToModifiedClosure
+                images.RemoveAll(e => e.Name == currentName || e.Content.EqualsWith(currentImage, context.Language));
                 images.Add(new ImageDisplayInformation(currentName, currentImage, currentTransform == null ? null : (TransformValue) _defaultTransform.AddWith(currentTransform)));
                 currentName = null;
                 currentImage = null;
@@ -225,9 +224,7 @@ namespace WADV.Plugins.Image {
             return actualArea.Equals(displayArea) ? (overlay, target, actualArea) : (overlay.Cut(actualArea), target.Cut(actualArea), actualArea);
         }
 
-        private static async Task<string> PlaceOverlayCanvas(Texture2D canvas, Vector2Int position, int layer) {
-            if (canvas == null) return null;
-            var name = $"OVERLAY{{{Guid.NewGuid().ToString().ToUpper()}}}";
+        private static TransformValue CreateOverlayTransform(Vector2Int position) {
             var transform = new TransformValue();
             transform.Set(TransformValue.PropertyName.PositionX, position.x);
             transform.Set(TransformValue.PropertyName.PositionY, position.y);
@@ -238,6 +235,11 @@ namespace WADV.Plugins.Image {
             transform.Set(TransformValue.PropertyName.AnchorMaxY, 0);
             transform.Set(TransformValue.PropertyName.PivotX, 0);
             transform.Set(TransformValue.PropertyName.PivotY, 0);
+            return transform;
+        }
+
+        private static async Task<string> PlaceOverlayCanvas(string name, Texture2D canvas, TransformValue transform, int layer) {
+            if (canvas == null) return null;
             var content = new ImageMessageIntegration.ShowImageContent {
                 Images = new[] {new ImageDisplayInformation(name, new ImageValue {Texture = new Texture2DValue {texture = canvas}}, transform) {layer = layer, status = ImageStatus.PrepareToShow}}
             };
@@ -252,10 +254,10 @@ namespace WADV.Plugins.Image {
             _images.RemoveAll(names);
         }
         
-        private static async Task PlayOverlayEffect(string name, Texture2D target, SingleGraphicEffect effect) {
+        private static async Task PlayOverlayEffect(string name, Texture2D target, SingleGraphicEffect effect, TransformValue transform) {
             var content = new ImageMessageIntegration.ShowImageContent {
                 Effect = effect,
-                Images = new[] {new ImageDisplayInformation(name, new ImageValue {Texture = new Texture2DValue {texture = target}}, null)}
+                Images = new[] {new ImageDisplayInformation(name, new ImageValue {Texture = new Texture2DValue {texture = target}}, transform)}
             };
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
         }

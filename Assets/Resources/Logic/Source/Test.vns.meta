@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 8f07a5f051da5c740a1cfad1d0469124
+ScriptedImporter:
+  fileIDToRecycleName:
+    4900000: VNScript:Assets/Resources/Logic/Source/Test.vns
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: a64cc6df3c40441d82cc1c55b3cc586d, type: 3}

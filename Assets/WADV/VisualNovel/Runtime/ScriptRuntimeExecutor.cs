@@ -131,7 +131,7 @@ namespace WADV.VisualNovel.Runtime {
                     CreateToNegative();
                     break;
                 case OperationCode.EQL:
-                    CreateBinaryOperation(OperatorType.EqualsTo);
+                    CreateBinaryOperation(OperatorType.LogicEqualsTo);
                     break;
                 case OperationCode.CGE:
                     CreateBinaryOperation(OperatorType.NotLessThan);
@@ -171,8 +171,7 @@ namespace WADV.VisualNovel.Runtime {
                     await CreateFunctionCall();
                     break;
                 case OperationCode.BF:
-                    var condition = MemoryStack.Pop();
-                    if (!(condition is NullValue) && condition is IBooleanConverter booleanConverter && booleanConverter.ConvertToBoolean(ActiveLanguage)) {
+                    if (MemoryStack.Pop() is BooleanValue condition && condition.value == false) {
                         Move();
                     }
                     break;
@@ -280,10 +279,11 @@ namespace WADV.VisualNovel.Runtime {
         }
 
         private void CreateScope() {
-            var newScope = new ScopeValue {scriptId = Script.Header.Id, entrance = Script.CurrentPosition};
-            if (ActiveScope != null) {
-                ActiveScope.parentScope = newScope;
-            }
+            var newScope = new ScopeValue {
+                scriptId = Script.Header.Id,
+                entrance = Script.CurrentPosition,
+                parentScope = ActiveScope
+            };
             ActiveScope = newScope;
         }
 
@@ -323,7 +323,7 @@ namespace WADV.VisualNovel.Runtime {
         private void LeaveScope() {
             if (ActiveScope == null) throw new RuntimeException(_callStack, "Unable to leave scope: No scope activated");
             // 清空局部作用域
-            ActiveScope?.LocalVariables.Clear();
+            ActiveScope.LocalVariables.Clear();
             ActiveScope = ActiveScope.parentScope;
         }
 
@@ -351,10 +351,13 @@ namespace WADV.VisualNovel.Runtime {
         private async Task CreatePluginCall() {
             var plugin = FindPlugin();
             var parameterCount = ((IIntegerConverter) MemoryStack.Pop()).ConvertToInteger(ActiveLanguage);
-            var context = PluginExecuteContext.Create(this);
+            var parameters = new List<KeyValuePair<SerializableValue, SerializableValue>>();
             for (var i = -1; ++i < parameterCount;) {
-                context.Parameters.Add(MemoryStack.Pop() ?? new NullValue(), MemoryStack.Pop() ?? new NullValue());
+                parameters.Add(new KeyValuePair<SerializableValue, SerializableValue>(
+                    MemoryStack.Pop() ?? new NullValue(), MemoryStack.Pop() ?? new NullValue()));
             }
+            parameters.Reverse();
+            var context = PluginExecuteContext.Create(this, parameters);
             try {
                 MemoryStack.Push(await plugin.Execute(context) ?? new NullValue());
             } catch (Exception ex) {
@@ -367,9 +370,9 @@ namespace WADV.VisualNovel.Runtime {
             if (plugin == null) {
                 throw new RuntimeException(_callStack, "Unable to create dialogue: no dialogue plugin registered");
             }
-            MemoryStack.Push(await plugin.Execute(PluginExecuteContext.Create(this, new Dictionary<SerializableValue, SerializableValue> {
-                {new StringValue {value = "Character"}, MemoryStack.Pop()},
-                {new StringValue {value = "Content"}, MemoryStack.Pop()}
+            MemoryStack.Push(await plugin.Execute(PluginExecuteContext.Create(this, new List<KeyValuePair<SerializableValue, SerializableValue>> {
+                new KeyValuePair<SerializableValue, SerializableValue>(new StringValue {value = "Character"}, MemoryStack.Pop()),
+                new KeyValuePair<SerializableValue, SerializableValue>(new StringValue {value = "Content"}, MemoryStack.Pop())
             })) ?? new NullValue());
         }
 
@@ -388,6 +391,10 @@ namespace WADV.VisualNovel.Runtime {
 
         private void CreateToBoolean() {
             var rawValue = MemoryStack.Pop();
+            if (rawValue is BooleanValue) {
+                MemoryStack.Push(rawValue);
+                return;
+            }
             try {
                 var result = new BooleanValue {value = rawValue is IBooleanConverter booleanValue ? booleanValue.ConvertToBoolean(ActiveLanguage) : rawValue != null};
                 MemoryStack.Push(result);
