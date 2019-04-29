@@ -218,7 +218,7 @@ namespace WADV.Plugins.Image {
             RectInt actualArea;
             if (overlay == null) {
                 actualArea = target.GetVisibleContentArea();
-                return actualArea.Equals(displayArea) ? (overlay, target, actualArea) : (overlay, target.Cut(displayArea), actualArea);
+                return actualArea.Equals(displayArea) ? (overlay, target, actualArea) : (overlay, target.Cut(actualArea), actualArea);
             }
             actualArea = overlay.GetVisibleContentArea().MergeWith(target.GetVisibleContentArea());
             return actualArea.Equals(displayArea) ? (overlay, target, actualArea) : (overlay.Cut(actualArea), target.Cut(actualArea), actualArea);

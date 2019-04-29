@@ -17,7 +17,7 @@ namespace WADV.Plugins {
                     case IFloatConverter floatConverter:
                         time = floatConverter.ConvertToFloat(context.Language);
                         break;
-                    case IStringConverter stringConverter when stringConverter.ConvertToString(context.Language) == "Time":
+                    case IStringConverter stringConverter when stringConverter.ConvertToString(context.Language) == "Duration":
                         time = FloatValue.TryParse(value, context.Language);
                         break;
                 }

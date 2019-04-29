@@ -68,7 +68,7 @@ namespace WADV.Extensions {
                 if (i == width - 1) return new RectInt(0, 0, 0, 0);
             }
             // 从下到上（不超过上边界）、从左至右扫描，第一次发现非全透明像素时记为下边界，同时如果该像素纵坐标比左边界小则更新左边界，纵坐标比右边界大则更新右边界
-            for (var i = height + 1; --i >= borderTop;) {
+            for (var i = height; --i >= borderTop;) {
                 found = false;
                 for (var j = -1; ++j < width;) {
                     if (!pixels[i * width + j]) continue;
@@ -92,7 +92,7 @@ namespace WADV.Extensions {
                 if (found) break;
             }
             // 从右到左（小于右边界）、从上至下（上边界至下边界）扫描，第一次发现非全透明像素时记为右边界
-            for (var i = width + 1; --i > borderRight;) {
+            for (var i = width; --i > borderRight;) {
                 found = false;
                 for (var j = borderTop - 1; ++j <= borderBottom;) {
                     if (!pixels[j * width + i]) continue;
