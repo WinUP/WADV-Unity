@@ -57,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Game\ElementDebugger.cs" />
     <Compile Include="Assets\Game\RuntimeTester.cs" />
     <Compile Include="Assets\Game\UI\DialogueWindowShowHideListener.cs" />
     <Compile Include="Assets\Game\UI\InputBoxRenderer.cs" />
@@ -122,6 +123,7 @@
     <Compile Include="Assets\WADV\Plugins\Image\EffectValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImageCanvas.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImagePlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\ImageSiblingList.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImageValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ShowPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ShowPluginMessageIntegration.cs" />

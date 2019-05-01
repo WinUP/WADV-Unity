@@ -279,15 +279,16 @@ namespace WADV {
             switch (mode) {
                 case MixMode.AlphaMask:
                     result = origin;
-                    result.a = 1.0F - target.a;
+                    if (origin != Color.clear) {
+                        result.a = 1.0F - target.a;
+                    }
                     break;
-                case MixMode.ReversedAlphaMask:
+                case MixMode.RemoveMask:
                     result = origin;
                     result.a = target.a;
                     break;
                 default:
                     result = target * target.a + origin * (1.0F - target.a);
-                    result.a = origin.a.Equals(0) ? target.a : origin.a;
                     break;
             }
             return result;
@@ -297,7 +298,7 @@ namespace WADV {
             switch (mode) {
                 case MixMode.AlphaMask:
                     return _alphaMaskKernel;
-                case MixMode.ReversedAlphaMask:
+                case MixMode.RemoveMask:
                     return _reversedAlphaMaskKernel;
                 default:
                     return _overlayKernel;
@@ -317,9 +318,9 @@ namespace WADV {
             /// </summary>
             AlphaMask,
             /// <summary>
-            /// 不透明蒙版
+            /// 剔除重叠的可见区域
             /// </summary>
-            ReversedAlphaMask
+            RemoveMask
         }
     }
 }

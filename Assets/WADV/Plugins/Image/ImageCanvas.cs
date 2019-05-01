@@ -12,8 +12,7 @@ using WADV.Thread;
 namespace WADV.Plugins.Image {
     [RequireComponent(typeof(Canvas))]
     public class ImageCanvas : MonoMessengerBehaviour {
-        private readonly ImageList _images = new ImageList();
-        private readonly ImageList _tempImages = new ImageList();
+        private readonly ImageSiblingList _images = new ImageSiblingList();
         private static Texture2D _defaultTexture;
         private RectTransform _root;
 
@@ -35,7 +34,9 @@ namespace WADV.Plugins.Image {
             if (message.HasTag(ImageMessageIntegration.GetCanvasSize))
                 return Message<Vector2Int>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetCanvasSize, _root.rect.size.CeilToVector2Int());
             if (message.HasTag(ImageMessageIntegration.GetBindShader))
-                return Message<ComputeShader>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader, computeShader);
+                return computeShader == null
+                    ? message
+                    : Message<ComputeShader>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader, computeShader);
             if (message.HasTag(ImageMessageIntegration.UpdateInformation) && message is Message<ImageDisplayInformation[]> updateMessage) {
                 await UpdateImages(updateMessage.Content);
             } else if (message.HasTag(ImageMessageIntegration.ShowImage) && message is Message<ImageMessageIntegration.ShowImageContent> showMessage) {
@@ -48,7 +49,7 @@ namespace WADV.Plugins.Image {
 
         private async Task UpdateImages(ImageDisplayInformation[] images) {
             var length = images.Length;
-            var extraImages = new List<string>();
+            var extraImages = new Dictionary<string, GameObject>();
             var readingTasks = new List<Task>();
             for (var i = -1; ++i < length;) {
                 var image = images[i];
@@ -58,18 +59,20 @@ namespace WADV.Plugins.Image {
                         image.Transform?.ApplyTo(_images.Find(image.Name).GetComponent<RectTransform>());
                         break;
                     default:
-                        extraImages.Add(image.Name);
                         readingTasks.Add(image.Content.Texture.ReadTexture());
-                        CreateImageObject(image, true).GetComponent<RawImage>().color = Color.clear;
+                        var target = CreateImageObject(image, true);
+                        target.GetComponent<RawImage>().color = Color.clear;
+                        extraImages.Add(image.Name, target);
                         break;
                 }
             }
             await Dispatcher.WaitAll(readingTasks);
             await Dispatcher.NextUpdate();
             for (var i = -1; ++i < length;) {
-                if (extraImages.TryRemove(images[i].Name)) {
-                    images[i].displayMatrix = GetMatrix(_tempImages.Find(images[i].Name));
-                    DestroyTempImage(images[i].Name);
+                if (extraImages.ContainsKey(images[i].Name)) {
+                    var target = extraImages[images[i].Name];
+                    images[i].displayMatrix = GetMatrix(target);
+                    Destroy(target);
                 } else {
                     images[i].displayMatrix = GetMatrix(_images.Find(images[i].Name));
                 }
@@ -92,13 +95,13 @@ namespace WADV.Plugins.Image {
                 await content.Effect.PlayEffect(targets.Select(e => _images.Find(e).GetComponent<RawImage>()), null);
             }
             foreach (var target in targets) {
-                DestroyImage(target);
+                Destroy(_images.Remove(target));
             }
         }
 
         private async Task ShowImages(ImageMessageIntegration.ShowImageContent content) {
+            await Dispatcher.WaitAll(content.Images.Select(e => e.Content.Texture.ReadTexture()));
             if (content.Effect == null) {
-                await Dispatcher.WaitAll(content.Images.Select(e => e.Content.Texture.ReadTexture()));
                 foreach (var image in content.Images) {
                     if (image.Content.Texture.texture == null) continue;
                     if (_images.Contains(image.Name)) {
@@ -109,9 +112,7 @@ namespace WADV.Plugins.Image {
                 }
             } else {
                 var tasks = new List<Task>();
-                foreach (var image in content.Images) {
-                    await image.Content.Texture.ReadTexture();
-                    if (image.Content.Texture.texture == null) continue;
+                foreach (var image in content.Images.Where(e => e.Content.Texture.texture != null)) {
                     tasks.Add(_images.Contains(image.Name)
                         ? PlayOnExistedImage(image, content.Effect)
                         : PlayOnNewImage(image, content.Effect));
@@ -120,21 +121,13 @@ namespace WADV.Plugins.Image {
             }
         }
 
-        private void DestroyImage(string target) {
-            _images.Destroy(target);
-        }
-
-        private void DestroyTempImage(string target) {
-            _tempImages.Destroy(target);
-        }
-
         private GameObject CreateImageObject(ImageDisplayInformation image, bool isTemp = false) {
             var target = new GameObject(image.Name);
             target.AddComponent<RectTransform>();
             target.AddComponent<RawImage>();
             image.ApplyTo(target, _root);
-            var list = isTemp ? _tempImages : _images;
-            target.GetComponent<RectTransform>().SetSiblingIndex(list.Add(image.Name, target, image.layer));
+            var index = isTemp ? _images.Detect(image.layer) : _images.Add(image.Name, target, image.layer);
+            target.GetComponent<RectTransform>().SetSiblingIndex(index);
             return target;
         }
 
@@ -152,46 +145,6 @@ namespace WADV.Plugins.Image {
             await effect.PlayEffect(new[] {rawImage}, target.Content.Texture.texture);
             rawImage.texture = target.Content.Texture.texture;
             rawImage.material = null;
-        }
-        
-        private class ImageList {
-            private readonly Dictionary<string, GameObject> _imageIndex = new Dictionary<string, GameObject>();
-            private readonly List<(string Name, int Sibling)> _images = new List<(string, int)>();
-
-            public int Add(string name, GameObject target, int layer) {
-                if (_imageIndex.ContainsKey(name)) {
-                    Destroy(name);
-                }
-                _imageIndex.Add(name, target);
-                var result = (name, layer);
-                if (_images.Count == 0) {
-                    _images.Add(result);
-                    return 0;
-                }
-                // 鉴于大多数情况下图片数量最多也就几十张，为二分查找开空间不值得，可直接使用线性查找
-                var index = _images.FindIndex(e => e.Sibling > layer);
-                if (index < 0) {
-                    _images.Add(result);
-                    return _images.Count - 1;
-                }
-                _images.Insert(index, result);
-                return index;
-            }
-            
-            public GameObject Find(string name) {
-                return _imageIndex.TryGetValue(name, out var target) ? target : null;
-            }
-
-            public bool Contains(string name) {
-                return _imageIndex.ContainsKey(name);
-            }
-
-            public void Destroy(string name) {
-                if (!_imageIndex.TryGetValue(name, out var target)) return;
-                Object.Destroy(target);
-                _images.RemoveAt(_images.FindIndex(e => e.Name == name));
-                _imageIndex.Remove(name);
-            }
         }
     }
 }

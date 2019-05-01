@@ -42,6 +42,7 @@ namespace WADV.Plugins.Image {
             InitializeImage(images, layer);
             if (effect == null) {
                 await PlaceNewImages(images);
+                UpdateImageInfo(images);
                 CompletePlaceholder();
                 return new NullValue();
             }
@@ -59,12 +60,10 @@ namespace WADV.Plugins.Image {
             var overlayTransform = CreateOverlayTransform(displayArea.position);
             await PlaceOverlayCanvas(overlayName, overlayCanvas, overlayTransform, layer);
             await RemoveHiddenSeparateImages(names);
-            await PlayOverlayEffect(overlayName, targetCanvas, effect.Effect as SingleGraphicEffect, overlayTransform);
+            await PlayOverlayEffect(overlayName, targetCanvas, effect.Effect as SingleGraphicEffect, overlayTransform, layer);
             await PlaceNewImages(images);
             await RemoveOverlayImage(overlayName);
-            for (var i = -1; ++i < images.Length;) {
-                _images.Add(images[i].Name, images[i]);
-            }
+            UpdateImageInfo(images);
             CompletePlaceholder();
             return new NullValue();
         }
@@ -85,6 +84,18 @@ namespace WADV.Plugins.Image {
             _placeholder = null;
         }
 
+        private void AddImage(ref ImageValue currentImage, ref string currentName, ref TransformValue currentTransform, List<ImageDisplayInformation> images, PluginExecuteContext context) {
+            if (string.IsNullOrEmpty(currentName)) throw new MissingMemberException($"Unable to create show command: missing image name for {currentImage.ConvertToString(context.Language)}");
+            // ReSharper disable once AccessToModifiedClosure
+            var name = currentName;
+            var image = currentImage;
+            images.RemoveAll(e => e.Name == name || e.Content.EqualsWith(image, context.Language));
+            images.Add(new ImageDisplayInformation(currentName, currentImage, currentTransform == null ? null : (TransformValue) _defaultTransform.AddWith(currentTransform)));
+            currentName = null;
+            currentImage = null;
+            currentTransform = null;
+        }
+        
         private (ImageBindMode Mode, int Layer, EffectValue Effect, ImageDisplayInformation[] Images) AnalyseParameters(PluginExecuteContext context) {
             EffectValue effect = null;
             var bind = ImageBindMode.None;
@@ -93,15 +104,6 @@ namespace WADV.Plugins.Image {
             ImageValue currentImage = null;
             string currentName = null;
             TransformValue currentTransform = null;
-            void AddImage() {
-                if (string.IsNullOrEmpty(currentName)) throw new MissingMemberException($"Unable to create show command: missing image name for {currentImage.ConvertToString(context.Language)}");
-                // ReSharper disable once AccessToModifiedClosure
-                images.RemoveAll(e => e.Name == currentName || e.Content.EqualsWith(currentImage, context.Language));
-                images.Add(new ImageDisplayInformation(currentName, currentImage, currentTransform == null ? null : (TransformValue) _defaultTransform.AddWith(currentTransform)));
-                currentName = null;
-                currentImage = null;
-                currentTransform = null;
-            }
             foreach (var (key, value) in context.Parameters) {
                 switch (key) {
                     case EffectValue effectValue:
@@ -109,7 +111,7 @@ namespace WADV.Plugins.Image {
                         break;
                     case ImageValue imageValue:
                         if (currentImage != null) {
-                            AddImage();
+                            AddImage(ref currentImage, ref currentName, ref currentTransform, images, context);
                         }
                         currentImage = imageValue;
                         currentTransform = new TransformValue();
@@ -127,7 +129,7 @@ namespace WADV.Plugins.Image {
                                 effect = value is EffectValue effectValue ? effectValue : throw new ArgumentException($"Unable to create show command: effect {value} is not EffectValue");
                                 break;
                             case "Transform":
-                                currentTransform.AddWith(value);
+                                currentTransform = (TransformValue) currentTransform.AddWith(value);
                                 break;
                             case "Bind":
                                 if (value is NullValue) {
@@ -160,7 +162,7 @@ namespace WADV.Plugins.Image {
                 }
             }
             if (currentImage != null) {
-                AddImage();
+                AddImage(ref currentImage, ref currentName, ref currentTransform, images, context);
             }
             layer = layer ?? _defaultLayer;
             var list = images.ToArray();
@@ -171,6 +173,36 @@ namespace WADV.Plugins.Image {
             return (bind, layer.Value, effect, list);
         }
 
+        private ImageDisplayInformation[] FindPreBindImages(string[] names) {
+            if (!_images.Any()) return new ImageDisplayInformation[] { };
+            var layers = _images.Where(e => names.Contains(e.Key)).Select(e => e.Value.layer).ToArray();
+            if (!layers.Any()) return new ImageDisplayInformation[] { };
+            var minLayer = layers.Min();
+            var targets = _images.Where(e => e.Value.layer >= minLayer).Select(e => e.Value).ToArray();
+            for (var i = -1; ++i < targets.Length;) {
+                targets[i].status = names.Contains(targets[i].Name) ? ImageStatus.PrepareToHide : ImageStatus.OnScreen;
+            }
+            Array.Sort(targets, (x, y) => x.layer - y.layer);
+            return targets;
+        }
+        
+        private void UpdateImageInfo(IList<ImageDisplayInformation> images) {
+            for (var i = -1; ++i < images.Count;) {
+                if (_images.ContainsKey(images[i].Name)) {
+                    _images[images[i].Name] = images[i];
+                } else {
+                    _images.Add(images[i].Name, images[i]);
+                }
+            }
+        }
+        
+        private async Task RemoveHiddenSeparateImages(string[] names) {
+            if (!names.Any()) return;
+            var content = new ImageMessageIntegration.HideImageContent {Names = names};
+            await MessageService.ProcessAsync(Message<ImageMessageIntegration.HideImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.HideImage, content));
+            _images.RemoveAll(names);
+        }
+        
         private static async Task<Texture2D> BindImages(ImageDisplayInformation[] images) {
             if (images.Length == 0) return null;
             images = (await MessageService.ProcessAsync<ImageDisplayInformation[]>(
@@ -187,23 +219,12 @@ namespace WADV.Plugins.Image {
                 var pivot = new Vector2(images[i].Transform?.Get(TransformValue.PropertyName.PivotX) ?? 0.0F, images[i].Transform?.Get(TransformValue.PropertyName.PivotY) ?? 0.0F);
                 if (images[i].status == ImageStatus.OnScreen) {
                     if (i == 0) continue;
-                    canvas.DrawTexture(images[i].Content.Texture.texture, images[i].displayMatrix, images[i].Content.Color.value, pivot, Texture2DCombiner.MixMode.AlphaMask);
+                    canvas.DrawTexture(images[i].Content.Texture.texture, images[i].displayMatrix, images[i].Content.Color.value, pivot, Texture2DCombiner.MixMode.RemoveMask);
                 } else {
                     canvas.DrawTexture(images[i].Content.Texture.texture, images[i].displayMatrix, images[i].Content.Color.value, pivot);
                 }
             }
             return canvas.Combine();
-        }
-        
-        private ImageDisplayInformation[] FindPreBindImages(string[] names) {
-            if (!_images.Any()) return new ImageDisplayInformation[] { };
-            var minLayer = _images.Where(e => names.Contains(e.Key)).Select(e => e.Value.layer).Min();
-            var targets = _images.Where(e => e.Value.layer >= minLayer).Select(e => e.Value).ToArray();
-            for (var i = -1; ++i < targets.Length;) {
-                targets[i].status = names.Contains(targets[i].Name) ? ImageStatus.PrepareToHide : ImageStatus.OnScreen;
-            }
-            Array.Sort(targets, (x, y) => x.layer - y.layer);
-            return targets;
         }
         
         private static void InitializeImage(ImageDisplayInformation[] images, int layer) {
@@ -238,26 +259,18 @@ namespace WADV.Plugins.Image {
             return transform;
         }
 
-        private static async Task<string> PlaceOverlayCanvas(string name, Texture2D canvas, TransformValue transform, int layer) {
-            if (canvas == null) return null;
+        private static async Task PlaceOverlayCanvas(string name, Texture2D canvas, TransformValue transform, int layer) {
+            if (canvas == null) return;
             var content = new ImageMessageIntegration.ShowImageContent {
                 Images = new[] {new ImageDisplayInformation(name, new ImageValue {Texture = new Texture2DValue {texture = canvas}}, transform) {layer = layer, status = ImageStatus.PrepareToShow}}
             };
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
-            return name;
         }
-        
-        private async Task RemoveHiddenSeparateImages(string[] names) {
-            if (!names.Any()) return;
-            var content = new ImageMessageIntegration.HideImageContent {Names = names};
-            await MessageService.ProcessAsync(Message<ImageMessageIntegration.HideImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.HideImage, content));
-            _images.RemoveAll(names);
-        }
-        
-        private static async Task PlayOverlayEffect(string name, Texture2D target, SingleGraphicEffect effect, TransformValue transform) {
+
+        private static async Task PlayOverlayEffect(string name, Texture2D target, SingleGraphicEffect effect, TransformValue transform, int layer) {
             var content = new ImageMessageIntegration.ShowImageContent {
                 Effect = effect,
-                Images = new[] {new ImageDisplayInformation(name, new ImageValue {Texture = new Texture2DValue {texture = target}}, transform)}
+                Images = new[] {new ImageDisplayInformation(name, new ImageValue {Texture = new Texture2DValue {texture = target}}, transform) {layer = layer}}
             };
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
         }
