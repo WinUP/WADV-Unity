@@ -26,11 +26,11 @@ half4 BilinearInterpolation(float2 sourcePosition) {
 [numthreads(GROUP_SIZE_X, GROUP_SIZE_Y, 1)]
 void DrawTextureAlphaMask(uint3 id : SV_DispatchThreadID) {
     float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
-    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5, 0, 1.0)).xy - 0.5;
+    float2 sourcePosition = mul(Transform, float4(canvasPosition - 0.5, 0, 1.0)).xy;
     if (sourcePosition.x >= 0 && sourcePosition.x < Size.z && sourcePosition.y >=0 && sourcePosition.y < Size.w) {
         float4 originColor = Canvas[canvasPosition];
         float4 targetColor = BilinearInterpolation(sourcePosition) * Color;
-        originColor.a = targetColor.a;
+        originColor.a *= targetColor.a;
         Canvas[canvasPosition] = originColor;
     }
 }
@@ -38,12 +38,12 @@ void DrawTextureAlphaMask(uint3 id : SV_DispatchThreadID) {
 [numthreads(GROUP_SIZE_X, GROUP_SIZE_Y, 1)]
 void DrawTextureReversedAlphaMask(uint3 id : SV_DispatchThreadID) {
     float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
-    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5, 0, 1.0)).xy - 0.5;
+    float2 sourcePosition = mul(Transform, float4(canvasPosition - 0.5, 0, 1.0)).xy;
     if (sourcePosition.x >= 0 && sourcePosition.x < Size.z && sourcePosition.y >=0 && sourcePosition.y < Size.w) {
         float4 originColor = Canvas[canvasPosition];
         float4 targetColor = BilinearInterpolation(sourcePosition) * Color;
         if (any(originColor - float4(0, 0, 0, 0))) {
-            originColor.a = 1 - targetColor.a;
+            originColor.a *= 1 - targetColor.a;
         }
         Canvas[canvasPosition] = originColor;
     }
@@ -52,7 +52,7 @@ void DrawTextureReversedAlphaMask(uint3 id : SV_DispatchThreadID) {
 [numthreads(GROUP_SIZE_X, GROUP_SIZE_Y, 1)]
 void DrawTextureOverlay(uint3 id : SV_DispatchThreadID) {
     float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
-    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5, 0, 1.0)).xy - 0.5;
+    float2 sourcePosition = mul(Transform, float4(canvasPosition - 0.5, 0, 1.0)).xy;
     if (sourcePosition.x >= 0 && sourcePosition.x < Size.z && sourcePosition.y >=0 && sourcePosition.y < Size.w) {
         float4 originColor = Canvas[canvasPosition];
         float4 targetColor = BilinearInterpolation(sourcePosition) * Color;
@@ -63,7 +63,7 @@ void DrawTextureOverlay(uint3 id : SV_DispatchThreadID) {
 [numthreads(GROUP_SIZE_X, GROUP_SIZE_Y, 1)]
 void FillArea(uint3 id : SV_DispatchThreadID) {
     float2 canvasPosition = float2(id.x + Size.x, id.y + Size.y);
-    float2 sourcePosition = mul(Transform, float4(canvasPosition + 0.5, 0, 1.0)).xy - 0.5;
+    float2 sourcePosition = mul(Transform, float4(canvasPosition - 0.5, 0, 1.0)).xy;
     if (sourcePosition.x >= 0 && sourcePosition.x < Size.z && sourcePosition.y >=0 && sourcePosition.y < Size.w) {
         Canvas[canvasPosition] = Color;
     }

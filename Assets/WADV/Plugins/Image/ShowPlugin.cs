@@ -38,6 +38,9 @@ namespace WADV.Plugins.Image {
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var (mode, layer, effect, images) = AnalyseParameters(context);
             if (!images.Any()) return new NullValue();
+            if (_placeholder != null) {
+                await _placeholder;
+            }
             CreatePlaceholder();
             InitializeImage(images, layer);
             if (effect == null) {

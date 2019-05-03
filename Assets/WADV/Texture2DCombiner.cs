@@ -9,13 +9,11 @@ namespace WADV {
     public class Texture2DCombiner {
         public const string ShaderDrawTextureOverlayKernelName = "DrawTextureOverlay";
         public const string ShaderDrawTextureAlphaMaskKernelName = "DrawTextureAlphaMask";
-        public const string ShaderDrawTextureReversedAlphaMaskKernelName = "DrawTextureReversedAlphaMask";
+        public const string ShaderDrawTextureRemoveMaskKernelName = "DrawTextureReversedAlphaMask";
         public const string ShaderFillAreaKernelName = "FillArea";
         public static readonly int ShaderCanvasName = Shader.PropertyToID("Canvas");
         public static readonly int ShaderSizeName = Shader.PropertyToID("Size");
-        public static readonly int ShaderSourceSizeName = Shader.PropertyToID("SourceSize");
         public static readonly int ShaderSourceName = Shader.PropertyToID("Source");
-        public static readonly int ShaderPivotDistanceName = Shader.PropertyToID("PivotDistance");
         public static readonly int ShaderTransformName = Shader.PropertyToID("Transform");
         public static readonly int ShaderColorName = Shader.PropertyToID("Color");
 
@@ -42,7 +40,7 @@ namespace WADV {
                 _shader = shader;
                 _overlayKernel = _shader.FindKernel(ShaderDrawTextureOverlayKernelName);
                 _alphaMaskKernel = _shader.FindKernel(ShaderDrawTextureAlphaMaskKernelName);
-                _reversedAlphaMaskKernel = _shader.FindKernel(ShaderDrawTextureReversedAlphaMaskKernelName);
+                _reversedAlphaMaskKernel = _shader.FindKernel(ShaderDrawTextureRemoveMaskKernelName);
                 _fillKernel = _shader.FindKernel(ShaderFillAreaKernelName);
                 shader.SetTexture(_overlayKernel, ShaderCanvasName, _renderCanvas);
                 shader.SetTexture(_alphaMaskKernel, ShaderCanvasName, _renderCanvas);
@@ -109,7 +107,7 @@ namespace WADV {
                 var areaY = area.yMax;
                 for (var i = area.y - 1; ++i < areaY;) {
                     for (var j = area.x - 1; ++j < areaX;) {
-                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) + InterpolationOffset) - InterpolationOffset;
+                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) - InterpolationOffset);
                         if (!position.x.InRange(0, width) || !position.y.InRange(0, height)) continue;
                         var canvasPixelIndex = j - area.x + (i - area.y) * area.width;
                         var origin = canvasPixels[canvasPixelIndex];
@@ -181,7 +179,7 @@ namespace WADV {
                 var areaY = area.yMax;
                 for (var i = area.y - 1; ++i < areaY;) {
                     for (var j = area.x - 1; ++j < areaX;) {
-                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) + InterpolationOffset) - InterpolationOffset;
+                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) - InterpolationOffset);
                         if (!position.x.InRange(0, width) || !position.y.InRange(0, height)) continue;
                         canvasPixels[j - area.x + (i - area.y) * area.width] = targetColor;
                     }
@@ -277,15 +275,15 @@ namespace WADV {
         private static Color MixColor(in Color origin, in Color target, MixMode mode) {
             Color result;
             switch (mode) {
-                case MixMode.AlphaMask:
-                    result = origin;
-                    if (origin != Color.clear) {
-                        result.a = 1.0F - target.a;
-                    }
-                    break;
                 case MixMode.RemoveMask:
                     result = origin;
-                    result.a = target.a;
+                    if (origin != Color.clear) {
+                        result.a *= 1.0F - target.a;
+                    }
+                    break;
+                case MixMode.AlphaMask:
+                    result = origin;
+                    result.a *= target.a;
                     break;
                 default:
                     result = target * target.a + origin * (1.0F - target.a);

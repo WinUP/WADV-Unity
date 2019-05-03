@@ -3,14 +3,18 @@
 @Tsubasa = [Image Source='Resources://tubasa37i']
 @TsubasaTransform = [Transform PositionX=100 PositionY=-350]
 
-[Show Bind=Minimal Layer=100 @Tomo Name=Tomo PositionX=0 PositionY=-350]
+[Show Layer=0 [Image Source='Resources://Classroom 2'] Name=Background PositionX=0 PositionY=0]
 
-[Show Bind=Minimal Layer=200 @Tsubasa Name=Tsubasa Transform=@TsubasaTransform]
+[Show Layer=100 @Tomo Name=Tomo PositionX=0 PositionY=-350]
 
-[Show Bind=Minimal Layer=300 @Tomo Name=Tomo2 PositionX=200 PositionY=-350]
+[Show Layer=200 @Tsubasa Name=Tsubasa Transform=@TsubasaTransform]
+
+[Show Layer=300 @Tomo Name=Tomo2 PositionX=200 PositionY=-350]
 
 [Pause 2.0]
 
 [Show @Effect Bind=Minimal Layer=200 @Tomo Name=Tsubasa Transform=@TsubasaTransform]
+
+[Pause 2.0]
 
 [Show @Effect Bind=Canvas Layer=100 @Tomo Name=Tomo PositionX=400 PositionY=-350 @Tsubasa Name=Tsubasa PositionX=0 PositionY=-350]
