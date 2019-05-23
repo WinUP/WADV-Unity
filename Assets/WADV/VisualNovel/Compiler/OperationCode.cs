@@ -22,7 +22,7 @@ namespace WADV.VisualNovel.Compiler {
         /// </summary>
         LDC_I4_2,
         /// <summary>
-        /// 入栈32位整数3）
+        /// 入栈32位整数3
         /// <para>格式：<code>03</code></para>
         /// </summary>
         LDC_I4_3,

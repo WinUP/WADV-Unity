@@ -58,24 +58,24 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             return new ScopeValue {entrance = entrance, scriptId = scriptId, parentScope = parentScope, LocalVariables = LocalVariables.Clone()};
         }
 
-        public override Task BeforeDump(DumpRuntimeIntent.TaskLists tasks) {
+        public override Task OnDump(DumpRuntimeIntent.TaskLists tasks) {
             foreach (var (_, value) in LocalVariables) {
-                tasks.AddBeforeDump(value);
+                tasks.OnDump(value);
             }
             if (parentScope != null) {
-                tasks.AddBeforeDump(parentScope);
+                tasks.OnDump(parentScope);
             }
-            return base.BeforeDump(tasks);
+            return base.OnDump(tasks);
         }
 
-        public override Task BeforeRead(DumpRuntimeIntent.TaskLists tasks) {
+        public override Task OnRead(DumpRuntimeIntent.TaskLists tasks) {
             foreach (var (_, value) in LocalVariables) {
-                tasks.AddBeforeRead(value);
+                tasks.OnRead(value);
             }
             if (parentScope != null) {
-                tasks.AddBeforeRead(parentScope);
+                tasks.OnRead(parentScope);
             }
-            return base.BeforeRead(tasks);
+            return base.OnRead(tasks);
         }
 
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {

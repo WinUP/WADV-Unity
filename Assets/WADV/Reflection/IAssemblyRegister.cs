@@ -11,6 +11,6 @@ namespace WADV.Reflection {
         /// </summary>
         /// <param name="target">目标类型</param>
         /// <param name="info">类型的静态注册信息</param>
-        void RegisterType(Type target, [CanBeNull] StaticRegistrationInfo info);
+        void RegisterType(Type target, [CanBeNull] StaticRegistrationInfoAttribute info);
     }
 }

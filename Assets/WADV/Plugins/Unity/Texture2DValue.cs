@@ -72,7 +72,7 @@ namespace WADV.Plugins.Unity {
             info.AddValue("t", texture != null && !string.IsNullOrEmpty(source));
         }
 
-        public override async Task BeforeRead(DumpRuntimeIntent.TaskLists tasks) {
+        public override async Task OnRead(DumpRuntimeIntent.TaskLists tasks) {
             if (ReloadedList.Contains(this)) {
                 ReloadedList.Remove(this);
                 await ReadTexture();

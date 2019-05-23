@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -71,6 +72,47 @@ namespace WADV.Extensions {
         /// <returns></returns>
         public static IEnumerable<(T Item, int Index)> WithIndex<T>(this IEnumerable<T> e) {
             return e.Select((item, index) => (item, index));
+        }
+
+        public static IEnumerable<T?> AsNullable<T>(this IEnumerable<T> e) where T : struct {
+            return new NullableEnumerator<T>(e.GetEnumerator());
+        }
+
+        private class NullableEnumerator<T> : IEnumerable<T?>, IEnumerator<T?> where T : struct {
+            private readonly IEnumerator<T> _original;
+            
+            public NullableEnumerator(IEnumerator<T> original) {
+                _original = original;
+                _original.Reset();
+            }
+            
+            public bool MoveNext() {
+                var result = _original.MoveNext();
+                if (result) {
+                    Current = _original.Current;
+                }
+                return result;
+            }
+
+            public void Reset() {
+                _original.Reset();
+            }
+
+            public T? Current { get; private set; }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() {
+                _original.Dispose();
+            }
+
+            public IEnumerator<T?> GetEnumerator() {
+                return this;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() {
+                return GetEnumerator();
+            }
         }
     }
 }

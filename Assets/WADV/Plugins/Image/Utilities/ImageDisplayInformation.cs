@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
 using WADV.Plugins.Unity;
+using WADV.Plugins.UnityUI;
 
 namespace WADV.Plugins.Image.Utilities {
     [Serializable]

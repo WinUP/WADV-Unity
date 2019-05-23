@@ -67,7 +67,7 @@ namespace WADV.Plugins.Unity {
         /// </summary>
         /// <param name="name">属性名称</param>
         /// <param name="value">属性值</param>
-        public void Set(PropertyName name, float? value) {
+        public TransformValue Set(PropertyName name, float? value) {
             if (value.HasValue) {
                 _data[(int) name] = value.Value;
                 _hasData[(int) name] = true;
@@ -75,6 +75,7 @@ namespace WADV.Plugins.Unity {
                 _data[(int) name] = default;
                 _hasData[(int) name] = false;
             }
+            return this;
         }
 
         /// <summary>

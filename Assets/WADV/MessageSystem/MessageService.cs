@@ -26,7 +26,7 @@ namespace WADV.MessageSystem {
         public static async Task<Message> ProcessAsync(Message message) {
             VerifyWaitingTasks(message);
             foreach (var (_, receiver) in Receivers) {
-                if ((receiver.Mask & message.Mask) == 0) {
+                if (receiver == null || (receiver.Mask & message.Mask) == 0) {
                     continue;
                 }
                 if (receiver.IsStandaloneMessage) {

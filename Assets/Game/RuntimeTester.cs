@@ -22,7 +22,7 @@ namespace Game {
             var title = new StringValue {value = "输入姓和名（空格隔开）"};
             var defaultText = new StringValue {value = "诹访部 翔平"};
             var confirmText = new StringValue {value = "继续"};
-            var context = PluginExecuteContext.Create(new ScriptRuntime("Utilities"));
+            var context = PluginExecuteContext.Create(new ScriptRuntime("Utilities"), "Input");
             var message = await MessageService.ProcessAsync(ContextMessage<InputPlugin.MessageIntegration.Content>.Create(
                                                                 InputPlugin.MessageIntegration.Mask,
                                                                 InputPlugin.MessageIntegration.CreateInput,

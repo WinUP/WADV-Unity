@@ -20,11 +20,21 @@ namespace WADV.VisualNovel.Interoperation {
         [NotNull]
         public abstract SerializableValue Clone();
 
-        public virtual Task BeforeDump(DumpRuntimeIntent.TaskLists tasks) {
+        /// <summary>
+        /// 转储该值前的准备工作
+        /// </summary>
+        /// <param name="tasks">转储管理器等待任务列表</param>
+        /// <returns></returns>
+        public virtual Task OnDump(DumpRuntimeIntent.TaskLists tasks) {
             return Task.CompletedTask;
         }
 
-        public virtual Task BeforeRead(DumpRuntimeIntent.TaskLists tasks) {
+        /// <summary>
+        /// 从转储文件读取该值后的额外工作
+        /// </summary>
+        /// <param name="tasks">转储管理器等待任务列表</param>
+        /// <returns></returns>
+        public virtual Task OnRead(DumpRuntimeIntent.TaskLists tasks) {
             return Task.CompletedTask;
         }
     }

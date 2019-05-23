@@ -123,10 +123,28 @@ namespace WADV.Extensions {
             return new Rect(value.x, value.y, value.width, value.height);
         }
 
+        /// <summary>
+        /// 最大化为普通矩形
+        /// <para>此操作会将矩形的四个顶点向中心反方向扩展至最近的整数值</para>
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <returns></returns>
         public static RectInt MaximizeToRectInt(this Rect value) {
             var x = value.x < 0 ? Mathf.FloorToInt(value.x) : Mathf.CeilToInt(value.x);
             var y = value.y < 0 ? Mathf.FloorToInt(value.y) : Mathf.CeilToInt(value.y);
             return new RectInt(x, y, Mathf.CeilToInt(value.width), Mathf.CeilToInt(value.height));
+        }
+        
+        /// <summary>
+        /// 最小化为普通矩形
+        /// <para>此操作会将矩形的四个顶点向中心方向缩小至最近的整数值</para>
+        /// </summary>
+        /// <param name="value">当前矩形</param>
+        /// <returns></returns>
+        public static RectInt MinimizeToRectInt(this Rect value) {
+            var x = value.x < 0 ? Mathf.CeilToInt(value.x) : Mathf.FloorToInt(value.x);
+            var y = value.y < 0 ? Mathf.CeilToInt(value.y) : Mathf.FloorToInt(value.y);
+            return new RectInt(x, y, Mathf.FloorToInt(value.width), Mathf.FloorToInt(value.height));
         }
         
         /// <summary>

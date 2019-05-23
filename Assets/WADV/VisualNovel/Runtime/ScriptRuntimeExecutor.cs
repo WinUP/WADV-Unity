@@ -340,16 +340,16 @@ namespace WADV.VisualNovel.Runtime {
             Script.ReadOperationCode();
         }
         
-        private IVisualNovelPlugin FindPlugin() {
+        private (IVisualNovelPlugin Plugin, string Name) FindPlugin() {
             var pluginName = PopString();
             if (string.IsNullOrEmpty(pluginName)) throw new RuntimeException(_callStack, "Unable to find plugin: expected string name");
             var plugin = PluginManager.Find(pluginName);
             if (plugin == null) throw new RuntimeException(_callStack, $"Unable to find plugin: expected plugin {pluginName} not existed");
-            return plugin;
+            return (plugin, pluginName);
         }
         
         private async Task CreatePluginCall() {
-            var plugin = FindPlugin();
+            var (plugin, name) = FindPlugin();
             var parameterCount = ((IIntegerConverter) MemoryStack.Pop()).ConvertToInteger(ActiveLanguage);
             var parameters = new List<KeyValuePair<SerializableValue, SerializableValue>>();
             for (var i = -1; ++i < parameterCount;) {
@@ -357,7 +357,7 @@ namespace WADV.VisualNovel.Runtime {
                     MemoryStack.Pop() ?? new NullValue(), MemoryStack.Pop() ?? new NullValue()));
             }
             parameters.Reverse();
-            var context = PluginExecuteContext.Create(this, parameters);
+            var context = PluginExecuteContext.Create(this, name, parameters);
             try {
                 MemoryStack.Push(await plugin.Execute(context) ?? new NullValue());
             } catch (Exception ex) {
@@ -370,7 +370,7 @@ namespace WADV.VisualNovel.Runtime {
             if (plugin == null) {
                 throw new RuntimeException(_callStack, "Unable to create dialogue: no dialogue plugin registered");
             }
-            MemoryStack.Push(await plugin.Execute(PluginExecuteContext.Create(this, new List<KeyValuePair<SerializableValue, SerializableValue>> {
+            MemoryStack.Push(await plugin.Execute(PluginExecuteContext.Create(this, "Dialogue", new List<KeyValuePair<SerializableValue, SerializableValue>> {
                 new KeyValuePair<SerializableValue, SerializableValue>(new StringValue {value = "Character"}, MemoryStack.Pop()),
                 new KeyValuePair<SerializableValue, SerializableValue>(new StringValue {value = "Content"}, MemoryStack.Pop())
             })) ?? new NullValue());
@@ -516,16 +516,16 @@ namespace WADV.VisualNovel.Runtime {
 
         private async Task Load() {
             ScriptRuntime runtime;
-            if (_loadingScript == null) {
+            if (LoadingTarget == null) {
                 var scriptId = PopString();
                 if (string.IsNullOrEmpty(scriptId)) throw new RuntimeException(_callStack, $"Unable to load script: script id {scriptId} is not string value");
-                runtime = new ScriptRuntime(scriptId, _callStack) {ActiveLanguage = ActiveLanguage};
-                _loadingScript = runtime;
+                runtime = new ScriptRuntime(scriptId, _callStack) {_activeLanguage = _activeLanguage};
+                LoadingTarget = runtime;
             } else {
-                runtime = _loadingScript;
+                runtime = LoadingTarget;
             }
             await runtime.ExecuteScript();
-            _loadingScript = null;
+            LoadingTarget = null;
             var result = new ObjectValue();
             foreach (var (name, value) in runtime.Exported) {
                 result.Add(new StringValue {value = name}, value);

@@ -55,12 +55,12 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             return new ReferenceValue {IsConstant = IsConstant, ReferenceTarget = ReferenceTarget.Clone()};
         }
 
-        public override Task BeforeDump(DumpRuntimeIntent.TaskLists tasks) {
-            return ReferenceTarget == null ? Task.CompletedTask : ReferenceTarget.BeforeDump(tasks);
+        public override Task OnDump(DumpRuntimeIntent.TaskLists tasks) {
+            return ReferenceTarget == null ? Task.CompletedTask : ReferenceTarget.OnDump(tasks);
         }
 
-        public override Task BeforeRead(DumpRuntimeIntent.TaskLists tasks) {
-            return ReferenceTarget == null ? Task.CompletedTask : ReferenceTarget.BeforeRead(tasks);
+        public override Task OnRead(DumpRuntimeIntent.TaskLists tasks) {
+            return ReferenceTarget == null ? Task.CompletedTask : ReferenceTarget.OnRead(tasks);
         }
         
         public string ConvertToString(string language = TranslationManager.DefaultLanguage) {

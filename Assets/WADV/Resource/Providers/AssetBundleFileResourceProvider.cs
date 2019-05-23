@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -10,7 +11,7 @@ namespace WADV.Resource.Providers {
     /// 基于文件的AssetBundle资源提供器
     /// </summary>
     public class AssetBundleFileResourceProvider : IResourceProvider, IDynamicRegistrationTarget {
-        public string RegistrationName { get; }
+        public StaticRegistrationInfoAttribute[] RegistrationInfo { get; }
         
         private readonly string _fileName;
         [CanBeNull] private AssetBundle _assetBundle;
@@ -20,10 +21,10 @@ namespace WADV.Resource.Providers {
         /// 创建一个AssetBundle资源提供器
         /// </summary>
         /// <param name="fileName">文件路径</param>
-        /// <param name="name">注册名</param>
-        public AssetBundleFileResourceProvider(string fileName, string name) {
+        /// <param name="names">注册名</param>
+        public AssetBundleFileResourceProvider(string fileName, params string[] names) {
             _fileName = fileName;
-            RegistrationName = name;
+            RegistrationInfo = names.Select(e => new StaticRegistrationInfoAttribute(e)).ToArray();
         }
         
         /// <inheritdoc />

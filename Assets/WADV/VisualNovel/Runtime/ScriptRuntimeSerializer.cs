@@ -15,7 +15,7 @@ namespace WADV.VisualNovel.Runtime {
             Exported = (Dictionary<string, SerializableValue>) info.GetValue("exported", typeof(Dictionary<string, SerializableValue>));
             _callStack = (CallStack) info.GetValue("callstack", typeof(CallStack));
             _historyScope = (Stack<ScopeValue>) info.GetValue("history", typeof(Stack<ScopeValue>));
-            _loadingScript = (ScriptRuntime) info.GetValue("loading", typeof(ScriptRuntime));
+            LoadingTarget = (ScriptRuntime) info.GetValue("loading", typeof(ScriptRuntime));
             ActiveScope = (ScopeValue) info.GetValue("scope", typeof(ScopeValue));
             if (ActiveScope != null) {
                 Script = ScriptFile.LoadSync(ActiveScope.scriptId);
@@ -36,7 +36,7 @@ namespace WADV.VisualNovel.Runtime {
             if (ActiveScope != null) {
                 info.AddValue("offset", Script.CurrentPosition);
             }
-            info.AddValue("loading", _loadingScript);
+            info.AddValue("loading", LoadingTarget);
         }
     }
 }

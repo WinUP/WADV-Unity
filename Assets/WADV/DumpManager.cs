@@ -20,14 +20,17 @@ namespace WADV {
             intent.runtime = runtime;
             intent = (await MessageService.ProcessAsync<DumpRuntimeIntent>(Message<DumpRuntimeIntent>.Create(CoreConstant.Mask, CoreConstant.DumpRuntime, intent))).Content;
             var tasks = new DumpRuntimeIntent.TaskLists();
-            foreach (var value in intent.runtime.MemoryStack) {
-                tasks.AddBeforeDump(value);
-            }
-            foreach (var (_, value) in intent.runtime.Exported) {
-                tasks.AddBeforeDump(value);
-            }
-            if (intent.runtime.ActiveScope != null) {
-                tasks.AddBeforeDump(intent.runtime.ActiveScope);
+            while (runtime != null) {
+                foreach (var value in runtime.MemoryStack) {
+                    tasks.OnDump(value);
+                }
+                foreach (var (_, value) in runtime.Exported) {
+                    tasks.OnDump(value);
+                }
+                if (runtime.ActiveScope != null) {
+                    tasks.OnDump(runtime.ActiveScope);
+                }
+                runtime = runtime.LoadingTarget;
             }
             await tasks.WaitAll();
             var serializer = new BinaryFormatter();
@@ -45,14 +48,18 @@ namespace WADV {
             var deserializer = new BinaryFormatter();
             var intent = (DumpRuntimeIntent) deserializer.Deserialize(new MemoryStream(data));
             var tasks = new DumpRuntimeIntent.TaskLists();
-            foreach (var value in intent.runtime.MemoryStack) {
-                tasks.AddBeforeRead(value);
-            }
-            foreach (var (_, value) in intent.runtime.Exported) {
-                tasks.AddBeforeRead(value);
-            }
-            if (intent.runtime.ActiveScope != null) {
-                tasks.AddBeforeRead(intent.runtime.ActiveScope);
+            var runtime = intent.runtime;
+            while (runtime != null) {
+                foreach (var value in runtime.MemoryStack) {
+                    tasks.OnRead(value);
+                }
+                foreach (var (_, value) in runtime.Exported) {
+                    tasks.OnRead(value);
+                }
+                if (runtime.ActiveScope != null) {
+                    tasks.OnRead(runtime.ActiveScope);
+                }
+                runtime = runtime.LoadingTarget;
             }
             await tasks.WaitAll();
             await MessageService.ProcessAsync(Message<DumpRuntimeIntent>.Create(CoreConstant.Mask, CoreConstant.DumpRuntime, intent));

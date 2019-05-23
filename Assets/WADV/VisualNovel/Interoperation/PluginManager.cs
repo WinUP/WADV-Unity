@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using JetBrains.Annotations;
 using WADV.Extensions;
+using WADV.MessageSystem;
 using WADV.Reflection;
 
 namespace WADV.VisualNovel.Interoperation {
@@ -12,6 +13,8 @@ namespace WADV.VisualNovel.Interoperation {
     public static class PluginManager {
         private static readonly Dictionary<string, IVisualNovelPlugin> Plugins = new Dictionary<string, IVisualNovelPlugin>();
 
+        public static LinkedTreeNode<IMessenger> ListenerRoot { get; } = MessageService.Receivers.CreateChild(null, 100);
+        
         static PluginManager() {
             AssemblyRegister.Load(Assembly.GetExecutingAssembly());
         }
@@ -32,13 +35,14 @@ namespace WADV.VisualNovel.Interoperation {
         /// </summary>
         /// <param name="plugin">要注册的插件</param>
         public static void Register([NotNull] IVisualNovelPlugin plugin) {
-            var name = AssemblyRegister.GetName(plugin.GetType(), plugin);
-            if (Plugins.ContainsKey(name)) {
-                plugin.OnUnregister(true);
-                Plugins.Remove(name);
+            foreach (var name in AssemblyRegister.GetInfo(plugin.GetType(), plugin)) {
+                if (Plugins.ContainsKey(name.Name)) {
+                    plugin.OnUnregister(true);
+                    Plugins.Remove(name.Name);
+                }
+                plugin.OnRegister();
+                Plugins.Add(name.Name, plugin);
             }
-            plugin.OnRegister();
-            Plugins.Add(name, plugin);
         }
 
         /// <summary>
@@ -46,10 +50,11 @@ namespace WADV.VisualNovel.Interoperation {
         /// </summary>
         /// <param name="plugin">要注销的插件</param>
         public static void Unregister(IVisualNovelPlugin plugin) {
-            var name = AssemblyRegister.GetName(plugin.GetType(), plugin);
-            if (!Plugins.ContainsKey(name)) return;
-            plugin.OnUnregister(false);
-            Plugins.Remove(name);
+            foreach (var name in AssemblyRegister.GetInfo(plugin.GetType(), plugin)) {
+                if (!Plugins.ContainsKey(name.Name)) continue;
+                plugin.OnUnregister(false);
+                Plugins.Remove(name.Name);
+            }
         }
 
         /// <summary>
@@ -72,7 +77,7 @@ namespace WADV.VisualNovel.Interoperation {
         
         [UsedImplicitly]
         private class AutoRegister : IAssemblyRegister {
-            public void RegisterType(Type target, StaticRegistrationInfo info) {
+            public void RegisterType(Type target, StaticRegistrationInfoAttribute info) {
                 if (target.HasInterface(typeof(IVisualNovelPlugin))) {
                     Register((IVisualNovelPlugin) Activator.CreateInstance(target));
                 }

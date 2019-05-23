@@ -10,6 +10,10 @@ namespace WADV.VisualNovel.Interoperation {
     /// </summary>
     public class PluginExecuteContext {
         /// <summary>
+        /// 插件命令
+        /// </summary>
+        public string CommandName { get; private set; }
+        /// <summary>
         /// 获取执行环境
         /// </summary>
         public ScriptRuntime Runtime { get; private set; }
@@ -37,19 +41,21 @@ namespace WADV.VisualNovel.Interoperation {
         /// 创建一个插件执行上下文
         /// </summary>
         /// <param name="runtime">执行环境</param>
+        /// <param name="commandName">插件命令</param>
         /// <returns></returns>
-        public static PluginExecuteContext Create(ScriptRuntime runtime) {
-            return new PluginExecuteContext(new List<KeyValuePair<SerializableValue, SerializableValue>>()) {Runtime = runtime};
+        public static PluginExecuteContext Create(ScriptRuntime runtime, string commandName) {
+            return new PluginExecuteContext(new List<KeyValuePair<SerializableValue, SerializableValue>>()) {Runtime = runtime, CommandName = commandName};
         }
 
         /// <summary>
         /// 插件执行上下文
         /// </summary>
         /// <param name="runtime">执行环境</param>
+        /// <param name="commandName">插件命令</param>
         /// <param name="parameters">参数列表</param>
         /// <returns></returns>
-        public static PluginExecuteContext Create(ScriptRuntime runtime, List<KeyValuePair<SerializableValue, SerializableValue>> parameters) {
-            return new PluginExecuteContext(parameters) {Runtime = runtime};
+        public static PluginExecuteContext Create(ScriptRuntime runtime, string commandName, List<KeyValuePair<SerializableValue, SerializableValue>> parameters) {
+            return new PluginExecuteContext(parameters) {Runtime = runtime, CommandName = commandName};
         }
 
         /// <summary>

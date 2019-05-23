@@ -38,6 +38,11 @@ namespace WADV.VisualNovel.Runtime {
         public Dictionary<string, SerializableValue> Exported { get; } = new Dictionary<string, SerializableValue>();
 
         /// <summary>
+        /// 记录LOAD指令正在处理的目标运行环境
+        /// </summary>
+        [CanBeNull] public ScriptRuntime LoadingTarget { get; private set; }
+        
+        /// <summary>
         /// 获取或设置当前激活的语言
         /// </summary>
         public string ActiveLanguage {
@@ -55,6 +60,10 @@ namespace WADV.VisualNovel.Runtime {
                         throw new RuntimeException(_callStack, $"Unable to change language: message was modified to non-string type during broadcast");
                 }
                 Script.UseTranslation(_activeLanguage).Wait();
+                if (LoadingTarget != null) {
+                    LoadingTarget._activeLanguage = _activeLanguage;
+                    LoadingTarget.Script.UseTranslation(_activeLanguage).Wait();
+                }
                 MessageService.Process(Message<ChangeLanguageIntent>.Create(CoreConstant.Mask, CoreConstant.LanguageChange, new ChangeLanguageIntent {Runtime = this, NewLanguage = _activeLanguage}));
             }
         }
@@ -75,10 +84,6 @@ namespace WADV.VisualNovel.Runtime {
         /// 记录用于停止执行的主线程占位符
         /// </summary>
         [CanBeNull] private MainThreadPlaceholder _stopRequest;
-        /// <summary>
-        /// 记录LOAD指令正在处理的目标运行环境
-        /// </summary>
-        [CanBeNull] private ScriptRuntime _loadingScript;
 
         /// <summary>
         /// 新建一个脚本运行环境

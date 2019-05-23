@@ -18,7 +18,6 @@ namespace WADV {
         public static readonly int ShaderColorName = Shader.PropertyToID("Color");
 
         private static readonly bool SupportsComputeShaders = SystemInfo.supportsComputeShaders;
-        private static readonly Vector2 InterpolationOffset = new Vector2(0.5F, 0.5F);
         private readonly ComputeShader _shader;
         private readonly RenderTexture _renderCanvas;
         private readonly Texture2D _canvas;
@@ -107,7 +106,7 @@ namespace WADV {
                 var areaY = area.yMax;
                 for (var i = area.y - 1; ++i < areaY;) {
                     for (var j = area.x - 1; ++j < areaX;) {
-                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) - InterpolationOffset);
+                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i));
                         if (!position.x.InRange(0, width) || !position.y.InRange(0, height)) continue;
                         var canvasPixelIndex = j - area.x + (i - area.y) * area.width;
                         var origin = canvasPixels[canvasPixelIndex];
@@ -179,7 +178,7 @@ namespace WADV {
                 var areaY = area.yMax;
                 for (var i = area.y - 1; ++i < areaY;) {
                     for (var j = area.x - 1; ++j < areaX;) {
-                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i) - InterpolationOffset);
+                        var position = (Vector2) transform.MultiplyPoint(new Vector2(j, i));
                         if (!position.x.InRange(0, width) || !position.y.InRange(0, height)) continue;
                         canvasPixels[j - area.x + (i - area.y) * area.width] = targetColor;
                     }
@@ -252,10 +251,10 @@ namespace WADV {
             var u = position.x - (int) position.x;
             var v = position.y - (int) position.y;
             if (u.Equals(0) && v.Equals(0)) return pixels[(int) position.y * width + (int) position.x];
-            var topLeft = pixels[Math.Min((int) position.y + 1, height) * width + (int) position.x];
+            var topLeft = pixels[Math.Min((int) position.y + 1, height - 1) * width + (int) position.x];
             var bottomLeft = pixels[(int) position.y * width + (int) position.x];
-            var topRight = pixels[Math.Min((int) position.y + 1, height) * width + Math.Min((int) position.x + 1, width)];
-            var bottomRight = pixels[(int) position.y * width + Math.Min((int) position.x + 1, width)];
+            var topRight = pixels[Math.Min((int) position.y + 1, height - 1) * width + Math.Min((int) position.x + 1, width - 1)];
+            var bottomRight = pixels[(int) position.y * width + Math.Min((int) position.x + 1, width - 1)];
             return v * (u * topRight + (1 - u) * topLeft) + (1 - v) * (u * bottomRight + (1 - u) * bottomLeft);
         }
         

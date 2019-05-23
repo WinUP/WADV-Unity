@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using JetBrains.Annotations;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace WADV.Extensions {

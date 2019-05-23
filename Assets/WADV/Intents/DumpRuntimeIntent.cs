@@ -93,12 +93,12 @@ namespace WADV.Intents {
         public class TaskLists {
             private readonly Dictionary<SerializableValue, Task> _tasks = new Dictionary<SerializableValue, Task>();
 
-            public void AddBeforeDump(SerializableValue value) {
-                _tasks.Add(value, value.BeforeDump(this));
+            public void OnDump(SerializableValue value) {
+                _tasks.Add(value, value.OnDump(this));
             }
 
-            public void AddBeforeRead(SerializableValue value) {
-                _tasks.Add(value, value.BeforeRead(this));
+            public void OnRead(SerializableValue value) {
+                _tasks.Add(value, value.OnRead(this));
             }
 
             public Task WaitAll() {

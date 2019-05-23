@@ -27,11 +27,11 @@ namespace WADV.Reflection {
         public static void Load(Assembly assembly) {
             if (LoadedAssemblies.Contains(assembly.FullName)) return;
             LoadedAssemblies.Add(assembly.FullName);
-            var targets = new List<(Type Item, StaticRegistrationInfo Information)>();
-            foreach (var item in assembly.GetTypes().Where(e => e.IsClass && !e.IsAbstract && e.GetCustomAttribute<StaticRegistrationInfo>() != null)) {
-                var info = item.GetCustomAttribute<StaticRegistrationInfo>();
+            var targets = new List<(Type Item, StaticRegistrationInfoAttribute Information)>();
+            foreach (var item in assembly.GetTypes().Where(e => e.IsClass && !e.IsAbstract && e.GetCustomAttribute<StaticRegistrationInfoAttribute>() != null)) {
+                var info = item.GetCustomAttribute<StaticRegistrationInfoAttribute>();
                 if (targets.Any()) {
-                    var index = targets.FindIndex(e => e.Information.Priority <= info.Priority);
+                    var index = targets.FindIndex(e => e.Information.Priority > info.Priority);
                     if (index < 0) {
                         targets.Add((item, info));
                     } else {
@@ -54,10 +54,12 @@ namespace WADV.Reflection {
         /// <param name="target">对象类型</param>
         /// <param name="instance">对象实例</param>
         /// <returns></returns>
-        public static string GetName(Type target, [CanBeNull] object instance = null) {
-            if (instance != null && instance is IDynamicRegistrationTarget dynamicRegisterTarget) return dynamicRegisterTarget.RegistrationName;
-            var description = target.GetCustomAttribute<StaticRegistrationInfo>();
-            return description == null ? target.Name : description.Name;
+        public static StaticRegistrationInfoAttribute[] GetInfo(Type target, [CanBeNull] object instance = null) {
+            if (instance != null && instance is IDynamicRegistrationTarget dynamicRegisterTarget) return dynamicRegisterTarget.RegistrationInfo;
+            var descriptions = target.GetCustomAttributes<StaticRegistrationInfoAttribute>().ToArray();
+            return descriptions.Length == 0
+                ? new[] {new StaticRegistrationInfoAttribute(target.Name)}
+                : descriptions.ToArray();
         }
     }
 }

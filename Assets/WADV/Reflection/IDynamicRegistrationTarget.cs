@@ -6,6 +6,6 @@ namespace WADV.Reflection {
         /// <summary>
         /// 类型注册名
         /// </summary>
-        string RegistrationName { get; }
+        StaticRegistrationInfoAttribute[] RegistrationInfo { get; }
     }
 }

@@ -42,9 +42,10 @@ namespace WADV.Resource {
         /// </summary>
         /// <param name="plugin">要注册的提供器</param>
         public static void Register([NotNull] IResourceProvider plugin) {
-            var name = AssemblyRegister.GetName(plugin.GetType(), plugin);
-            Providers.TryRemove(name);
-            Providers.Add(name, plugin);
+            foreach (var name in AssemblyRegister.GetInfo(plugin.GetType(), plugin)) {
+                Providers.TryRemove(name.Name);
+                Providers.Add(name.Name, plugin);
+            }
         }
         
         /// <summary>
@@ -52,8 +53,9 @@ namespace WADV.Resource {
         /// </summary>
         /// <param name="plugin">要注销的提供器</param>
         public static void Unregister(IResourceProvider plugin) {
-            var name = AssemblyRegister.GetName(plugin.GetType(), plugin);
-            Providers.TryRemove(name);
+            foreach (var name in AssemblyRegister.GetInfo(plugin.GetType(), plugin)) {
+                Providers.TryRemove(name.Name);
+            }
         }
         
         /// <summary>
@@ -138,7 +140,7 @@ namespace WADV.Resource {
         }
         
         private class AutoRegister : IAssemblyRegister {
-            public void RegisterType(Type target, StaticRegistrationInfo info) {
+            public void RegisterType(Type target, StaticRegistrationInfoAttribute info) {
                 if (target.HasInterface(typeof(IResourceProvider))) {
                     Register((IResourceProvider) Activator.CreateInstance(target));
                 }

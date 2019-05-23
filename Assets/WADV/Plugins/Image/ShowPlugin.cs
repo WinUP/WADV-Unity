@@ -6,9 +6,10 @@ using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Extensions;
 using WADV.MessageSystem;
-using WADV.Plugins.Image.Effects;
+using WADV.Plugins.Effect;
 using WADV.Plugins.Image.Utilities;
 using WADV.Plugins.Unity;
+using WADV.Plugins.UnityUI;
 using WADV.Reflection;
 using WADV.Thread;
 using WADV.VisualNovel.Interoperation;
@@ -33,6 +34,7 @@ namespace WADV.Plugins.Image {
             _defaultTransform.Set(TransformValue.PropertyName.AnchorMaxY, 0);
             _defaultTransform.Set(TransformValue.PropertyName.PivotX, 0);
             _defaultTransform.Set(TransformValue.PropertyName.PivotY, 0);
+            PluginManager.ListenerRoot.CreateChild(this);
         }
 
         public async Task<SerializableValue> Execute(PluginExecuteContext context) {
@@ -45,16 +47,61 @@ namespace WADV.Plugins.Image {
             InitializeImage(images, layer);
             if (effect == null) {
                 await PlaceNewImages(images);
-                UpdateImageInfo(images);
-                CompletePlaceholder();
-                return new NullValue();
-            }
-            if (mode == ImageBindMode.None) {
-                // TODO: Images separate display
+                UpdateImageList(images);
                 CompletePlaceholder();
                 return new NullValue();
             }
             var names = images.Select(e => e.Name).ToArray();
+            if (mode == ImageBindMode.None) {
+                var existedImages = await UpdateImageInfo(_images.Where(e => names.Contains(e.Key)).Select(e => e.Value).ToArray());
+                images = await UpdateImageInfo(images);
+                await Dispatcher.WaitAll(images.Select(e => e.Content.Texture.ReadTexture()));
+                var targets = existedImages.Length == 0
+                    ? images.Select(e => (Previous: (ImageDisplayInformation?) null, Target: e)).ToArray()
+                    : (from image in images
+                       join e in existedImages.AsNullable() on image.Name equals e?.Name into tempImages
+                       from r in tempImages.DefaultIfEmpty()
+                       select (Previous: r, Target: image)).ToArray();
+                var finalImages = new List<ImageDisplayInformation>();
+                for (var i = -1; ++i < targets.Length;) {
+                    var (previous, target) = targets[i];
+                    if (previous.HasValue && previous.Value.Content.Texture.texture != null && target.Content.Texture.texture != null) {
+                        var texture = previous.Value.Content.Texture.texture;
+                        var previousRect = previous.Value.displayMatrix.MultiplyRect(new Rect(0, 0, texture.width, texture.height));
+                        texture = target.Content.Texture.texture;
+                        var targetRect = target.displayMatrix.MultiplyRect(new Rect(0, 0, texture.width, texture.height));
+                        var canvasSize = previousRect.MergeWith(targetRect).MaximizeToRectInt();
+                        var shader = await GetCombinerShader();
+                        var combiner = new Texture2DCombiner(canvasSize.width, canvasSize.height, shader);
+                        var drawingMatrix = previous.Value.displayMatrix;
+                        drawingMatrix.SetTranslation(previousRect.position - canvasSize.position);
+                        combiner.DrawTexture(previous.Value.Content.Texture.texture, drawingMatrix);
+                        var canvasTransform = new TransformValue()
+                            .Set(TransformValue.PropertyName.PositionX, canvasSize.xMin)
+                            .Set(TransformValue.PropertyName.PositionY, canvasSize.yMin);
+                        await PlaceOverlayCanvas(previous.Value.Name, combiner.Combine(), canvasTransform, previous.Value.layer);
+                        combiner = new Texture2DCombiner(canvasSize.width, canvasSize.height, shader);
+                        drawingMatrix = target.displayMatrix;
+                        drawingMatrix.SetTranslation(targetRect.position - canvasSize.position);
+                        combiner.DrawTexture(target.Content.Texture.texture, drawingMatrix);
+                        finalImages.Add(new ImageDisplayInformation(target.Name, new ImageValue {
+                            Uv = target.Content.Uv,
+                            Color = target.Content.Color,
+                            Texture = new Texture2DValue {texture = combiner.Combine()}
+                        }, canvasTransform) {
+                            layer = target.layer,
+                            status = ImageStatus.PrepareToShow
+                        });
+                    } else {
+                        finalImages.Add(target);
+                    }
+                }
+                await PlaceNewImages(finalImages.ToArray(), effect.Effect as SingleGraphicEffect);
+                await PlaceNewImages(images);
+                UpdateImageList(images);
+                CompletePlaceholder();
+                return new NullValue();
+            }
             var overlayCanvas = await BindImages(FindPreBindImages(names));
             var targetCanvas = await BindImages(images);
             RectInt displayArea;
@@ -66,7 +113,7 @@ namespace WADV.Plugins.Image {
             await PlayOverlayEffect(overlayName, targetCanvas, effect.Effect as SingleGraphicEffect, overlayTransform, layer);
             await PlaceNewImages(images);
             await RemoveOverlayImage(overlayName);
-            UpdateImageInfo(images);
+            UpdateImageList(images);
             CompletePlaceholder();
             return new NullValue();
         }
@@ -189,16 +236,17 @@ namespace WADV.Plugins.Image {
             return targets;
         }
         
-        private void UpdateImageInfo(IList<ImageDisplayInformation> images) {
-            for (var i = -1; ++i < images.Count;) {
-                if (_images.ContainsKey(images[i].Name)) {
-                    _images[images[i].Name] = images[i];
+        private void UpdateImageList(ImageDisplayInformation[] images) {
+            for (var i = -1; ++i < images.Length;) {
+                ref var image = ref images[i];
+                if (_images.ContainsKey(image.Name)) {
+                    _images[image.Name] = image;
                 } else {
-                    _images.Add(images[i].Name, images[i]);
+                    _images.Add(image.Name, image);
                 }
             }
         }
-        
+
         private async Task RemoveHiddenSeparateImages(string[] names) {
             if (!names.Any()) return;
             var content = new ImageMessageIntegration.HideImageContent {Names = names};
@@ -206,16 +254,24 @@ namespace WADV.Plugins.Image {
             _images.RemoveAll(names);
         }
         
-        private static async Task<Texture2D> BindImages(ImageDisplayInformation[] images) {
-            if (images.Length == 0) return null;
-            images = (await MessageService.ProcessAsync<ImageDisplayInformation[]>(
-                Message<ImageDisplayInformation[]>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.UpdateInformation, images))).Content;
-            var canvasSize = (await MessageService.ProcessAsync<Vector2Int>(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetCanvasSize))).Content;
-            if (canvasSize.x == 0 && canvasSize.y == 0) throw new NotSupportedException("Unable to create show command: image canvas size must not be 0");
-            var shader = SystemInfo.supportsComputeShaders
+        private static async Task<ImageDisplayInformation[]> UpdateImageInfo(ImageDisplayInformation[] images) {
+            return (await MessageService.ProcessAsync<ImageDisplayInformation[]>(
+                Message<ImageDisplayInformation[]>.Create(
+                    ImageMessageIntegration.Mask, ImageMessageIntegration.UpdateInformation, images))).Content;
+        }
+
+        private static async Task<ComputeShader> GetCombinerShader() {
+            return SystemInfo.supportsComputeShaders
                 ? (await MessageService.ProcessAsync(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetBindShader)) as Message<ComputeShader>)?.Content
                 : null;
-            var canvas = new Texture2DCombiner(canvasSize.x, canvasSize.y, shader);
+        }
+        
+        private static async Task<Texture2D> BindImages(ImageDisplayInformation[] images) {
+            if (images.Length == 0) return null;
+            images = await UpdateImageInfo(images);
+            var canvasSize = (await MessageService.ProcessAsync<Vector2Int>(Message.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.GetCanvasSize))).Content;
+            if (canvasSize.x == 0 && canvasSize.y == 0) throw new NotSupportedException("Unable to create show command: image canvas size must not be 0");
+            var canvas = new Texture2DCombiner(canvasSize.x, canvasSize.y, await GetCombinerShader());
             for (var i = -1; ++i < images.Length;) {
                 await images[i].Content.Texture.ReadTexture();
                 if (images[i].Content.Texture.texture == null) continue;
@@ -232,12 +288,13 @@ namespace WADV.Plugins.Image {
         
         private static void InitializeImage(ImageDisplayInformation[] images, int layer) {
             for (var i = -1; ++i < images.Length;) {
-                images[i].status = ImageStatus.PrepareToShow;
-                images[i].layer = layer;
+                ref var image = ref images[i];
+                image.status = ImageStatus.PrepareToShow;
+                image.layer = layer;
             }
         }
 
-        private static (Texture2D Overlay, Texture2D Target, RectInt Area) CutDisplayArea(RectInt displayArea, Texture2D overlay, Texture2D target, ImageBindMode mode) {
+        private static (Texture2D Overlay, Texture2D Target, RectInt Area) CutDisplayArea(in RectInt displayArea, Texture2D overlay, Texture2D target, ImageBindMode mode) {
             if (mode != ImageBindMode.Minimal) return (overlay, target, displayArea);
             RectInt actualArea;
             if (overlay == null) {
@@ -248,7 +305,7 @@ namespace WADV.Plugins.Image {
             return actualArea.Equals(displayArea) ? (overlay, target, actualArea) : (overlay.Cut(actualArea), target.Cut(actualArea), actualArea);
         }
 
-        private static TransformValue CreateOverlayTransform(Vector2Int position) {
+        private static TransformValue CreateOverlayTransform(in Vector2Int position) {
             var transform = new TransformValue();
             transform.Set(TransformValue.PropertyName.PositionX, position.x);
             transform.Set(TransformValue.PropertyName.PositionY, position.y);
@@ -278,8 +335,8 @@ namespace WADV.Plugins.Image {
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
         }
 
-        private static async Task PlaceNewImages(ImageDisplayInformation[] images) {
-            var content = new ImageMessageIntegration.ShowImageContent {Images = images};
+        private static async Task PlaceNewImages(ImageDisplayInformation[] images, SingleGraphicEffect effect = null) {
+            var content = new ImageMessageIntegration.ShowImageContent {Images = images, Effect = effect};
             await MessageService.ProcessAsync(Message<ImageMessageIntegration.ShowImageContent>.Create(ImageMessageIntegration.Mask, ImageMessageIntegration.ShowImage, content));
             for (var i = -1; ++i < images.Length;) {
                 images[i].status = ImageStatus.OnScreen;

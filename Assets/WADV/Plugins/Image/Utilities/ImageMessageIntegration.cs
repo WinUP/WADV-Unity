@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using WADV.Plugins.Image.Effects;
+using WADV.Plugins.Effect;
 
 namespace WADV.Plugins.Image.Utilities {
     public static class ImageMessageIntegration {
@@ -17,6 +17,10 @@ namespace WADV.Plugins.Image.Utilities {
         public const string GetCanvasSize = "GET_CANVAS_SIZE";
 
         public const string GetBindShader = "GET_BIND_SHADER";
+
+        public const string PlayEffect = "PLAY_EFFECT";
+
+        public const string StopEffect = "STOP_EFFECT";
         
         public struct ShowImageContent {
             [CanBeNull] public SingleGraphicEffect Effect;
@@ -27,6 +31,12 @@ namespace WADV.Plugins.Image.Utilities {
         public struct HideImageContent {
             [CanBeNull] public SingleGraphicEffect Effect;
 
+            public string[] Names;
+        }
+
+        public struct PlayEffectContent {
+            public GraphicEffect Effect;
+            
             public string[] Names;
         }
     }
