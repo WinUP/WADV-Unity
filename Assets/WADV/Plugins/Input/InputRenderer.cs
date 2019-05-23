@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using WADV.Intents;
 using WADV.MessageSystem;
-using WADV.VisualNovel.Plugin;
+using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Input {
     /// <inheritdoc />
@@ -44,7 +44,7 @@ namespace WADV.Plugins.Input {
         
         /// <inheritdoc />
         public override async Task<Message> Receive(Message message) {
-             if (!_isShowing && message.HasTag(InputPlugin.MessageIntegration.CreateInput) && message is ContextMessage<InputPlugin.MessageIntegration.Content> inputMessage) {
+            if (!_isShowing && message.HasTag(InputPlugin.MessageIntegration.CreateInput) && message is ContextMessage<InputPlugin.MessageIntegration.Content> inputMessage) {
                 _isShowing = true;
                 QuickCacheMessage(inputMessage);
                 SetText(inputMessage.Context, inputMessage.Content);
@@ -53,11 +53,12 @@ namespace WADV.Plugins.Input {
                 await Hide();
                 PopQuickCacheMessage();
                 _isShowing = false;
-                return Message<string>.Create(Text, InputPlugin.MessageIntegration.Mask);
-            } else if (_isShowing && message.HasTag(CoreConstant.LanguageChange) && message is Message<ChangeLanguageIntent> languageMessage) {
-                 inputMessage = PeekQuickCacheMessage<ContextMessage<InputPlugin.MessageIntegration.Content>>();
-                 if (inputMessage == null || inputMessage.Context.Runtime != languageMessage.Content.Runtime) return message;
-                 SetText(inputMessage.Context, inputMessage.Content);
+                return Message<string>.Create(InputPlugin.MessageIntegration.Mask, null, Text);
+            }
+            if (_isShowing && message.HasTag(CoreConstant.LanguageChange) && message is Message<ChangeLanguageIntent> languageMessage) {
+                inputMessage = PeekQuickCacheMessage<ContextMessage<InputPlugin.MessageIntegration.Content>>();
+                if (inputMessage == null || inputMessage.Context.Runtime != languageMessage.Content.Runtime) return message;
+                SetText(inputMessage.Context, inputMessage.Content);
             }
             return message;
         }

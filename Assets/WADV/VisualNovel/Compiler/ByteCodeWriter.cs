@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using WADV.Extensions;
-using WADV.VisualNovel.Translation;
 using JetBrains.Annotations;
+using WADV.Translation;
 
 namespace WADV.VisualNovel.Compiler {
     /// <summary>

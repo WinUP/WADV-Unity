@@ -1,16 +1,33 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using WADV.Extensions;
 using WADV.VisualNovel.Interoperation;
 using JetBrains.Annotations;
+using WADV.Intents;
+using WADV.Translation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
+    /// <inheritdoc cref="IStringConverter" />
     /// <summary>
     /// <para>表示一个作用域内存值</para>
     /// <list type="bullet">
-    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>对偏移值使用值复制</description></item>
+    ///     <item><description>对其他部分使用引用复制</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>自有数据字节量</description></listheader>
+    ///     <item><description>8 字节</description></item>
+    ///     <item><description>1 字符串</description></item>
+    ///     <item><description>2 ObjectId</description></item>
+    ///     <item><description>1 引用关联的WADV.VisualNovel.Runtime.Utilities.ScopeValue</description></item>
+    ///     <item><description>1 引用关联的System.Collections.Generic.Dictionary&lt;string, WADV.VisualNovel.Runtime.Utilities.ReferenceValue&gt;</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>字符串转换器</description></item>
     /// </list>
     /// </summary>
@@ -19,37 +36,50 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// <summary>
         /// 获取或设置偏移量
         /// </summary>
-        public long Entrance { get; set; }
-        
+        public long entrance;
+
         /// <summary>
         /// 获取或设置目标脚本ID
         /// </summary>
-        public string ScriptId { get; set; }
-        
+        public string scriptId;
+
         /// <summary>
         /// 获取或设置父函数
         /// </summary>
         [CanBeNull]
-        public ScopeValue ParentScope { get; set; }
+        public ScopeValue parentScope;
         
         /// <summary>
         /// 获取局部变量列表
         /// </summary>
         public Dictionary<string, ReferenceValue> LocalVariables { get; private set; } = new Dictionary<string, ReferenceValue>();
         
-        /// <inheritdoc />
-        public override SerializableValue Duplicate() {
-            return new ScopeValue {Entrance = Entrance, ScriptId = ScriptId, ParentScope = ParentScope, LocalVariables = LocalVariables.Duplicate()};
+        public override SerializableValue Clone() {
+            return new ScopeValue {entrance = entrance, scriptId = scriptId, parentScope = parentScope, LocalVariables = LocalVariables.Clone()};
         }
 
-        /// <inheritdoc />
-        public string ConvertToString() {
-            return $"ScopeValue {{ScriptId = {ScriptId}, Entrance = {Entrance}}}";
+        public override Task OnDump(DumpRuntimeIntent.TaskLists tasks) {
+            foreach (var (_, value) in LocalVariables) {
+                tasks.OnDump(value);
+            }
+            if (parentScope != null) {
+                tasks.OnDump(parentScope);
+            }
+            return base.OnDump(tasks);
         }
-        
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
-            return ConvertToString();
+
+        public override Task OnRead(DumpRuntimeIntent.TaskLists tasks) {
+            foreach (var (_, value) in LocalVariables) {
+                tasks.OnRead(value);
+            }
+            if (parentScope != null) {
+                tasks.OnRead(parentScope);
+            }
+            return base.OnRead(tasks);
+        }
+
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
+            return $"ScopeValue {{ScriptId = {scriptId}, Entrance = 0x{Convert.ToString(entrance, 16)}}}";
         }
 
         public override string ToString() {
@@ -82,7 +112,7 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             }
             var result = items.Where(e => e.Key == name).ToList();
             if (result.Any()) return (result.First().Value, this);
-            return includeParent ? ParentScope?.FindVariableAndScope(name, true, mode) : null;
+            return includeParent ? parentScope?.FindVariableAndScope(name, true, mode) : null;
         }
 
         /// <summary>
@@ -107,8 +137,8 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         [CanBeNull]
         public T FindVariableValue<T>(string name, bool includeParent, VariableSearchMode mode) where T : SerializableValue {
             var variable = FindVariable(name, includeParent, mode);
-            if (variable == null || variable.Value.GetType() != typeof(T)) return null;
-            return (T) variable.Value;
+            if (variable == null || variable.ReferenceTarget.GetType() != typeof(T)) return null;
+            return (T) variable.ReferenceTarget;
         }
     }
 }

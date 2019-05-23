@@ -26,7 +26,7 @@ namespace WADV.MessageSystem {
         public static async Task<Message> ProcessAsync(Message message) {
             VerifyWaitingTasks(message);
             foreach (var (_, receiver) in Receivers) {
-                if ((receiver.Mask & message.Mask) == 0) {
+                if (receiver == null || (receiver.Mask & message.Mask) == 0) {
                     continue;
                 }
                 if (receiver.IsStandaloneMessage) {
@@ -40,9 +40,21 @@ namespace WADV.MessageSystem {
             }
             return message;
         }
+        
+        /// <summary>
+        /// 异步处理消息并验证广播结果的类型
+        /// </summary>
+        /// <param name="message">要处理的消息</param>
+        /// <returns></returns>
+        public static async Task<Message<T>> ProcessAsync<T>(Message message) {
+            var result = await ProcessAsync(message);
+            if (!(result is Message<T> target)) throw new NotSupportedException($"Unable to process message: required type {typeof(T).FullName} is not acceptable for broadcast result");
+            return target;
+        }
 
         /// <summary>
         /// 同步处理消息
+        /// <para>这会在当前帧执行并等待监听器，因此请务必在一帧之内完成逻辑</para>
         /// </summary>
         /// <param name="message">要处理的消息</param>
         /// <returns></returns>
@@ -50,6 +62,18 @@ namespace WADV.MessageSystem {
             var task = ProcessAsync(message).WrapErrors();
             task.Wait();
             return task.GetAwaiter().GetResult();
+        }
+        
+        /// <summary>
+        /// 同步处理消息
+        /// <para>这会在当前帧执行并等待监听器，因此请务必在一帧之内完成逻辑</para>
+        /// </summary>
+        /// <param name="message">要处理的消息</param>
+        /// <returns></returns>
+        public static Message<T> Process<T>(Message message) {
+            var result = Process(message);
+            if (!(result is Message<T> target)) throw new NotSupportedException($"Unable to process message: required type {typeof(T).FullName} is not acceptable for broadcast result");
+            return target;
         }
 
         /// <summary>

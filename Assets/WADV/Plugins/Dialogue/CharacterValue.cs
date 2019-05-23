@@ -1,4 +1,5 @@
 using System;
+using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
 
 namespace WADV.Plugins.Dialogue {
@@ -16,38 +17,28 @@ namespace WADV.Plugins.Dialogue {
         /// <summary>
         /// 获取或设置角色名称
         /// </summary>
-        public IStringConverter Name { get; set; }
-            
+        public IStringConverter name;
+
         /// <summary>
         /// 获取或设置角色头像资源路径
         /// </summary>
-        public IStringConverter Avatar { get; set; }
+        public IStringConverter avatar;
             
         /// <inheritdoc />
-        public override SerializableValue Duplicate() {
-            return new CharacterValue {Name = Name, Avatar = Avatar};
+        public override SerializableValue Clone() {
+            return new CharacterValue {name = name, avatar = avatar};
         }
 
         /// <inheritdoc />
-        public string ConvertToString() {
-            return Name.ConvertToString();
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
+            return name.ConvertToString(language);
         }
 
         /// <inheritdoc />
-        public string ConvertToString(string language) {
-            return Name.ConvertToString(language);
-        }
-
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target) {
+        public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
             return target is CharacterValue characterValue
-                   && characterValue.Name.ConvertToString() == Name.ConvertToString()
-                   && characterValue.Avatar.ConvertToString() == Avatar.ConvertToString();
-        }
-
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target, string language) {
-            return EqualsWith(target);
+                   && characterValue.name.ConvertToString(language) == name.ConvertToString(language)
+                   && characterValue.avatar.ConvertToString(language) == avatar.ConvertToString(language);
         }
     }
 }

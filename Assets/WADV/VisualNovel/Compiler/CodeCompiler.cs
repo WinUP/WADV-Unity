@@ -4,8 +4,8 @@ using System.IO;
 using System.Text;
 using WADV.Extensions;
 using WADV.VisualNovel.ScriptStatus;
-using WADV.VisualNovel.Translation;
 using UnityEngine;
+using WADV.Translation;
 
 namespace WADV.VisualNovel.Compiler {
     /// <summary>
@@ -43,20 +43,20 @@ namespace WADV.VisualNovel.Compiler {
                 throw new NullReferenceException($"Cannot compile {path}: target outside of source folder or target is not acceptable script/binary");
             var changedFiles = new List<string>();
             var source = File.ReadAllText(path, Encoding.UTF8).UnifyLineBreak();
-            if (!option.Hash.HasValue) {
-                option.Hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source));
+            if (!option.hash.HasValue) {
+                option.hash = Hasher.Crc32(Encoding.UTF8.GetBytes(source));
             }
-            var identifier = new CodeIdentifier {Id = option.Id, Hash = option.Hash.Value};
+            var identifier = new CodeIdentifier {Id = option.id, Hash = option.hash.Value};
             // 编译文件
             if (!forceCompile) {
-                if (option.RecordedHash.HasValue && option.RecordedHash.Value == identifier.Hash) {
+                if (option.recordedHash.HasValue && option.recordedHash.Value == identifier.Hash) {
                     return new string[] { }; // 如果源代码内容没有变化则直接跳过编译
                 }
             }
             var (content, defaultTranslation) = CompileCode(source, identifier);
             var binaryFile = option.BinaryAssetPath();
             File.WriteAllBytes(binaryFile, content);
-            option.RecordedHash = option.Hash = identifier.Hash;
+            option.recordedHash = option.hash = identifier.Hash;
             changedFiles.Add(binaryFile);
             // 处理其他翻译
             foreach (var (language, _) in option.Translations) {

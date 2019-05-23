@@ -1,7 +1,7 @@
 using System.Linq;
 using WADV.Extensions;
+using WADV.Translation;
 using WADV.VisualNovel.Compiler.Expressions;
-using WADV.VisualNovel.Translation;
 
 namespace WADV.VisualNovel.Compiler {
     /// <summary>
@@ -100,7 +100,7 @@ namespace WADV.VisualNovel.Compiler {
                                 break;
                             case OperatorType.LogicNotEqualsTo:
                                 context.File.OperationCode(OperationCode.EQL, binaryExpression.Position);
-                                context.File.OperationCode(OperationCode.NOT, binaryExpression.Position);
+                                context.File.OperationCode(OperationCode.NEG, binaryExpression.Position);
                                 break;
                         }
                     }
@@ -116,13 +116,17 @@ namespace WADV.VisualNovel.Compiler {
                 case ConditionExpression conditionExpression: // 协同处理ConditionContentExpression
                     var conditionEndLabel = context.NextLabelId;
                     var conditionNextLabel = context.NextLabelId;
-                    foreach (var branch in conditionExpression.Contents) {
+                    var conditionCount = conditionExpression.Contents.Count;
+                    for (var i = -1; ++i < conditionCount;) {
+                        var branch = conditionExpression.Contents[i];
                         context.File.CreateLabel(conditionNextLabel);
-                        conditionNextLabel = context.NextLabelId;
+                        if (i < conditionCount - 1) {
+                            conditionNextLabel = context.NextLabelId;
+                        }
                         Generate(context, branch.Condition);
                         context.File.OperationCode(OperationCode.BVAL, branch.Position);
                         context.File.OperationCode(OperationCode.BF, branch.Position);
-                        context.File.Write7BitEncodedInteger(conditionNextLabel);
+                        context.File.Write7BitEncodedInteger(i == conditionCount - 1 ? conditionEndLabel : conditionNextLabel);
                         Generate(context, branch.Body);
                         context.File.OperationCode(OperationCode.BR, branch.Body.Position);
                         context.File.Write7BitEncodedInteger(conditionEndLabel);
@@ -217,7 +221,7 @@ namespace WADV.VisualNovel.Compiler {
                     break;
                 case LogicNotExpression logicNotExpression:
                     Generate(context, logicNotExpression.Content);
-                    context.File.OperationCode(OperationCode.NOT, logicNotExpression.Position);
+                    context.File.OperationCode(OperationCode.NEG, logicNotExpression.Position);
                     break;
                 case LoopExpression loopExpression:
                     var loopStartLabel = context.NextLabelId;

@@ -69,21 +69,21 @@ namespace WADV.Plugins.Dialogue.Renderer {
 
         /// <inheritdoc />
         public override async Task<Message> Receive(Message message) {
-            if (message.HasTag(DialoguePlugin.MessageIntegration.NewDialogue) && message is ContextMessage<DialoguePlugin.MessageIntegration.Content> dialogueMessage) {
+            if (message.HasTag(DialoguePlugin.MessageIntegration.NewDialogue) && message is ContextMessage<DialoguePlugin.MessageIntegration.Content> _) {
                 if (HasQuickCachePlaceholder()) {
                     await WaitCachedPlaceholder();
                 }
                 QuickCacheMessage(message);
                 QuickCachePlaceholder(message.CreatePlaceholder());
-                await ProcessText(dialogueMessage.Context.Runtime.ActiveLanguage);
+                await ProcessText();
                 PopQuickCacheMessage();
                 CompleteCachedPlaceholder();
-            } else if (HasQuickCacheMessage() && message.HasTag(CoreConstant.LanguageChange) && message is Message<string> languageMessage) {
+            } else if (HasQuickCacheMessage() && message.HasTag(CoreConstant.LanguageChange) && message is Message<string> _) {
                 if (HasQuickCachePlaceholder()) {
                     await WaitCachedPlaceholder();
                 }
                 QuickCachePlaceholder(message.CreatePlaceholder());
-                await ProcessText(languageMessage.Content);
+                await ProcessText();
                 CompleteCachedPlaceholder();
             } else if (State == RenderState.Rendering && message.HasTag(DialoguePlugin.MessageIntegration.FinishContentWaiting)) {
                 _quickMode = true;
@@ -91,11 +91,10 @@ namespace WADV.Plugins.Dialogue.Renderer {
             return message;
         }
 
-        private async Task ProcessText(string language) {
-            var dialogue = PopQuickCacheMessage<ContextMessage<DialoguePlugin.MessageIntegration.Content>>();
-            QuickCacheMessage(dialogue);
+        private async Task ProcessText() {
+            var dialogue = PeekQuickCacheMessage<ContextMessage<DialoguePlugin.MessageIntegration.Content>>();
             if (dialogue == null) return;
-            var (content, noWait, noClear) = DialoguePlugin.CreateDialogueContent(dialogue.Context.Runtime, dialogue.Content.Text, language);
+            var (content, noWait, noClear) = DialoguePlugin.CreateDialogueContent(dialogue.Context.Runtime, dialogue.Content.Text);
             var history = noClear ? CurrentText : null;
             if (_generator == null) {
                 ResetGenerator(textGenerator);

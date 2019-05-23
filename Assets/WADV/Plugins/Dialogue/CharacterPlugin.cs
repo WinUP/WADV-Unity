@@ -1,20 +1,23 @@
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Extensions;
+using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Plugin;
 
 namespace WADV.Plugins.Dialogue {
     /// <inheritdoc />
     /// <summary>
     /// <para>用于生成角色描述的插件</para>
     /// </summary>
-    [UsedImplicitly]
-    public class CharacterPlugin : VisualNovelPlugin {
-        public CharacterPlugin() : base("Character") { }
+    [StaticRegistrationInfo("Character")]
+    public class CharacterPlugin : IVisualNovelPlugin {
+        /// <inheritdoc />
+        public void OnRegister() { }
+
+        /// <inheritdoc />
+        public void OnUnregister(bool isReplace) { }
         
-        public override Task<SerializableValue> Execute(PluginExecuteContext context) {
+        public Task<SerializableValue> Execute(PluginExecuteContext context) {
             var character = new CharacterValue();
             foreach (var (key, value) in context.StringParameters) {
                 var stringValue = value as IStringConverter;
@@ -23,14 +26,14 @@ namespace WADV.Plugins.Dialogue {
                         if (stringValue == null) {
                             Debug.LogWarning($"Skip parameter Name when creating Character: {value} is not string value");
                         } else {
-                            character.Name = stringValue;
+                            character.name = stringValue;
                         }
                         break;
                     case "Avatar":
                         if (stringValue == null) {
                             Debug.LogWarning($"Skip parameter Avatar when creating Character: {value} is not string value");
                         } else {
-                            character.Avatar = stringValue;
+                            character.avatar = stringValue;
                         }
                         break;
                     default:

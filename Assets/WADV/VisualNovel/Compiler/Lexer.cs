@@ -63,6 +63,26 @@ namespace WADV.VisualNovel.Compiler {
                         position = position.MoveColumn(offset);
                     }
                     file.MoveToNext(); // 换行符处理结束后移动游标一位以对应CodePosition
+                    
+                    // 如果去掉空白后行以#开头则表示带角色描述的快速对话。快速对话中不能使用可编程语法，也不能中途换行，直接解析至行尾即可。
+                    if (file.Current == '#') {
+                        file.MoveToNext();
+                        position = position.NextColumn();
+                        var nextSpace = file.IndexOf(' ');
+                        var lineBreak = file.IndexOf('\n');
+                        if (nextSpace < 0 || nextSpace > lineBreak) { // 对话内容不能为空
+                            throw new CompileException(identifier, position, "Unable to create quick dialogue: dialogue starts with character must has content");
+                        }
+                        if (file.Current == ' ') { // 角色描述不能为空
+                            throw new CompileException(identifier, position, "Unable to create quick dialogue: dialogue starts with character must has character definition");
+                        }
+                        tokens.Add(new StringToken(TokenType.DialogueSpeaker, position, file.CopyContent(nextSpace).ExecuteEscapeCharacters(), false));
+                        position = position.MoveColumn(nextSpace);
+                        tokens.Add(new StringToken(TokenType.DialogueContent, position, file.CopyContent(nextSpace + 1, lineBreak).ExecuteEscapeCharacters(), false));
+                        file.Move(lineBreak);
+                        position = position.MoveColumn(lineBreak - nextSpace);
+                        continue;
+                    }
                 }
 
                 if (file.Current == '\0') {
@@ -122,23 +142,23 @@ namespace WADV.VisualNovel.Compiler {
                     file.MoveToNext();
                     position = position.NextColumn();
                     var index = file.IndexOf(' ', '\n');
-                    if (file.StartsWith(Keywords.SyntaxFunction)) {
+                    if (file.StartsWith(Keywords.Function)) {
                         tokens.Add(new BasicToken(TokenType.Function, position));
-                    } else if (file.StartsWith(Keywords.SyntaxIf)) {
+                    } else if (file.StartsWith(Keywords.If)) {
                         tokens.Add(new BasicToken(TokenType.If, position));
-                    } else if (file.StartsWith(Keywords.SyntaxElseIf)) {
+                    } else if (file.StartsWith(Keywords.ElseIf)) {
                         tokens.Add(new BasicToken(TokenType.ElseIf, position));
-                    } else if (file.StartsWith(Keywords.SyntaxElse)) {
+                    } else if (file.StartsWith(Keywords.Else)) {
                         tokens.Add(new BasicToken(TokenType.Else, position));
-                    } else if (file.StartsWith(Keywords.SyntaxWhileLoop + ' ')) {
+                    } else if (file.StartsWith(Keywords.WhileLoop + ' ')) {
                         tokens.Add(new BasicToken(TokenType.Loop, position));
-                    } else if (file.StartsWith(Keywords.SyntaxReturn)) {
+                    } else if (file.StartsWith(Keywords.Return)) {
                         tokens.Add(new BasicToken(TokenType.Return, position));
-                    } else if (file.StartsWith(Keywords.SyntaxCall)) {
+                    } else if (file.StartsWith(Keywords.Call)) {
                         tokens.Add(new BasicToken(TokenType.FunctionCall, position));
-                    } else if (file.StartsWith(Keywords.SyntaxImport)) {
+                    } else if (file.StartsWith(Keywords.Import)) {
                         tokens.Add(new BasicToken(TokenType.Import, position));
-                    } else if (file.StartsWith(Keywords.SyntaxExport)) {
+                    } else if (file.StartsWith(Keywords.Export)) {
                         tokens.Add(new BasicToken(TokenType.Export, position));
                     } else {
                         throw new CompileException(identifier, position, $"Unknown keyword {file.CopyContent(index)}");
@@ -171,7 +191,7 @@ namespace WADV.VisualNovel.Compiler {
                     if (file[nextSeparator] == '-' && file[nextSeparator + 1] >= '0' && file[nextSeparator + 1] <= '9') { // 负数
                         var initialEndPosition = nextSeparator;
                         file.Move(initialEndPosition + 1);
-                        nextSeparator = file.IndexOfWithEscapeRecognize(Keywords.Separators);
+                        nextSeparator = file.IndexOfWithEscapeRecognize(Keywords.Separators) + 1;
                         file.Move(-initialEndPosition - 1);
                     }
                     var content = file.CopyContent(nextSeparator).Trim();
@@ -186,25 +206,6 @@ namespace WADV.VisualNovel.Compiler {
                     }
                     file.Move(nextSeparator);
                     position = position.MoveColumn(nextSeparator);
-                    continue;
-                }
-
-                if (file.Current == '#' && file.Previous != '\\') { // 带角色描述的快速对话。快速对话中不能使用可编程语法，也不能中途换行，直接解析至行尾即可。
-                    file.MoveToNext();
-                    position = position.NextColumn();
-                    var nextSpace = file.IndexOf(' ');
-                    var lineBreak = file.IndexOf('\n');
-                    if (nextSpace < 0 || nextSpace > lineBreak) { // 对话内容不能为空
-                        throw new CompileException(identifier, position, "Unable to create quick dialogue: Dialogue starts with character must has content");
-                    }
-                    if (file.Current == ' ') { // 角色描述不能为空
-                        throw new CompileException(identifier, position, "Unable to create quick dialogue: Dialogue starts with character must has character definition");
-                    }
-                    tokens.Add(new StringToken(TokenType.DialogueSpeaker, position, file.CopyContent(nextSpace).ExecuteEscapeCharacters(), false));
-                    position = position.MoveColumn(nextSpace);
-                    tokens.Add(new StringToken(TokenType.DialogueContent, position, file.CopyContent(nextSpace + 1, lineBreak).ExecuteEscapeCharacters(), false));
-                    file.Move(lineBreak);
-                    position = position.MoveColumn(lineBreak - nextSpace);
                     continue;
                 }
 
@@ -236,21 +237,21 @@ namespace WADV.VisualNovel.Compiler {
             if (number.StartsWith("0X")) { // 二进制整数转十进制
                 number = number.Substring(2);
                 if (number.Any(e => e != '0' && e != '1')) {
-                    throw new CompileException(identifier, position, "Unable to create number: Binary number must be integer and only allows 0/1");
+                    throw new CompileException(identifier, position, "Unable to create number: binary number must be integer and only allows 0/1");
                 }
                 tokens.Add(new IntegerToken(TokenType.Number, position, Convert.ToInt32(number, 2) * addon));
             } else if (number.StartsWith("0B")) { // 十六进制整数转十进制
                 number = number.Substring(2);
                 if (number.Any(e => e == '.')) {
-                    throw new CompileException(identifier, position, "Unable to create number: Hex number must be integer");
+                    throw new CompileException(identifier, position, "Unable to create number: hex number must be integer");
                 }
                 tokens.Add(new IntegerToken(TokenType.Number, position, Convert.ToInt32(number, 16) * addon));
             } else if (number.Any(e => e != '.' && e != '-' && e != 'E' && (e < '0' || e > '9'))) { // 错误格式
-                throw new CompileException(identifier, position, $"Unable to create number: Unknown format {number}");
+                throw new CompileException(identifier, position, $"Unable to create number: unknown format {number}");
             } else { // 十进制整数和浮点数转换
                 var dotCount = number.Count(e => e == '.');
                 if (dotCount > 1) { // 浮点数格式错误
-                    throw new CompileException(identifier, position, "Unable to create number: Float number format error");
+                    throw new CompileException(identifier, position, "Unable to create number: float number format error");
                 } else if (dotCount == 1 || number.Contains('E')) { // 浮点数
                     tokens.Add(new FloatToken(TokenType.Number, position, float.Parse(number) * addon));
                 } else { // 整数

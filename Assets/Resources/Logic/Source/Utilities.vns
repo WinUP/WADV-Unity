@@ -1,3 +1,6 @@
-﻿;export ApplicationName (;scene temp
-    "SCHOOLBOYS! 梦之御咲祭篇"
-)
+﻿;export ApplicationName "SCHOOLBOYS! 梦之御咲祭篇"
+
+@RoundFadeToLeftMask = [Texture2D Source='Resources://Mask/RoundFadeToLeft']
+@CircleFadeToCenterMask = [Texture2D Source='Resources://Mask/CircleFadeToCenter']
+
+;export RoundFadeToLeft1.0Linear [Effect Type=AlphaMask Time=1.0 Easing=Linear Threshold=0.2 Mask=@RoundFadeToLeftMask]

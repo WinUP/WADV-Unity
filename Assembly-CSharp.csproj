@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <LangVersion>7</LangVersion>
+    <LangVersion>latest</LangVersion>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <_TargetFrameworkDirectories>non_empty_path_generated_by_rider_editor_plugin</_TargetFrameworkDirectories>
     <_FullFrameworkReferenceAssemblyPaths>non_empty_path_generated_by_rider_editor_plugin</_FullFrameworkReferenceAssemblyPaths>
@@ -26,7 +26,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Temp\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_4_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2018_2_OR_NEWER;UNITY_2018_3_OR_NEWER;UNITY_2018_3_0;UNITY_2018_3;UNITY_2018;PLATFORM_ARCH_64;UNITY_64;UNITY_INCLUDE_TESTS;UNITY_ANALYTICS;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_SPRITES;ENABLE_GRID;ENABLE_TILEMAP;ENABLE_TERRAIN;ENABLE_TEXTURE_STREAMING;ENABLE_DIRECTOR;ENABLE_UNET;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_COLLAB_SOFTLOCKS;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_DIRECTOR_AUDIO;ENABLE_DIRECTOR_TEXTURE;ENABLE_TIMELINE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;ENABLE_MANAGED_JOBS;ENABLE_MANAGED_TRANSFORM_JOBS;ENABLE_MANAGED_ANIMATION_JOBS;INCLUDE_DYNAMIC_GI;INCLUDE_GI;ENABLE_MONO_BDWGC;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;INCLUDE_PUBNUB;ENABLE_VIDEO;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_LOCALIZATION;PLATFORM_STANDALONE_WIN;PLATFORM_STANDALONE;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_OUT_OF_PROCESS_CRASH_HANDLER;ENABLE_EVENT_QUEUE;ENABLE_CLUSTER_SYNC;ENABLE_CLUSTERINPUT;ENABLE_VR;ENABLE_AR;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;NET_STANDARD_2_0;ENABLE_PROFILER;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_UNITY_COLLECTIONS_CHECKS;ENABLE_BURST_AOT;UNITY_TEAM_LICENSE;UNITY_PRO_LICENSE;CSHARP_7_OR_LATER;CSHARP_7_3_OR_NEWER</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_4_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2018_2_OR_NEWER;UNITY_2018_3_OR_NEWER;UNITY_2018_3_13;UNITY_2018_3;UNITY_2018;PLATFORM_ARCH_64;UNITY_64;UNITY_INCLUDE_TESTS;UNITY_ANALYTICS;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_SPRITES;ENABLE_GRID;ENABLE_TILEMAP;ENABLE_TERRAIN;ENABLE_TEXTURE_STREAMING;ENABLE_DIRECTOR;ENABLE_UNET;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_COLLAB_SOFTLOCKS;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_DIRECTOR_AUDIO;ENABLE_DIRECTOR_TEXTURE;ENABLE_TIMELINE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;ENABLE_MANAGED_JOBS;ENABLE_MANAGED_TRANSFORM_JOBS;ENABLE_MANAGED_ANIMATION_JOBS;INCLUDE_DYNAMIC_GI;INCLUDE_GI;ENABLE_MONO_BDWGC;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;INCLUDE_PUBNUB;ENABLE_VIDEO;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_LOCALIZATION;PLATFORM_STANDALONE_WIN;PLATFORM_STANDALONE;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_OUT_OF_PROCESS_CRASH_HANDLER;ENABLE_EVENT_QUEUE;ENABLE_CLUSTER_SYNC;ENABLE_CLUSTERINPUT;ENABLE_VR;ENABLE_AR;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;NET_STANDARD_2_0;ENABLE_PROFILER;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_UNITY_COLLECTIONS_CHECKS;ENABLE_BURST_AOT;UNITY_TEAM_LICENSE;UNITY_PRO_LICENSE;CSHARP_7_OR_LATER;CSHARP_7_3_OR_NEWER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0169</NoWarn>
@@ -57,23 +57,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Game\ElementDebugger.cs" />
     <Compile Include="Assets\Game\RuntimeTester.cs" />
     <Compile Include="Assets\Game\UI\DialogueWindowShowHideListener.cs" />
     <Compile Include="Assets\Game\UI\InputBoxRenderer.cs" />
-    <Compile Include="Assets\WADV\Attributes\SkipAutoRegistrationAttribute.cs" />
-    <Compile Include="Assets\WADV\AutoRegister.cs" />
+    <Compile Include="Assets\WADV\DumpManager.cs" />
     <Compile Include="Assets\WADV\Easing.cs" />
     <Compile Include="Assets\WADV\EasingType.cs" />
-    <Compile Include="Assets\WADV\Extensions\AwaitExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\DictionaryExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\EnumeratorExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\KeyValuePairExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\ListExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\StringExtensions.cs" />
-    <Compile Include="Assets\WADV\Extensions\TaskExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\AsyncExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\IntervalType.cs" />
+    <Compile Include="Assets\WADV\Extensions\ReflectionExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\SwizzleExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\SwizzleItem.cs" />
+    <Compile Include="Assets\WADV\Extensions\UnityGraphicExtensions.cs" />
+    <Compile Include="Assets\WADV\Extensions\ValuesExtensions.cs" />
     <Compile Include="Assets\WADV\GraphicColorFade.cs" />
+    <Compile Include="Assets\WADV\Hasher.cs" />
     <Compile Include="Assets\WADV\Intents\ChangeLanguageIntent.cs" />
+    <Compile Include="Assets\WADV\Intents\DumpRuntimeIntent.cs" />
     <Compile Include="Assets\WADV\LinkedTreeNode.cs" />
     <Compile Include="Assets\WADV\MessageSystem\CoreConstant.cs" />
     <Compile Include="Assets\WADV\MessageSystem\DebugLogMessenger.cs" />
@@ -83,6 +85,10 @@
     <Compile Include="Assets\WADV\MessageSystem\MessageService.cs" />
     <Compile Include="Assets\WADV\MessageSystem\MonoMessengerBehaviour.cs" />
     <Compile Include="Assets\WADV\ParallaxController.cs" />
+    <Compile Include="Assets\WADV\Plugins\Converter\BooleanPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Converter\FloatPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Converter\IntegerPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Converter\StringPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\CharacterPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\CharacterValue.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\DialogueCreator.cs" />
@@ -102,26 +108,69 @@
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\DialogueTextGeneratorType.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\EmptyDialogueTextGenerator.cs" />
     <Compile Include="Assets\WADV\Plugins\Dialogue\TextGenerator\SimpleDialogueTextGenerator.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeIn.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Effects\FadeOut.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Effects\IGraphicEffect.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Effects\ILoopGraphicEffect.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Effects\ISingleGraphicEffect.cs" />
-    <Compile Include="Assets\WADV\Plugins\Image\Effects\ShaderGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\EffectPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\Effects\AlphaMaskTransition.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\Effects\FadeIn.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\Effects\FadeOut.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\Effects\Move.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\Effects\TextureMaskTransition.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\EffectValue.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\FrameGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\FrameShaderGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\GraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\SingleGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\SingleShaderGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\StaticGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Effect\StaticShaderGraphicEffect.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\EffectControlPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Image\ImageCanvas.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\PlayPluginMessageIntegration.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\ShowPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\ShowPluginMessageIntegration.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageBindMode.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageDisplayInformation.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageMessageIntegration.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageReferenceList.cs" />
+    <Compile Include="Assets\WADV\Plugins\Image\Utilities\ImageStatus.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputPlugin.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\InputRenderer.cs" />
     <Compile Include="Assets\WADV\Plugins\Input\MessageIntegration.cs" />
-    <Compile Include="Assets\WADV\Plugins\SoundPlugin.cs" />
-    <Compile Include="Assets\WADV\Providers\AssetBundleFileResourceProvider.cs" />
-    <Compile Include="Assets\WADV\Providers\UnityPersistentResourceProvider.cs" />
-    <Compile Include="Assets\WADV\Providers\UnityResourcesResourceProvider.cs" />
-    <Compile Include="Assets\WADV\Providers\UnityStreamingAssetsResourceProvider.cs" />
+    <Compile Include="Assets\WADV\Plugins\PausePlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\ColorPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\ColorValue.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\RectPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\RectValue.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\Texture2DPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\Texture2DValue.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\TransformPlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\TransformValue.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\Vector2Plugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\Vector2Value.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\Vector3Plugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\Unity\Vector3Value.cs" />
+    <Compile Include="Assets\WADV\Plugins\UnityUI\ImagePlugin.cs" />
+    <Compile Include="Assets\WADV\Plugins\UnityUI\ImageValue.cs" />
+    <Compile Include="Assets\WADV\Reflection\AssemblyRegister.cs" />
+    <Compile Include="Assets\WADV\Reflection\IAssemblyRegister.cs" />
+    <Compile Include="Assets\WADV\Reflection\IDynamicRegistrationTarget.cs" />
+    <Compile Include="Assets\WADV\Reflection\StaticRegistrationInfoAttribute.cs" />
+    <Compile Include="Assets\WADV\Resource\BinaryData.cs" />
+    <Compile Include="Assets\WADV\Resource\IResourceProvider.cs" />
+    <Compile Include="Assets\WADV\Resource\Providers\AssetBundleFileResourceProvider.cs" />
+    <Compile Include="Assets\WADV\Resource\Providers\UnityPersistentResourceProvider.cs" />
+    <Compile Include="Assets\WADV\Resource\Providers\UnityResourcesResourceProvider.cs" />
+    <Compile Include="Assets\WADV\Resource\Providers\UnityShaderResourceProvider.cs" />
+    <Compile Include="Assets\WADV\Resource\Providers\UnityStreamingAssetsResourceProvider.cs" />
+    <Compile Include="Assets\WADV\Resource\ResourceManager.cs" />
+    <Compile Include="Assets\WADV\Texture2DCombiner.cs" />
     <Compile Include="Assets\WADV\Thread\Dispatcher.cs" />
     <Compile Include="Assets\WADV\Thread\MainThreadPlaceholder.cs" />
     <Compile Include="Assets\WADV\Thread\TaskDelegator.cs" />
     <Compile Include="Assets\WADV\Thread\WaitForBackgroundThread.cs" />
     <Compile Include="Assets\WADV\Thread\WaitForUpdate.cs" />
+    <Compile Include="Assets\WADV\Translation\ScriptTranslation.cs" />
+    <Compile Include="Assets\WADV\Translation\Translation.cs" />
+    <Compile Include="Assets\WADV\Translation\TranslationManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\ByteCodeGenerator.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\ByteCodeGeneratorContext.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\ByteCodeWriter.cs" />
@@ -168,7 +217,7 @@
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Tokens\IntegerToken.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Tokens\StringToken.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Compiler\Tokens\TokenType.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Hasher.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Interoperation\ContextMessageTemplate.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\IAddOperator.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\IBooleanConverter.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\ICompareOperator.cs" />
@@ -177,17 +226,14 @@
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\IFloatConverter.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\IIntegerConverter.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\IMultiplyOperator.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Interoperation\INegativeOperator.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\IPickChildOperator.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\IStringConverter.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\ISubtractOperator.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Interoperation\IVisualNovelPlugin.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Interoperation\PluginExecuteContext.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Interoperation\PluginManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Interoperation\SerializableValue.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Plugin\ContextMessageTemplate.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginExecuteContext.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Plugin\PluginManager.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Plugin\VisualNovelPlugin.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Provider\BinaryData.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Provider\ResourceProvider.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Provider\ResourceProviderManager.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\CallStack.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\ExtendedBinaryReader.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\RuntimeException.cs" />
@@ -195,32 +241,32 @@
     <Compile Include="Assets\WADV\VisualNovel\Runtime\ScriptFile.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\ScriptHeader.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\ScriptRuntime.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Runtime\ScriptRuntimeExecutor.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Runtime\ScriptRuntimeSerializer.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\BooleanValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\FloatValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\IntegerValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\NullValue.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\ObjectValue.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\Object\ObjectPlugin.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\Object\ObjectValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\ReferenceValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\ScopeValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\StringValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\TranslatableValue.cs" />
+    <Compile Include="Assets\WADV\VisualNovel\Runtime\Utilities\WriteBackReferenceValue.cs" />
     <Compile Include="Assets\WADV\VisualNovel\Runtime\VariableSearchMode.cs" />
     <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\CompileConfiguration.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\RelativePath.cs" />
     <Compile Include="Assets\WADV\VisualNovel\ScriptStatus\ScriptInformation.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Sound\PlaySoundMessageContent.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Sound\SoundChannel.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Sound\SoundManager.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Translation\ScriptTranslation.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Translation\Translation.cs" />
-    <Compile Include="Assets\WADV\VisualNovel\Translation\TranslationManager.cs" />
     <None Include="Assets\Resources\Logic\Translation\jp\!Entrance.txt" />
-    <None Include="Assets\WADV\Plugins\Image\Shaders\UIBase.cginc" />
-    <None Include="Assets\WADV\Plugins\Image\Shaders\Fade.shader" />
+    <None Include="Assets\WADV\Plugins\Effect\Shaders\UIBase.cginc" />
+    <None Include="Assets\WADV\Plugins\Effect\Shaders\Fade.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMPro_Properties.cginc" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
+    <None Include="Assets\WADV\Plugins\Effect\Shaders\TextureMaskTransition.shader" />
+    <None Include="Assets\WADV\CopyTexture.compute" />
+    <None Include="Assets\WADV\Plugins\Effect\Shaders\EffectUtilities.cginc" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
     <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Mobile Masking.shader" />
@@ -231,30 +277,31 @@
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_Bitmap.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMPro.cginc" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF.shader" />
+    <None Include="Assets\WADV\Plugins\Effect\Shaders\AlphaMaskTransition.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_Sprite.shader" />
     <None Include="Assets\Resources\Logic\Translation\jp\Utilities.txt" />
     <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface.shader" />
     <Reference Include="Unity.TextMeshPro.Editor">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+      <HintPath>C:/Users/WinUP/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.Advertisements">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/UnityEngine.Advertisements.dll</HintPath>
+      <HintPath>C:/Users/WinUP/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/UnityEngine.Advertisements.dll</HintPath>
     </Reference>
     <Reference Include="Unity.PackageManagerUI.Editor">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
+      <HintPath>C:/Users/WinUP/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.CollabProxy.Editor">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
+      <HintPath>C:/Users/WinUP/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.Advertisements">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/UnityEditor.Advertisements.dll</HintPath>
+      <HintPath>C:/Users/WinUP/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/UnityEditor.Advertisements.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+      <HintPath>C:/Users/WinUP/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.DataPrivacy">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.Analytics.DataPrivacy.dll</HintPath>
+      <HintPath>C:/Users/WinUP/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/ScriptAssemblies/Unity.Analytics.DataPrivacy.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
       <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
@@ -458,13 +505,13 @@
       <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/RuntimeEditor/UnityEngine.SpatialTracking.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.Editor">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Editor.dll</HintPath>
+      <HintPath>C:/Users/WinUP/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.StandardEvents">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.StandardEvents.dll</HintPath>
+      <HintPath>C:/Users/WinUP/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.StandardEvents.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Analytics.Tracker">
-      <HintPath>C:/Users/lghol/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Tracker.dll</HintPath>
+      <HintPath>C:/Users/WinUP/OneDrive/Projects/Unity Projects/SCHOOLBOYS! YUME NO MISAKISAI/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Tracker.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
       <HintPath>C:/Program Files/Unity/Editor/Data/NetStandard/ref/2.0.0/netstandard.dll</HintPath>

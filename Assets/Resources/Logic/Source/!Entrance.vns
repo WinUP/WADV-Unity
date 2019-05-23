@@ -2,7 +2,9 @@
 // 变量取值顺序：当前域变量表->当前域常量表->上一层变量表->上一层常量表->再上一层……
 // 变量为一级值传递，变量内所有非一级资源均为引用传递
 
-@applicationName = (;call ((;import 'Resources://Utilities')->ApplicationName))
+@Utilities = (;import Utilities)
+
+@applicationName = @Utilities->ApplicationName
 
 适用于工程"[@applicationName]"的VNS测试脚本。首先测试无角色对话。
 

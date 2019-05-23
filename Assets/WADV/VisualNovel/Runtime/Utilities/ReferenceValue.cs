@@ -1,30 +1,40 @@
 using System;
+using System.Threading.Tasks;
+using WADV.Intents;
+using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
+    /// <inheritdoc cref="IStringConverter" />
     /// <summary>
     /// <para>表示一个间接引用内存值</para>
-    ///  <list type="bullet">
-    ///     <listheader><description>互操作支持</description></listheader>
-    ///     <item><description>字符串转换器</description></item>
-    ///     <item><description>取子元素互操作器</description></item>
+    /// <list type="bullet">
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>外部使用引用复制</description></item>
+    ///     <item><description>被引用对象的复制方式取决于其本身</description></item>
     /// </list>
     /// <list type="bullet">
-    ///     <listheader><description>子元素/特性支持</description></listheader>
-    ///     <item><description>ToString</description></item>
+    ///     <listheader><description>自有数据字节量</description></listheader>
+    ///     <item><description>1 字节</description></item>
+    ///     <item><description>1 ObjectId</description></item>
+    ///     <item><description>1 引用关联的WADV.VisualNovel.Interoperation.SerializableValue</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>类型转换支持</description></listheader>
+    ///     <item><description>字符串转换器</description></item>
     /// </list>
     /// </summary>
     [Serializable]
-    public class ReferenceValue : SerializableValue, IStringConverter, IPickChildOperator {
+    public class ReferenceValue : SerializableValue, IStringConverter {
         /// <summary>
         /// 获取或设置变量值
         /// </summary>
-        public SerializableValue Value { get => _value;
+        public virtual SerializableValue ReferenceTarget { get => _referenceTarget;
             set {
-                if (value == _value) return;
-                if (IsConstant) throw new NotSupportedException("Cannot assign value to constant variable");
-                _value = value ?? new NullValue();
+                if (value == _referenceTarget) return;
+                if (IsConstant) throw new NotSupportedException($"Unable to change variable value {value}: cannot assign value to constant variable");
+                _referenceTarget = value ?? new NullValue();
             }
         }
         
@@ -33,39 +43,28 @@ namespace WADV.VisualNovel.Runtime.Utilities {
         /// </summary>
         public bool IsConstant { get; set; }
 
-        private SerializableValue _value;
+        private SerializableValue _referenceTarget;
+        
+        public ReferenceValue() { }
 
-        /// <inheritdoc />
-        public override SerializableValue Duplicate() {
-            return new ReferenceValue {IsConstant = IsConstant, Value = Value.Duplicate()};
+        public ReferenceValue(SerializableValue referenceTarget) {
+            _referenceTarget = referenceTarget;
         }
 
-        /// <inheritdoc />
-        public string ConvertToString() {
-            return Value is IStringConverter stringConverter ? stringConverter.ConvertToString() : Value.ToString();
+        public override SerializableValue Clone() {
+            return new ReferenceValue {IsConstant = IsConstant, ReferenceTarget = ReferenceTarget.Clone()};
+        }
+
+        public override Task OnDump(DumpRuntimeIntent.TaskLists tasks) {
+            return ReferenceTarget == null ? Task.CompletedTask : ReferenceTarget.OnDump(tasks);
+        }
+
+        public override Task OnRead(DumpRuntimeIntent.TaskLists tasks) {
+            return ReferenceTarget == null ? Task.CompletedTask : ReferenceTarget.OnRead(tasks);
         }
         
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
-            return Value is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : Value.ToString();
-        }
-
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue name) {
-            if (!(name is IStringConverter stringConverter))
-                throw new NotSupportedException($"Unable to get feature in variable with feature id {name}: only string feature name is accepted");
-            var target = stringConverter.ConvertToString();
-            switch (target) {
-                case "ToString":
-                    return new StringValue {Value = ConvertToString()};
-                default:
-                    throw new NotSupportedException($"Unable to get feature in variable: unsupported feature {target}");
-            }
-        }
-
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue target, string language) {
-            return PickChild(target);
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
+            return ReferenceTarget is IStringConverter stringConverter ? stringConverter.ConvertToString(language) : ReferenceTarget.ToString();
         }
     }
 }

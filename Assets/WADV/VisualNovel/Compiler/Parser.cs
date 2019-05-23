@@ -532,6 +532,7 @@ namespace WADV.VisualNovel.Compiler {
                 case TokenType.Divide:
                     return 3;
                 case TokenType.LogicEqual:
+                case TokenType.LogicNotEqual:
                     return 4;
                 case TokenType.PickChild:
                     return 5;

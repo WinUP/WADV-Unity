@@ -32,7 +32,7 @@ namespace WADV.VisualNovel.Runtime.Editor {
                     var label = script.Header.Labels.Where(e => e.Value == script.CurrentPosition).ToList();
                     if (label.Any()) {
                         foreach (var pointer in label) {
-                            assemblyContent.Content.AppendLine($".label {pointer.Key}");
+                            assemblyContent.Content.AppendLine($"< label {pointer.Key} >");
                         }
                     }
                     SourcePosition? position;
@@ -213,8 +213,8 @@ namespace WADV.VisualNovel.Runtime.Editor {
                 case OperationCode.DIV:
                     assemblyContent.AppendLine(position, "div");
                     break;
-                case OperationCode.NOT:
-                    assemblyContent.AppendLine(position, "not");
+                case OperationCode.NEG:
+                    assemblyContent.AppendLine(position, "neg");
                     break;
                 case OperationCode.EQL:
                     assemblyContent.AppendLine(position, "eql");
@@ -259,11 +259,11 @@ namespace WADV.VisualNovel.Runtime.Editor {
                     break;
                 case OperationCode.BF:
                     var jumpIfFalseLabelIndex = file.Read7BitEncodedInt();
-                    assemblyContent.AppendLine(position, $"bf.s {jumpIfFalseLabelIndex}");
+                    assemblyContent.AppendLine(position, $"bf {jumpIfFalseLabelIndex}");
                     break;
                 case OperationCode.BR:
                     var jumpLabelIndex = file.Read7BitEncodedInt();
-                    assemblyContent.AppendLine(position, $"br.s {jumpLabelIndex}");
+                    assemblyContent.AppendLine(position, $"br {jumpLabelIndex}");
                     break;
                 case OperationCode.LOAD:
                     assemblyContent.AppendLine(position, "load");

@@ -4,5 +4,7 @@ namespace WADV.MessageSystem {
         public const string RepaintCompileOptionEditor = "REPAINT_COMPILE_OPTION_EDITOR";
         public const string PrepareLanguageChange = "PREPARE_LANGUAGE_CHANGE";
         public const string LanguageChange = "LANGUAGE_CHANGE";
+        public const string DumpRuntime = "DUMP_RUNTIME";
+        public const string LoadRuntime = "LOAD_RUNTIME";
     }
 }

@@ -1,11 +1,10 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using WADV.Extensions;
 using WADV.MessageSystem;
+using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
 
 // ReSharper disable once CommentTypo
@@ -13,25 +12,29 @@ using WADV.VisualNovel.Runtime.Utilities;
 // ! Not covered by current project
 
 namespace WADV.Plugins.Dialogue {
-    /// <inheritdoc cref="VisualNovelPlugin" />
+    /// <inheritdoc cref="IVisualNovelPlugin" />
     /// <summary>
     /// 对话解析插件
     /// </summary>
-    [UsedImplicitly]
-    public partial class DialoguePlugin : VisualNovelPlugin {
+    [StaticRegistrationInfo("Dialogue")]
+    public partial class DialoguePlugin : IVisualNovelPlugin {
         private static Regex CommandTester { get; } = new Regex(@"\s*([^=]+)\s*=\s*(\S+)\s*$");
         
-        public DialoguePlugin() : base("Dialogue") { }
+        /// <inheritdoc />
+        public void OnRegister() { }
+
+        /// <inheritdoc />
+        public void OnUnregister(bool isReplace) { }
         
-        public override async Task<SerializableValue> Execute(PluginExecuteContext context) {
+        public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var dialogue = new MessageIntegration.Content();
             foreach (var (name, value) in context.StringParameters) {
                 switch (name.ConvertToString(context.Language)) {
                     case "Show":
-                        await ShowWindow(value);
+                        await ShowWindow(value, context.Language);
                         return new NullValue();
                     case "Hide":
-                        await HideWindow(value);
+                        await HideWindow(value, context.Language);
                         return new NullValue();
                     case "Character":
                         dialogue.Character = value;
@@ -45,28 +48,28 @@ namespace WADV.Plugins.Dialogue {
                         break;
                 }
             }
-            await MessageService.ProcessAsync(ContextMessage<MessageIntegration.Content>.Create(context, dialogue, MessageIntegration.Mask, MessageIntegration.NewDialogue));
+            await MessageService.ProcessAsync(ContextMessage<MessageIntegration.Content>.Create(MessageIntegration.Mask, MessageIntegration.NewDialogue, dialogue, context));
             return new NullValue();
         }
         
-        private static async Task ShowWindow(SerializableValue time) {
+        private static async Task ShowWindow(SerializableValue time, string language) {
             float showValue;
             try {
-                showValue = FloatValue.TryParse(time);
+                showValue = FloatValue.TryParse(time, language);
             } catch {
                 showValue = 0.0F;
             }
-            await MessageService.ProcessAsync(Message<float>.Create(showValue, MessageIntegration.Mask, MessageIntegration.ShowDialogueBox));
+            await MessageService.ProcessAsync(Message<float>.Create(MessageIntegration.Mask, MessageIntegration.ShowDialogueBox, showValue));
         }
         
-        private static async Task HideWindow(SerializableValue time) {
+        private static async Task HideWindow(SerializableValue time, string language) {
             float hideValue;
             try {
-                hideValue = FloatValue.TryParse(time);
+                hideValue = FloatValue.TryParse(time, language);
             } catch {
                 hideValue = 0.0F;
             }
-            await MessageService.ProcessAsync(Message<float>.Create(hideValue, MessageIntegration.Mask, MessageIntegration.HideDialogueBox));
+            await MessageService.ProcessAsync(Message<float>.Create(MessageIntegration.Mask, MessageIntegration.HideDialogueBox, hideValue));
         }
     }
 }

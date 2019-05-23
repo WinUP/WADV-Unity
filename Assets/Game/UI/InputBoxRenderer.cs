@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using WADV;
 using WADV.Plugins.Input;
 using WADV.Thread;
-using WADV.VisualNovel.Plugin;
+using WADV.VisualNovel.Interoperation;
 
 namespace Game.UI {
     [RequireComponent(typeof(Canvas))]

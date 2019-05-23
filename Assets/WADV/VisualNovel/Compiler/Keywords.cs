@@ -6,47 +6,46 @@ namespace WADV.VisualNovel.Compiler {
         /// <summary>
         /// 脚本语言
         /// </summary>
-        public const string SyntaxLanguage = "lang";
+        public const string Language = "lang";
         /// <summary>
         /// 选择指令
         /// </summary>
-        public const string SyntaxIf = "if";
+        public const string If = "if";
         /// <summary>
         /// 分支指令
         /// </summary>
-        public const string SyntaxElseIf = "elseif";
+        public const string ElseIf = "elseif";
         /// <summary>
         /// 否则指令
         /// </summary>
-        public const string SyntaxElse = "else";
+        public const string Else = "else";
         /// <summary>
         /// 循环指令
         /// </summary>
-        public const string SyntaxWhileLoop = "while";
+        public const string WhileLoop = "while";
         /// <summary>
         /// 函数指令
         /// </summary>
-        public const string SyntaxFunction = "scene";
+        public const string Function = "scene";
         /// <summary>
         /// 函数调用指令
         /// </summary>
-        public const string SyntaxCall = "call";
+        public const string Call = "call";
         /// <summary>
         /// 返回指令
         /// </summary>
-        public const string SyntaxReturn = "return";
+        public const string Return = "return";
         /// <summary>
         /// 导入指令
         /// </summary>
-        public const string SyntaxImport = "import";
+        public const string Import = "import";
         /// <summary>
         /// 导出指令
         /// </summary>
-        public const string SyntaxExport = "export";
+        public const string Export = "export";
         /// <summary>
         /// 所有操作符
         /// </summary>
         public static readonly string[] Separators = {"->", "+=", "-=", "*=", "/=", ">", "<", ">=", "<=", "[", "]", "!", "+", "-", "*", "/", "@", "@#", ";", "=", "==", "!=", "(", ")", " ", "\"", "\n", "'"};
-
     }
 }

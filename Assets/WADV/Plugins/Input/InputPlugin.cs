@@ -4,21 +4,25 @@ using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Extensions;
 using WADV.MessageSystem;
+using WADV.Reflection;
 using WADV.VisualNovel.Interoperation;
-using WADV.VisualNovel.Plugin;
 using WADV.VisualNovel.Runtime.Utilities;
 
 namespace WADV.Plugins.Input {
     /// <inheritdoc />
     /// <summary>
-    /// 输入框插件
+    /// <para>输入框插件</para>
+    /// <list type="bullet">
+    ///     <listheader><description>可选有值参数</description></listheader>
+    ///     <item><description>Title: 标题字符串</description></item>
+    ///     <item><description>Default: 默认内容字符串</description></item>
+    ///     <item><description>ButtonText: 确认按钮文本字符串</description></item>
+    /// </list>
     /// </summary>
+    [StaticRegistrationInfo("Input")]
     [UsedImplicitly]
-    public partial class InputPlugin : VisualNovelPlugin {
-        public InputPlugin() : base("Input") { }
-        
-        /// <inheritdoc />
-        public override async Task<SerializableValue> Execute(PluginExecuteContext context) {
+    public partial class InputPlugin : IVisualNovelPlugin {
+        public async Task<SerializableValue> Execute(PluginExecuteContext context) {
             var description = new MessageIntegration.Content();
             foreach (var (name, value) in context.StringParameters) {
                 switch (name.ConvertToString(context.Language)) {
@@ -45,8 +49,12 @@ namespace WADV.Plugins.Input {
                         break;
                 }
             }
-            var message = await MessageService.ProcessAsync(ContextMessage<MessageIntegration.Content>.Create(context, description, MessageIntegration.Mask, MessageIntegration.CreateInput));
-            return message is Message<string> stringMessage ? new StringValue {Value = stringMessage.Content} : null;
+            var message = await MessageService.ProcessAsync(ContextMessage<MessageIntegration.Content>.Create(MessageIntegration.Mask, MessageIntegration.CreateInput, description, context));
+            return message is Message<string> stringMessage ? new StringValue {value = stringMessage.Content} : null;
         }
+
+        public void OnRegister() { }
+
+        public void OnUnregister(bool isReplace) { }
     }
 }

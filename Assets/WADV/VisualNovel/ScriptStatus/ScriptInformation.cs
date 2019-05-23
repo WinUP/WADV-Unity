@@ -5,11 +5,9 @@ using System.Text;
 using JetBrains.Annotations;
 using UnityEngine;
 using WADV.Extensions;
+using WADV.Translation;
 using WADV.VisualNovel.Compiler;
 using WADV.VisualNovel.Runtime;
-using WADV.VisualNovel.Translation;
-
-// ReSharper disable InconsistentNaming
 
 namespace WADV.VisualNovel.ScriptStatus {
     /// <summary>
@@ -20,22 +18,22 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// <summary>
         /// 脚本ID（即相对DistributionFolder的不含扩展名的文件路径）
         /// </summary>
-        public string Id;
+        public string id;
         /// <summary>
         /// 源文件当前哈希值
         /// </summary>
-        public uint? Hash;
+        public uint? hash;
         
         /// <summary>
         /// 二进制文件中记录的编译时源文件哈希值
         /// </summary>
-        public uint? RecordedHash;
+        public uint? recordedHash;
 
         /// <summary>
         /// 自定义的运行时二进制加载URI
         /// </summary>
         [CanBeNull]
-        public string DistributionTarget;
+        public string distributionTarget;
         
         /// <summary>
         /// 支持的翻译和自定义运行时翻译加载URI列表
@@ -105,20 +103,20 @@ namespace WADV.VisualNovel.ScriptStatus {
             if (CompileConfiguration.Content.Scripts.ContainsKey(id)) {
                 result = CompileConfiguration.Content.Scripts[id];
             } else {
-                result = new ScriptInformation {Id = id};
+                result = new ScriptInformation {id = id};
                 CompileConfiguration.Content.Scripts.Add(id, result);
             }
             if (path.EndsWith(".vns")) {
                 var hash = Hasher.Crc32(Encoding.UTF8.GetBytes(File.ReadAllText(path, Encoding.UTF8).UnifyLineBreak()));
-                if (result.Hash == hash) return result;
-                result.Hash = hash;
+                if (result.hash == hash) return result;
+                result.hash = hash;
                 CompileConfiguration.Save();
             } else if (path.EndsWith(".vnb")) {
                 var stream = new FileStream(path, FileMode.Open);
                 var hash = ReadBinaryHash(stream);
                 stream.Close();
-                if (result.RecordedHash == hash) return result;
-                result.RecordedHash = hash;
+                if (result.recordedHash == hash) return result;
+                result.recordedHash = hash;
                 CompileConfiguration.Save();
             } else {
                 path = path.RemoveStarts($"Assets/{CompileConfiguration.Content.TranslationFolder}/");
@@ -166,19 +164,19 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// <param name="language">目标语言</param>
         public void CreateTranslationFile(string language) {
             if (!Application.isEditor)
-                throw new NotSupportedException($"Cannot create translation file for {Id}: static file compiler can only run in editor mode");
+                throw new NotSupportedException($"Cannot create translation file for {id}: static file compiler can only run in editor mode");
             var target = $"Assets/{CompileConfiguration.Content.TranslationFolder}/{language}";
             if (!Directory.Exists(target)) {
                 Directory.CreateDirectory(target);
             }
-            target = CreateLanguageAssetPathFromId(Id, language);
+            target = CreateLanguageAssetPathFromId(id, language);
             if (File.Exists(target)) {
                 var translation = new ScriptTranslation(File.ReadAllText(target, Encoding.UTF8));
-                if (translation.MergeWith(ScriptHeader.LoadSync(Id).Header.LoadDefaultTranslation())) {
+                if (translation.MergeWith(ScriptHeader.LoadSync(id).Header.LoadDefaultTranslation())) {
                     translation.SaveToAsset(target);
                 }
             } else {
-                ScriptHeader.LoadSync(Id).Header.LoadDefaultTranslation().SaveToAsset(target);
+                ScriptHeader.LoadSync(id).Header.LoadDefaultTranslation().SaveToAsset(target);
             }
         }
 
@@ -198,12 +196,12 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// <summary>
         /// 确定脚本是否有源文件
         /// </summary>
-        public bool HasSource() => Hash.HasValue;
+        public bool HasSource() => hash.HasValue;
 
         /// <summary>
         /// 确定脚本是否有二进制文件
         /// </summary>
-        public bool HasBinary() => RecordedHash.HasValue;
+        public bool HasBinary() => recordedHash.HasValue;
 
         /// <summary>
         /// 确定脚本是否支持指定翻译
@@ -215,29 +213,29 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// <summary>
         /// 获取脚本的源文件路径
         /// </summary>
-        public string SourceAssetPath() => CreateSourceAssetPathFromId(Id);
+        public string SourceAssetPath() => CreateSourceAssetPathFromId(id);
         
         /// <summary>
         /// 获取脚本的二进制文件路径
         /// </summary>
-        public string BinaryAssetPath() => CreateBinaryAssetPathFromId(Id);
+        public string BinaryAssetPath() => CreateBinaryAssetPathFromId(id);
         
         /// <summary>
         /// 获取脚本的运行时二进制加载URI模板
         /// </summary>
-        public string DistributionTargetTemplate() => string.IsNullOrEmpty(DistributionTarget) ? CompileConfiguration.Content.DefaultRuntimeDistributionUri : DistributionTarget;
+        public string DistributionTargetTemplate() => string.IsNullOrEmpty(distributionTarget) ? CompileConfiguration.Content.DefaultRuntimeDistributionUri : distributionTarget;
 
         /// <summary>
         /// 获取脚本的运行时二进制加载URI
         /// </summary>
-        public string DistributionTargetUri() => DistributionTargetTemplate().ParseTemplate(new Dictionary<string, string> {{"id", Id}, {"language", "default"}});
+        public string DistributionTargetUri() => DistributionTargetTemplate().ParseTemplate(new Dictionary<string, string> {{"id", id}, {"language", "default"}});
         
         /// <summary>
         /// 获取脚本的翻译文件路径
         /// </summary>
         /// <param name="language">目标翻译的语言名</param>
         /// <returns></returns>
-        public string LanguageAssetPath([NotNull] string language) => CreateLanguageAssetPathFromId(Id, language);
+        public string LanguageAssetPath([NotNull] string language) => CreateLanguageAssetPathFromId(id, language);
 
         /// <summary>
         /// 获取脚本的运行时翻译加载URI模板
@@ -257,6 +255,6 @@ namespace WADV.VisualNovel.ScriptStatus {
         /// <param name="language">目标翻译的语言名</param>
         /// <returns></returns>
         [CanBeNull]
-        public string LanguageUri(string language) => LanguageTemplate(language)?.ParseTemplate(new Dictionary<string, string> {{"id", Id}, {"language", language}});
+        public string LanguageUri(string language) => LanguageTemplate(language)?.ParseTemplate(new Dictionary<string, string> {{"id", id}, {"language", language}});
     }
 }

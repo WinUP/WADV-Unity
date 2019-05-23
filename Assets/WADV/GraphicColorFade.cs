@@ -15,12 +15,12 @@ namespace WADV {
         /// <summary>
         /// 起始颜色
         /// </summary>
-        public Color startColor = new Color(1.0F, 1.0F, 1.0F, 1.0F);
-        
+        public Color startColor = Color.white;
+
         /// <summary>
         /// 终止颜色
         /// </summary>
-        public Color targetColor = new Color(1.0F, 1.0F, 1.0F, 0.0F);
+        public Color targetColor = Color.clear;
 
         /// <summary>
         /// 渐变缓动类型

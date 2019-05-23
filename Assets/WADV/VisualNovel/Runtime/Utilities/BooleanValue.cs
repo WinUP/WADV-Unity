@@ -1,51 +1,78 @@
 using System;
+using WADV.Translation;
 using WADV.VisualNovel.Interoperation;
 
 namespace WADV.VisualNovel.Runtime.Utilities {
     /// <inheritdoc cref="SerializableValue" />
+    /// <inheritdoc cref="IBooleanConverter" />
+    /// <inheritdoc cref="IFloatConverter" />
+    /// <inheritdoc cref="IIntegerConverter" />
+    /// <inheritdoc cref="IStringConverter" />
+    /// <inheritdoc cref="IAddOperator" />
+    /// <inheritdoc cref="IMultiplyOperator" />
+    /// <inheritdoc cref="INegativeOperator" />
+    /// <inheritdoc cref="IEqualOperator" />
     /// <summary>
-    /// <para>表示一个布尔内存值</para>
+    /// <para>表示一个布尔可序列化内存值</para>
     /// <list type="bullet">
-    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <listheader><description>复制方式</description></listheader>
+    ///     <item><description>值复制</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>自有数据字节量</description></listheader>
+    ///     <item><description>1 字节</description></item>
+    /// </list>
+    /// <list type="bullet">
+    ///     <listheader><description>类型转换支持</description></listheader>
     ///     <item><description>布尔转换器</description></item>
     ///     <item><description>浮点转换器</description></item>
     ///     <item><description>整数转换器</description></item>
     ///     <item><description>字符串转换器</description></item>
-    ///     <item><description>加法互操作器</description></item>
-    ///     <item><description>乘法互操作器</description></item>
-    ///     <item><description>取子元素互操作器</description></item>
-    ///     <item><description>比较互操作器</description></item>
     /// </list>
     /// <list type="bullet">
-    ///     <listheader><description>子元素/特性支持</description></listheader>
-    ///     <item><description>Reverse</description></item>
-    ///     <item><description>ToNumber</description></item>
-    ///     <item><description>ToString</description></item>
+    ///     <listheader><description>互操作支持</description></listheader>
+    ///     <item><description>加法互操作器</description></item>
+    ///     <item><description>乘法互操作器</description></item>
+    ///     <item><description>取反互操作器</description></item>
+    ///     <item><description>相等比较互操作器</description></item>
     /// </list>
     /// </summary>
     [Serializable]
     public class BooleanValue : SerializableValue, IBooleanConverter, IFloatConverter, IIntegerConverter, IStringConverter, IAddOperator, IMultiplyOperator,
-                                IPickChildOperator, IEqualOperator {
+                                INegativeOperator, IEqualOperator {
         /// <summary>
         /// 获取或设置内存堆栈值
         /// </summary>
-        public bool Value { get; set; }
+        public bool value;
 
         /// <summary>
         /// 尝试将可序列化值解析为布尔值
         /// </summary>
         /// <param name="value">目标内存值</param>
+        /// <param name="language">目标语言</param>
         /// <returns></returns>
-        public static bool TryParse(SerializableValue value) {
+        public static bool TryParse(SerializableValue value, string language = TranslationManager.DefaultLanguage) {
             switch (value) {
+                case BooleanValue booleanTarget:
+                    return booleanTarget.value;
+                case FloatValue floatTarget:
+                    return floatTarget.ConvertToBoolean(language);
+                case IntegerValue integerTarget:
+                    return integerTarget.ConvertToBoolean(language);
+                case NullValue nullTarget:
+                    return nullTarget.ConvertToBoolean(language);
+                case StringValue stringTarget:
+                    return stringTarget.ConvertToBoolean(language);
+                case TranslatableValue translatableTarget:
+                    return translatableTarget.ConvertToBoolean(language);
                 case IBooleanConverter booleanConverter:
-                    return booleanConverter.ConvertToBoolean();
+                    return booleanConverter.ConvertToBoolean(language);
                 case IFloatConverter floatConverter:
-                    return !floatConverter.ConvertToFloat().Equals(0.0F);
+                    return !floatConverter.ConvertToFloat(language).Equals(0.0F);
                 case IIntegerConverter integerConverter:
-                    return integerConverter.ConvertToInteger() != 0;
+                    return integerConverter.ConvertToInteger(language) != 0;
                 case IStringConverter stringConverter:
-                    var upperValue = stringConverter.ConvertToString().ToUpper();
+                    var upperValue = stringConverter.ConvertToString(language).ToUpper();
                     if (upperValue == "F" || upperValue == "FALSE") return false;
                     if (int.TryParse(upperValue, out var intValue) && intValue == 0) return false;
                     return !(float.TryParse(upperValue, out var floatValue) && floatValue.Equals(0.0F));
@@ -54,107 +81,44 @@ namespace WADV.VisualNovel.Runtime.Utilities {
             }
         }
 
-        /// <inheritdoc />
-        public override SerializableValue Duplicate() {
-            return new BooleanValue {Value = Value};
+        public override SerializableValue Clone() {
+            return new BooleanValue {value = value};
         }
 
-        /// <inheritdoc />
-        public bool ConvertToBoolean() {
-            return Value;
+        public bool ConvertToBoolean(string language = TranslationManager.DefaultLanguage) {
+            return value;
         }
 
-        /// <inheritdoc />
-        public bool ConvertToBoolean(string language) {
-            return ConvertToBoolean();
+        public float ConvertToFloat(string language = TranslationManager.DefaultLanguage) {
+            return value ? 1.0F : 0.0F;
         }
 
-        /// <inheritdoc />
-        public float ConvertToFloat() {
-            return Value ? 1.0F : 0.0F;
+        public int ConvertToInteger(string language = TranslationManager.DefaultLanguage) {
+            return value ? 1 : 0;
         }
 
-        /// <inheritdoc />
-        public float ConvertToFloat(string language) {
-            return ConvertToFloat();
+        public string ConvertToString(string language = TranslationManager.DefaultLanguage) {
+            return value ? "True" : "False";
         }
 
-        /// <inheritdoc />
-        public int ConvertToInteger() {
-            return Value ? 1 : 0;
-        }
-
-        /// <inheritdoc />
-        public int ConvertToInteger(string language) {
-            return ConvertToInteger();
-        }
-
-        /// <inheritdoc />
-        public string ConvertToString() {
-            return Value ? "True" : "False";
-        }
-
-        /// <inheritdoc />
-        public string ConvertToString(string language) {
-            return ConvertToString();
-        }
-
-        /// <inheritdoc />
         public override string ToString() {
             return ConvertToString();
         }
 
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target) {
-            var value = TryParse(target);
-            return value == Value;
+        public SerializableValue ToNegative(string language = TranslationManager.DefaultLanguage) {
+            return new BooleanValue {value = !value};
         }
 
-        /// <inheritdoc />
-        public bool EqualsWith(SerializableValue target, string language) {
-            return EqualsWith(target);
+        public bool EqualsWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return TryParse(target, language) == value;
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target) {
-            return new BooleanValue {Value = Value || TryParse(target)};
+        public SerializableValue AddWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new BooleanValue {value = value || TryParse(target, language)};
         }
 
-        /// <inheritdoc />
-        public SerializableValue AddWith(SerializableValue target, string language) {
-            return AddWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target) {
-            return new BooleanValue {Value = Value && TryParse(target)};
-        }
-
-        /// <inheritdoc />
-        public SerializableValue MultiplyWith(SerializableValue target, string language) {
-            return MultiplyWith(target);
-        }
-
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue name) {
-            if (!(name is IStringConverter stringConverter))
-                throw new NotSupportedException($"Unable to get feature in boolean value with feature id {name}: only string feature name is accepted");
-            var target = stringConverter.ConvertToString();
-            switch (target) {
-                case "Reverse":
-                    return new BooleanValue {Value = !Value};
-                case "ToNumber":
-                    return new IntegerValue {Value = ConvertToInteger()};
-                case "ToString":
-                    return new StringValue {Value = ConvertToString()};
-                default:
-                    throw new NotSupportedException($"Unable to get feature in boolean value: unsupported feature {target}");
-            }
-        }
-
-        /// <inheritdoc />
-        public SerializableValue PickChild(SerializableValue target, string language) {
-            return PickChild(target);
+        public SerializableValue MultiplyWith(SerializableValue target, string language = TranslationManager.DefaultLanguage) {
+            return new BooleanValue {value = value && TryParse(target, language)};
         }
     }
 }

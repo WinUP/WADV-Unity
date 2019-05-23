@@ -10,20 +10,20 @@ namespace WADV.VisualNovel.Compiler.Editor {
             // 重命名
             var movingFiles = movedFromAssetPaths
                               .WithIndex()
-                              .Where(e => e.item.EndsWith(".vns") || e.item.EndsWith(".vnb") || e.item.EndsWith(".txt"))
-                              .Select(e => (From: e.item, To: movedAssets[e.index]));
+                              .Where(e => e.Item.EndsWith(".vns") || e.Item.EndsWith(".vnb") || e.Item.EndsWith(".txt"))
+                              .Select(e => (From: e.Item, To: movedAssets[e.Index]));
             foreach (var (movedFromAsset, moveToAsset) in movingFiles) {
                 var origin = ScriptInformation.CreateInformationFromAsset(movedFromAsset);
                 if (origin == null) continue;
                 var target = ScriptInformation.CreateInformationFromAsset(moveToAsset);
                 if (target == null) {
-                    CompileConfiguration.Content.Scripts.Remove(origin.Id);
+                    CompileConfiguration.Content.Scripts.Remove(origin.id);
                     continue;
                 }
                 if (movedFromAsset.EndsWith(".vns")) {
                     if (moveToAsset.EndsWith(".vns")) { // vns -> vns
                         // 同步Hash
-                        target.Hash = target.Hash ?? origin.Hash;
+                        target.hash = target.hash ?? origin.hash;
                         // 移动翻译文件
                         foreach (var (language, path) in origin.Translations) {
                             if (!target.Translations.ContainsKey(language)) {
@@ -36,7 +36,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
                             }
                         }
                         // 移动编译文件
-                        target.RecordedHash = target.RecordedHash ?? origin.RecordedHash;
+                        target.recordedHash = target.recordedHash ?? origin.recordedHash;
                         var binaryFile = origin.BinaryAssetPath();
                         var targetBinaryFile = target.BinaryAssetPath();
                         if (binaryFile != targetBinaryFile && File.Exists(binaryFile)) {
@@ -44,11 +44,11 @@ namespace WADV.VisualNovel.Compiler.Editor {
                         }
                     }
                     // 删除旧配置
-                    CompileConfiguration.Content.Scripts.Remove(origin.Id);
+                    CompileConfiguration.Content.Scripts.Remove(origin.id);
                 } else if (movedFromAsset.EndsWith(".vnb")) {
                     if (moveToAsset.EndsWith(".vnb")) { // vnb -> vnb
                         // 同步Hash
-                        target.RecordedHash = target.RecordedHash ?? origin.RecordedHash;
+                        target.recordedHash = target.recordedHash ?? origin.recordedHash;
                         // 移动翻译文件
                         foreach (var (language, path) in origin.Translations) {
                             if (!target.Translations.ContainsKey(language)) {
@@ -61,7 +61,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
                             }
                         }
                         // 移动源文件
-                        target.Hash = target.Hash ?? origin.Hash;
+                        target.hash = target.hash ?? origin.hash;
                         var sourceFile = origin.SourceAssetPath();
                         var targetSourceFile = target.SourceAssetPath();
                         if (sourceFile != targetSourceFile && File.Exists(sourceFile)) {
@@ -69,7 +69,7 @@ namespace WADV.VisualNovel.Compiler.Editor {
                         }
                     }
                     // 删除旧配置
-                    CompileConfiguration.Content.Scripts.Remove(origin.Id);
+                    CompileConfiguration.Content.Scripts.Remove(origin.id);
                 }
             }
             // 处理删除

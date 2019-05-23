@@ -24,7 +24,9 @@ namespace WADV {
             _lastMousePosition = Input.mousePosition;
             var mouse = camera.ScreenToViewportPoint(_lastMousePosition);
             mouse = new Vector3(mouse.x - 0.5F, mouse.y - 0.5F, mouse.z);
-            foreach (var target in targets) {
+            var length = targets.Count;
+            for (var i = -1; ++i < length;) {
+                var target = targets[i];
                 var cache = _cache[target.transform];
                 target.transform.position = new Vector3(cache.x + mouse.x * target.scale, cache.y + mouse.y * target.scale, cache.z);
             }

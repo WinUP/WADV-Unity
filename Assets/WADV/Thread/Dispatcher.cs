@@ -1,6 +1,7 @@
 // All dispatcher related codes are based on http://www.stevevermeulen.com/index.php/2017/09/using-async-await-in-unity3d-2017/
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -15,10 +16,10 @@ namespace WADV.Thread {
         /// 跳转到主线程执行
         /// </summary>
         /// <returns></returns>
-        public static WaitForUpdate UseMainThread() => NextUpdate();
+        public static WaitForUpdate UseMainThread() => WaitForUpdate.Instance;
 
         /// <summary>
-        /// 等待下一个更新循环
+        /// 等待下一个渲染循环
         /// </summary>
         /// <returns></returns>
         public static WaitForUpdate NextUpdate() => WaitForUpdate.Instance;
@@ -28,7 +29,7 @@ namespace WADV.Thread {
         /// <para>后台线程往往拥有更出色的性能，但其不能访问任何Unity界面和游戏场景元素</para>
         /// </summary>
         /// <returns></returns>
-        public static WaitForBackgroundThread UseBackgroundThread() => new WaitForBackgroundThread();
+        public static WaitForBackgroundThread UseBackgroundThread() => WaitForBackgroundThread.Instance;
 
         /// <summary>
         /// 等待一定时间
@@ -49,6 +50,12 @@ namespace WADV.Thread {
         /// </summary>
         /// <returns></returns>
         public static MainThreadPlaceholder CreatePlaceholder() => new MainThreadPlaceholder();
+        
+        /// <summary>
+        /// 生成一个新的带返回值的主线程占位符
+        /// </summary>
+        /// <returns></returns>
+        public static MainThreadPlaceholder<T> CreatePlaceholder<T>() => new MainThreadPlaceholder<T>();
 
         /// <summary>
         /// 等待所有任务完成
@@ -56,7 +63,20 @@ namespace WADV.Thread {
         /// <param name="tasks">目标任务组</param>
         /// <returns></returns>
         public static async Task WaitAll(params Task[] tasks) {
-            while (tasks.Any(e => !e.GetAwaiter().IsCompleted)) {
+            var target = tasks.Select(e => e.GetAwaiter()).ToArray();
+            while (!target.All(e => e.IsCompleted)) {
+                await NextUpdate();
+            }
+        }
+        
+        /// <summary>
+        /// 等待所有任务完成
+        /// </summary>
+        /// <param name="tasks">目标任务组</param>
+        /// <returns></returns>
+        public static async Task WaitAll(IEnumerable<Task> tasks) {
+            var target = tasks.Select(e => e.GetAwaiter()).ToArray();
+            while (!target.All(e => e.IsCompleted)) {
                 await NextUpdate();
             }
         }
@@ -67,7 +87,20 @@ namespace WADV.Thread {
         /// <param name="tasks">目标任务组</param>
         /// <returns></returns>
         public static async Task WaitAny(params Task[] tasks) {
-            while (!tasks.Any(e => e.GetAwaiter().IsCompleted)) {
+            var target = tasks.Select(e => e.GetAwaiter()).ToArray();
+            while (!target.Any(e => e.IsCompleted)) {
+                await NextUpdate();
+            }
+        }
+        
+        /// <summary>
+        /// 等待任意一个任务完成
+        /// </summary>
+        /// <param name="tasks">目标任务组</param>
+        /// <returns></returns>
+        public static async Task WaitAny(IEnumerable<Task> tasks) {
+            var target = tasks.Select(e => e.GetAwaiter()).ToArray();
+            while (!target.Any(e => e.IsCompleted)) {
                 await NextUpdate();
             }
         }

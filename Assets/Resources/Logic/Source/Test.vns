@@ -1,0 +1,14 @@
+﻿@Effect = [Effect Type=TextureMask Duration=1.0 Easing=QuadIn Threshold=0.2 Mask=[Texture2D Source='Resources://Mask/RoundFadeToLeft']]
+@Tomo = [Image Source='Resources://tomo13i']
+@Tsubasa = [Image Source='Resources://tubasa37i']
+@TomoTransform = [Transform PositionX=100 PositionY=-350]
+@TsubasaTransform = [Transform PositionX=400 PositionY=-350]
+
+[Show Layer=0 [Image Source='Resources://Classroom 2'] Name=Background PositionX=0 PositionY=0]
+
+[Show Layer=100 @Tomo Name=Tomo PositionX=100 PositionY=-350]
+[Show Layer=100 @Tsubasa Name=Tsubasa PositionX=200 PositionY=-350]
+
+[Pause 2.0]
+
+[Show @Effect @Tomo Name=Tomo Transform=@TsubasaTransform @Tsubasa Name=Tsubasa Transform=@TomoTransform]
